@@ -432,11 +432,45 @@ public static class Adl2Parser
         // The surrounding '/' chars stay; the original raw text is lost
         // from this slice. The /…/ block will end up as path-segment
         // tokens that the parser ignores when inside a c-primitive body.
+        //
+        // String-literal contents and line comments are skipped: a URL like
+        // "http://www.example.org/foo" inside a quoted string must NOT be
+        // mangled, otherwise the round-trip writer cannot reproduce it.
         StringBuilder sb = new(source);
         int i = 0;
         while (i < source.Length)
         {
             char c = source[i];
+            if (c == '"')
+            {
+                // Skip a double-quoted string literal verbatim.
+                i++;
+                while (i < source.Length)
+                {
+                    char sc = source[i];
+                    if (sc == '\\' && i + 1 < source.Length)
+                    {
+                        i += 2;
+                        continue;
+                    }
+                    if (sc == '"')
+                    {
+                        i++;
+                        break;
+                    }
+                    i++;
+                }
+                continue;
+            }
+            if (c == '-' && i + 1 < source.Length && source[i + 1] == '-')
+            {
+                // Skip an ADL line comment.
+                while (i < source.Length && source[i] != '\n')
+                {
+                    i++;
+                }
+                continue;
+            }
             if (c == '/' && i + 1 < source.Length && IsIdentStart(source[i + 1]))
             {
                 int j = i + 1;
@@ -1552,13 +1586,16 @@ public static class Adl2Parser
             node.NodeId = idTok.Value ?? idTok.Text;
         }
         TryParseOccurrences(state, node);
-        // Target path: a series of PathSegment tokens
+        // Target path: a series of PathSegment tokens. Use the raw source
+        // slice so the leading '/' and any '[idN]' predicate are preserved
+        // (Token.Text returns only the bare segment name via the Value
+        // field, which would yield "dataeventsdata" for "/data[id2]/events[id7]/data[id4]").
         StringBuilder pathSb = new();
         while (state.PeekRaw().Kind == Adl2TokenKind.PathSegment)
         {
             Adl2TokenInfo seg = state.Tokens[state.Index];
             state.Index++;
-            pathSb.Append(seg.Text);
+            pathSb.Append(state.Source.AsSpan(seg.Start, seg.Length));
         }
         node.TargetPath = pathSb.ToString();
         return node;
@@ -1585,7 +1622,7 @@ public static class Adl2Parser
         {
             Adl2TokenInfo seg = state.Tokens[state.Index];
             state.Index++;
-            pathSb.Append(seg.Text);
+            pathSb.Append(state.Source.AsSpan(seg.Start, seg.Length));
         }
         node.TargetPath = pathSb.ToString();
         return node;
