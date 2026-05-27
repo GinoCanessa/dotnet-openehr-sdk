@@ -1,0 +1,42 @@
+{
+  "id": "audit_change_type",
+  "rubric": "Audit change type",
+  "entries": [
+    {
+      "code": "249",
+      "rubric": "creation"
+    },
+    {
+      "code": "250",
+      "rubric": "amendment"
+    },
+    {
+      "code": "251",
+      "rubric": "modification"
+    },
+    {
+      "code": "252",
+      "rubric": "synthesis"
+    },
+    {
+      "code": "523",
+      "rubric": "deleted"
+    },
+    {
+      "code": "666",
+      "rubric": "attestation"
+    },
+    {
+      "code": "816",
+      "rubric": "restoration"
+    },
+    {
+      "code": "817",
+      "rubric": "format conversion"
+    },
+    {
+      "code": "253",
+      "rubric": "unknown"
+    }
+  ]
+}

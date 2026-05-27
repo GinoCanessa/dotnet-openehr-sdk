@@ -1,0 +1,26 @@
+{
+  "id": "version_lifecycle_state",
+  "rubric": "Version lifecycle state",
+  "entries": [
+    {
+      "code": "532",
+      "rubric": "complete"
+    },
+    {
+      "code": "553",
+      "rubric": "incomplete"
+    },
+    {
+      "code": "523",
+      "rubric": "deleted"
+    },
+    {
+      "code": "800",
+      "rubric": "inactive"
+    },
+    {
+      "code": "801",
+      "rubric": "abandoned"
+    }
+  ]
+}

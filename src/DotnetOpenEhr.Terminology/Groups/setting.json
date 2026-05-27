@@ -1,0 +1,110 @@
+{
+  "id": "setting",
+  "rubric": "Setting",
+  "entries": [
+    {
+      "code": "225",
+      "rubric": "home"
+    },
+    {
+      "code": "227",
+      "rubric": "emergency care"
+    },
+    {
+      "code": "228",
+      "rubric": "primary medical care"
+    },
+    {
+      "code": "229",
+      "rubric": "primary nursing care"
+    },
+    {
+      "code": "230",
+      "rubric": "primary allied health care"
+    },
+    {
+      "code": "231",
+      "rubric": "midwifery care"
+    },
+    {
+      "code": "232",
+      "rubric": "secondary medical care"
+    },
+    {
+      "code": "233",
+      "rubric": "secondary nursing care"
+    },
+    {
+      "code": "234",
+      "rubric": "secondary allied health care"
+    },
+    {
+      "code": "235",
+      "rubric": "complementary health care"
+    },
+    {
+      "code": "236",
+      "rubric": "dental care"
+    },
+    {
+      "code": "237",
+      "rubric": "nursing home care"
+    },
+    {
+      "code": "802",
+      "rubric": "mental healthcare"
+    },
+    {
+      "code": "238",
+      "rubric": "other care"
+    },
+    {
+      "code": "803",
+      "rubric": "openEHR EHR"
+    },
+    {
+      "code": "804",
+      "rubric": "openEHR Demographic"
+    },
+    {
+      "code": "805",
+      "rubric": "openEHR synchronisation"
+    },
+    {
+      "code": "806",
+      "rubric": "openEHR generic"
+    },
+    {
+      "code": "807",
+      "rubric": "generic EMR"
+    },
+    {
+      "code": "808",
+      "rubric": "other"
+    },
+    {
+      "code": "809",
+      "rubric": "cancel"
+    },
+    {
+      "code": "810",
+      "rubric": "resend"
+    },
+    {
+      "code": "811",
+      "rubric": "send new"
+    },
+    {
+      "code": "812",
+      "rubric": "any change"
+    },
+    {
+      "code": "813",
+      "rubric": "correction"
+    },
+    {
+      "code": "814",
+      "rubric": "update"
+    }
+  ]
+}

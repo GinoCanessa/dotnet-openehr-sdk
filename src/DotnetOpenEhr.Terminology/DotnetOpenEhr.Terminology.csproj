@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>DotnetOpenEhr.Terminology</RootNamespace>
+    <AssemblyName>DotnetOpenEhr.Terminology</AssemblyName>
+    <PackageId>DotnetOpenEhr.Terminology</PackageId>
+    <Description>
+      openEHR Support Terminology for .NET: the openEHR-internal vocabulary
+      groups (null_flavours, audit_change_type, composition_category, ...)
+      shipped as embedded JSON resources with an AOT-safe lookup API
+      backed by System.Text.Json source-generated parsing and frozen
+      dictionaries. Trim-safe and Native-AOT-safe. Single TFM net10.0.
+    </Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DotnetOpenEhr.Foundation\DotnetOpenEhr.Foundation.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Groups\*.json"
+                      LogicalName="DotnetOpenEhr.Terminology.Groups.%(Filename).json" />
+  </ItemGroup>
+
+</Project>

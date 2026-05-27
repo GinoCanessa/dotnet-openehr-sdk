@@ -1,0 +1,86 @@
+{
+  "id": "instruction_transitions",
+  "rubric": "Instruction transitions",
+  "entries": [
+    {
+      "code": "535",
+      "rubric": "initiate"
+    },
+    {
+      "code": "536",
+      "rubric": "plan step"
+    },
+    {
+      "code": "537",
+      "rubric": "postpone"
+    },
+    {
+      "code": "538",
+      "rubric": "restore"
+    },
+    {
+      "code": "166",
+      "rubric": "cancel"
+    },
+    {
+      "code": "542",
+      "rubric": "postponed step"
+    },
+    {
+      "code": "539",
+      "rubric": "schedule"
+    },
+    {
+      "code": "534",
+      "rubric": "scheduled step"
+    },
+    {
+      "code": "540",
+      "rubric": "start"
+    },
+    {
+      "code": "541",
+      "rubric": "do"
+    },
+    {
+      "code": "543",
+      "rubric": "active step"
+    },
+    {
+      "code": "544",
+      "rubric": "suspend"
+    },
+    {
+      "code": "545",
+      "rubric": "suspended step"
+    },
+    {
+      "code": "546",
+      "rubric": "resume"
+    },
+    {
+      "code": "547",
+      "rubric": "abort"
+    },
+    {
+      "code": "548",
+      "rubric": "finish"
+    },
+    {
+      "code": "549",
+      "rubric": "time out"
+    },
+    {
+      "code": "550",
+      "rubric": "notify aborted"
+    },
+    {
+      "code": "551",
+      "rubric": "notify completed"
+    },
+    {
+      "code": "552",
+      "rubric": "notify cancelled"
+    }
+  ]
+}

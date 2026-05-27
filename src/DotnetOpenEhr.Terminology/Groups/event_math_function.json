@@ -1,0 +1,50 @@
+{
+  "id": "event_math_function",
+  "rubric": "Event math function",
+  "entries": [
+    {
+      "code": "145",
+      "rubric": "minimum"
+    },
+    {
+      "code": "144",
+      "rubric": "maximum"
+    },
+    {
+      "code": "267",
+      "rubric": "mode"
+    },
+    {
+      "code": "268",
+      "rubric": "median"
+    },
+    {
+      "code": "146",
+      "rubric": "mean"
+    },
+    {
+      "code": "147",
+      "rubric": "change"
+    },
+    {
+      "code": "148",
+      "rubric": "total"
+    },
+    {
+      "code": "149",
+      "rubric": "variation"
+    },
+    {
+      "code": "521",
+      "rubric": "decrease"
+    },
+    {
+      "code": "522",
+      "rubric": "increase"
+    },
+    {
+      "code": "640",
+      "rubric": "actual"
+    }
+  ]
+}

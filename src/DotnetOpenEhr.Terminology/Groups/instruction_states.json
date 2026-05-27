@@ -1,0 +1,46 @@
+{
+  "id": "instruction_states",
+  "rubric": "Instruction states",
+  "entries": [
+    {
+      "code": "524",
+      "rubric": "initial"
+    },
+    {
+      "code": "526",
+      "rubric": "planned"
+    },
+    {
+      "code": "527",
+      "rubric": "postponed"
+    },
+    {
+      "code": "528",
+      "rubric": "cancelled"
+    },
+    {
+      "code": "529",
+      "rubric": "scheduled"
+    },
+    {
+      "code": "245",
+      "rubric": "active"
+    },
+    {
+      "code": "530",
+      "rubric": "suspended"
+    },
+    {
+      "code": "531",
+      "rubric": "aborted"
+    },
+    {
+      "code": "532",
+      "rubric": "completed"
+    },
+    {
+      "code": "533",
+      "rubric": "expired"
+    }
+  ]
+}

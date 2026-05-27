@@ -1,0 +1,350 @@
+{
+  "id": "property",
+  "rubric": "Property",
+  "entries": [
+    {
+      "code": "339",
+      "rubric": "Acceleration"
+    },
+    {
+      "code": "342",
+      "rubric": "Acceleration, angular"
+    },
+    {
+      "code": "381",
+      "rubric": "Amount (Eq)"
+    },
+    {
+      "code": "384",
+      "rubric": "Amount (mole)"
+    },
+    {
+      "code": "497",
+      "rubric": "Angle, plane"
+    },
+    {
+      "code": "500",
+      "rubric": "Angle, solid"
+    },
+    {
+      "code": "335",
+      "rubric": "Area"
+    },
+    {
+      "code": "119",
+      "rubric": "Concentration"
+    },
+    {
+      "code": "350",
+      "rubric": "Density"
+    },
+    {
+      "code": "362",
+      "rubric": "Diffusion coefficient"
+    },
+    {
+      "code": "501",
+      "rubric": "Electric capacitance"
+    },
+    {
+      "code": "498",
+      "rubric": "Electric charge"
+    },
+    {
+      "code": "502",
+      "rubric": "Electric conductance"
+    },
+    {
+      "code": "334",
+      "rubric": "Electric current"
+    },
+    {
+      "code": "377",
+      "rubric": "Electric field strength"
+    },
+    {
+      "code": "655",
+      "rubric": "Electric potential time"
+    },
+    {
+      "code": "121",
+      "rubric": "Energy"
+    },
+    {
+      "code": "366",
+      "rubric": "Energy density"
+    },
+    {
+      "code": "508",
+      "rubric": "Energy dose"
+    },
+    {
+      "code": "365",
+      "rubric": "Energy per area"
+    },
+    {
+      "code": "364",
+      "rubric": "Energy, linear"
+    },
+    {
+      "code": "347",
+      "rubric": "Flow rate, mass"
+    },
+    {
+      "code": "352",
+      "rubric": "Flow rate, mass/force"
+    },
+    {
+      "code": "351",
+      "rubric": "Flow rate, mass/volume"
+    },
+    {
+      "code": "126",
+      "rubric": "Flow rate, volume"
+    },
+    {
+      "code": "348",
+      "rubric": "Flux, mass"
+    },
+    {
+      "code": "355",
+      "rubric": "Force"
+    },
+    {
+      "code": "358",
+      "rubric": "Force per mass"
+    },
+    {
+      "code": "357",
+      "rubric": "Force, body"
+    },
+    {
+      "code": "382",
+      "rubric": "Frequency"
+    },
+    {
+      "code": "586",
+      "rubric": "Glomerular filtration rate"
+    },
+    {
+      "code": "373",
+      "rubric": "Heat transfer coefficient"
+    },
+    {
+      "code": "505",
+      "rubric": "Illuminance"
+    },
+    {
+      "code": "379",
+      "rubric": "Inductance"
+    },
+    {
+      "code": "122",
+      "rubric": "Length"
+    },
+    {
+      "code": "499",
+      "rubric": "Light intensity"
+    },
+    {
+      "code": "123",
+      "rubric": "Loudness"
+    },
+    {
+      "code": "504",
+      "rubric": "Luminous flux"
+    },
+    {
+      "code": "378",
+      "rubric": "Magnetic flux"
+    },
+    {
+      "code": "503",
+      "rubric": "Magnetic flux density"
+    },
+    {
+      "code": "124",
+      "rubric": "Mass"
+    },
+    {
+      "code": "385",
+      "rubric": "Mass (IU)"
+    },
+    {
+      "code": "445",
+      "rubric": "Mass (Units)"
+    },
+    {
+      "code": "349",
+      "rubric": "Mass per area"
+    },
+    {
+      "code": "344",
+      "rubric": "Moment inertia, area"
+    },
+    {
+      "code": "345",
+      "rubric": "Moment inertia, mass"
+    },
+    {
+      "code": "340",
+      "rubric": "Momentum"
+    },
+    {
+      "code": "346",
+      "rubric": "Momentum flow rate"
+    },
+    {
+      "code": "343",
+      "rubric": "Momentum, angular"
+    },
+    {
+      "code": "363",
+      "rubric": "Power"
+    },
+    {
+      "code": "369",
+      "rubric": "Power density"
+    },
+    {
+      "code": "368",
+      "rubric": "Power flux"
+    },
+    {
+      "code": "367",
+      "rubric": "Power, linear"
+    },
+    {
+      "code": "125",
+      "rubric": "Pressure"
+    },
+    {
+      "code": "507",
+      "rubric": "Proportion"
+    },
+    {
+      "code": "380",
+      "rubric": "Qualified real"
+    },
+    {
+      "code": "506",
+      "rubric": "Radioactivity"
+    },
+    {
+      "code": "375",
+      "rubric": "Resistance"
+    },
+    {
+      "code": "370",
+      "rubric": "Specific energy"
+    },
+    {
+      "code": "371",
+      "rubric": "Specific heat, gas constant"
+    },
+    {
+      "code": "337",
+      "rubric": "Specific surface"
+    },
+    {
+      "code": "336",
+      "rubric": "Specific volume"
+    },
+    {
+      "code": "354",
+      "rubric": "Specific weight"
+    },
+    {
+      "code": "356",
+      "rubric": "Surface tension"
+    },
+    {
+      "code": "127",
+      "rubric": "Temperature"
+    },
+    {
+      "code": "372",
+      "rubric": "Thermal conductivity"
+    },
+    {
+      "code": "128",
+      "rubric": "Time"
+    },
+    {
+      "code": "359",
+      "rubric": "Torque"
+    },
+    {
+      "code": "338",
+      "rubric": "Velocity"
+    },
+    {
+      "code": "341",
+      "rubric": "Velocity, angular"
+    },
+    {
+      "code": "360",
+      "rubric": "Viscosity, dynamic"
+    },
+    {
+      "code": "361",
+      "rubric": "Viscosity, kinematic"
+    },
+    {
+      "code": "374",
+      "rubric": "Electric potential"
+    },
+    {
+      "code": "129",
+      "rubric": "Volume"
+    },
+    {
+      "code": "130",
+      "rubric": "Work"
+    },
+    {
+      "code": "685",
+      "rubric": "Refractive power"
+    },
+    {
+      "code": "118",
+      "rubric": "<not set>"
+    },
+    {
+      "code": "709",
+      "rubric": "Time fraction"
+    },
+    {
+      "code": "708",
+      "rubric": "Rate of change, pressure"
+    },
+    {
+      "code": "754",
+      "rubric": "Rate of change, frequency"
+    },
+    {
+      "code": "755",
+      "rubric": "Arbitrary"
+    },
+    {
+      "code": "756",
+      "rubric": "Medication dose rate"
+    },
+    {
+      "code": "757",
+      "rubric": "Spectral power"
+    },
+    {
+      "code": "758",
+      "rubric": "Spectral power density"
+    },
+    {
+      "code": "759",
+      "rubric": "Pace"
+    },
+    {
+      "code": "760",
+      "rubric": "Enzyme activity"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>DotnetOpenEhr.Bmm</RootNamespace>
+    <AssemblyName>DotnetOpenEhr.Bmm</AssemblyName>
+    <PackageId>DotnetOpenEhr.Bmm</PackageId>
+    <Description>
+      openEHR Basic Meta-Model (BMM) object model and parser for .NET.
+      Reads BMM schema files (ODIN under the hood) into a strongly-typed
+      model of packages, classes, properties, generic parameters, and
+      type references. Trim-safe and Native-AOT-safe. Single TFM net10.0.
+    </Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DotnetOpenEhr.Foundation\DotnetOpenEhr.Foundation.csproj" />
+    <ProjectReference Include="..\DotnetOpenEhr.Odin\DotnetOpenEhr.Odin.csproj" />
+  </ItemGroup>
+
+</Project>

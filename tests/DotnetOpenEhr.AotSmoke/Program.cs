@@ -108,6 +108,34 @@ DotnetOpenEhr.Odin.OdinValue odinReparsed = DotnetOpenEhr.Odin.OdinParser.Parse(
 DotnetOpenEhr.Odin.Values.OdinHash odinHash = odinReparsed.AsHash();
 System.Console.WriteLine($"odin parse ok: keys={odinHash.Entries.Count}");
 
+// Phase 6: terminology lookup via the embedded resource + STJ source-gen
+// pipeline, and a small BMM fragment parse end-to-end.
+bool nullFlavour253 = DotnetOpenEhr.Terminology.OpenEhrTerminology.IsValidCode("null_flavours", "253");
+System.Console.WriteLine($"terminology: null_flavours[253]={nullFlavour253.ToString().ToLowerInvariant()}");
+
+const string bmmFragment = """
+    bmm_version = <"2.1">
+    model_name = <"smoke">
+    class_definitions = <
+        ["LOCATABLE"] = <
+            name = <"LOCATABLE">
+            is_abstract = <True>
+        >
+        ["PARTY"] = <
+            name = <"PARTY">
+            ancestors = <"LOCATABLE">
+            properties = <
+                ["name"] = <
+                    name = <"name">
+                    type = <"String">
+                >
+            >
+        >
+    >
+    """;
+DotnetOpenEhr.Bmm.BmmModel bmm = DotnetOpenEhr.Bmm.BmmParser.Parse(bmmFragment);
+System.Console.WriteLine($"bmm parse ok: classes={bmm.ClassDefinitions.Count}");
+
 System.Console.WriteLine("smoke ok");
 return 0;
 

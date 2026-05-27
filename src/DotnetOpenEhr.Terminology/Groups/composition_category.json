@@ -1,0 +1,22 @@
+{
+  "id": "composition_category",
+  "rubric": "Composition category",
+  "entries": [
+    {
+      "code": "431",
+      "rubric": "persistent"
+    },
+    {
+      "code": "451",
+      "rubric": "episodic"
+    },
+    {
+      "code": "433",
+      "rubric": "event"
+    },
+    {
+      "code": "815",
+      "rubric": "report"
+    }
+  ]
+}

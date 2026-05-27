@@ -1,0 +1,150 @@
+{
+  "id": "subject_relationship",
+  "rubric": "Subject relationship",
+  "entries": [
+    {
+      "code": "0",
+      "rubric": "self"
+    },
+    {
+      "code": "3",
+      "rubric": "foetus"
+    },
+    {
+      "code": "10",
+      "rubric": "mother"
+    },
+    {
+      "code": "9",
+      "rubric": "father"
+    },
+    {
+      "code": "6",
+      "rubric": "donor"
+    },
+    {
+      "code": "253",
+      "rubric": "unknown"
+    },
+    {
+      "code": "261",
+      "rubric": "adopted daughter"
+    },
+    {
+      "code": "260",
+      "rubric": "adopted son"
+    },
+    {
+      "code": "259",
+      "rubric": "adoptive father"
+    },
+    {
+      "code": "258",
+      "rubric": "adoptive mother"
+    },
+    {
+      "code": "256",
+      "rubric": "biological father"
+    },
+    {
+      "code": "255",
+      "rubric": "biological mother"
+    },
+    {
+      "code": "23",
+      "rubric": "brother"
+    },
+    {
+      "code": "28",
+      "rubric": "child"
+    },
+    {
+      "code": "265",
+      "rubric": "cohabitee"
+    },
+    {
+      "code": "257",
+      "rubric": "cousin"
+    },
+    {
+      "code": "29",
+      "rubric": "daughter"
+    },
+    {
+      "code": "264",
+      "rubric": "guardian"
+    },
+    {
+      "code": "39",
+      "rubric": "maternal aunt"
+    },
+    {
+      "code": "8",
+      "rubric": "maternal grandfather"
+    },
+    {
+      "code": "7",
+      "rubric": "maternal grandmother"
+    },
+    {
+      "code": "38",
+      "rubric": "maternal uncle"
+    },
+    {
+      "code": "189",
+      "rubric": "neonate"
+    },
+    {
+      "code": "254",
+      "rubric": "parent"
+    },
+    {
+      "code": "22",
+      "rubric": "partner/spouse"
+    },
+    {
+      "code": "41",
+      "rubric": "paternal aunt"
+    },
+    {
+      "code": "36",
+      "rubric": "paternal grandfather"
+    },
+    {
+      "code": "37",
+      "rubric": "paternal grandmother"
+    },
+    {
+      "code": "40",
+      "rubric": "paternal uncle"
+    },
+    {
+      "code": "27",
+      "rubric": "sibling"
+    },
+    {
+      "code": "24",
+      "rubric": "sister"
+    },
+    {
+      "code": "31",
+      "rubric": "son"
+    },
+    {
+      "code": "263",
+      "rubric": "step father"
+    },
+    {
+      "code": "262",
+      "rubric": "step mother"
+    },
+    {
+      "code": "25",
+      "rubric": "step or half brother"
+    },
+    {
+      "code": "26",
+      "rubric": "step or half sister"
+    }
+  ]
+}

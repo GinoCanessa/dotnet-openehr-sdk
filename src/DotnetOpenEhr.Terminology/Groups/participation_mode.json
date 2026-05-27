@@ -1,0 +1,134 @@
+{
+  "id": "participation_mode",
+  "rubric": "Participation mode",
+  "entries": [
+    {
+      "code": "193",
+      "rubric": "not specified"
+    },
+    {
+      "code": "216",
+      "rubric": "face-to-face communication"
+    },
+    {
+      "code": "223",
+      "rubric": "interpreted face-to-face communication"
+    },
+    {
+      "code": "217",
+      "rubric": "signing (face-to-face)"
+    },
+    {
+      "code": "195",
+      "rubric": "live audiovisual; videoconference; videophone"
+    },
+    {
+      "code": "198",
+      "rubric": "videoconferencing"
+    },
+    {
+      "code": "197",
+      "rubric": "videophone"
+    },
+    {
+      "code": "218",
+      "rubric": "signing over video"
+    },
+    {
+      "code": "224",
+      "rubric": "interpreted video communication"
+    },
+    {
+      "code": "194",
+      "rubric": "asynchronous audiovisual; recorded video"
+    },
+    {
+      "code": "196",
+      "rubric": "recorded video"
+    },
+    {
+      "code": "202",
+      "rubric": "live audio-only; telephone; internet phone; teleconference"
+    },
+    {
+      "code": "204",
+      "rubric": "telephone"
+    },
+    {
+      "code": "203",
+      "rubric": "teleconference"
+    },
+    {
+      "code": "205",
+      "rubric": "internet telephone"
+    },
+    {
+      "code": "222",
+      "rubric": "interpreted audio-only"
+    },
+    {
+      "code": "199",
+      "rubric": "asynchronous audio-only; dictated; voice mail"
+    },
+    {
+      "code": "200",
+      "rubric": "dictated"
+    },
+    {
+      "code": "201",
+      "rubric": "voice-mail"
+    },
+    {
+      "code": "212",
+      "rubric": "live text-only; internet chat; SMS chat; interactive written note"
+    },
+    {
+      "code": "213",
+      "rubric": "internet chat"
+    },
+    {
+      "code": "214",
+      "rubric": "SMS chat"
+    },
+    {
+      "code": "215",
+      "rubric": "interactive written note"
+    },
+    {
+      "code": "206",
+      "rubric": "asynchronous text; email; fax; letter; handwritten note; SMS message"
+    },
+    {
+      "code": "211",
+      "rubric": "handwritten note"
+    },
+    {
+      "code": "210",
+      "rubric": "printed/typed letter"
+    },
+    {
+      "code": "207",
+      "rubric": "email"
+    },
+    {
+      "code": "208",
+      "rubric": "facsimile/telefax"
+    },
+    {
+      "code": "221",
+      "rubric": "translated text"
+    },
+    {
+      "code": "209",
+      "rubric": "SMS message"
+    },
+    {
+      "code": "219",
+      "rubric": "physically present"
+    },
+    {
+      "code": "220",
+      "rubric": "physically remote"
+    }
+  ]
+}

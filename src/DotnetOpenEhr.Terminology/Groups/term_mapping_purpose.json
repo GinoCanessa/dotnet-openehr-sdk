@@ -1,0 +1,18 @@
+{
+  "id": "term_mapping_purpose",
+  "rubric": "Term mapping purpose",
+  "entries": [
+    {
+      "code": "669",
+      "rubric": "public health"
+    },
+    {
+      "code": "670",
+      "rubric": "reimbursement"
+    },
+    {
+      "code": "671",
+      "rubric": "research study"
+    }
+  ]
+}

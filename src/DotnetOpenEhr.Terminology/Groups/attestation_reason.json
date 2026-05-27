@@ -1,0 +1,14 @@
+{
+  "id": "attestation_reason",
+  "rubric": "Attestation reason",
+  "entries": [
+    {
+      "code": "240",
+      "rubric": "signed"
+    },
+    {
+      "code": "648",
+      "rubric": "witnessed"
+    }
+  ]
+}

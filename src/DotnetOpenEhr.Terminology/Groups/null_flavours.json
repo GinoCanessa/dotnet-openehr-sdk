@@ -1,0 +1,22 @@
+{
+  "id": "null_flavours",
+  "rubric": "Null flavours",
+  "entries": [
+    {
+      "code": "271",
+      "rubric": "no information"
+    },
+    {
+      "code": "253",
+      "rubric": "unknown"
+    },
+    {
+      "code": "272",
+      "rubric": "masked"
+    },
+    {
+      "code": "273",
+      "rubric": "not applicable"
+    }
+  ]
+}

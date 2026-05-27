@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>DotnetOpenEhr.Bmm.Tests</RootNamespace>
+    <AssemblyName>DotnetOpenEhr.Bmm.Tests</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DotnetOpenEhr.Bmm\DotnetOpenEhr.Bmm.csproj" />
+    <ProjectReference Include="..\..\src\DotnetOpenEhr.Foundation\DotnetOpenEhr.Foundation.csproj" />
+    <ProjectReference Include="..\..\src\DotnetOpenEhr.Odin\DotnetOpenEhr.Odin.csproj" />
+  </ItemGroup>
+
+</Project>
