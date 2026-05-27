@@ -17,4 +17,8 @@
     <ProjectReference Include="..\DotnetOpenEhr.Rm\DotnetOpenEhr.Rm.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="DotnetOpenEhr.Serialization.Json.Flat" />
+  </ItemGroup>
+
 </Project>

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>DotnetOpenEhr.Templates.Abstractions</RootNamespace>
+    <AssemblyName>DotnetOpenEhr.Templates.Abstractions</AssemblyName>
+    <PackageId>DotnetOpenEhr.Templates.Abstractions</PackageId>
+    <Description>
+      Seam abstractions used by openEHR template-aware components in
+      DotnetOpenEhr. Defines ITemplateSchema and supporting DTOs so the
+      FLAT JSON serializer (Phase 4) and the OPT-backed
+      OperationalTemplate (Phase 8) can interoperate without a circular
+      reference. Trim-safe and Native-AOT-safe. Single TFM net10.0.
+    </Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DotnetOpenEhr.Foundation\DotnetOpenEhr.Foundation.csproj" />
+  </ItemGroup>
+
+</Project>

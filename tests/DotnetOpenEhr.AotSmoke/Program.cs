@@ -8,6 +8,7 @@
 
 using System.IO;
 using System.Reflection;
+using System.Text.Json;
 using DotnetOpenEhr.Foundation.Iso;
 using DotnetOpenEhr.Rm;
 using DotnetOpenEhr.Rm.Composition;
@@ -79,6 +80,24 @@ Composition? roundTripped = OpenEhrJson.ParseComposition(ms.ToArray());
 if (roundTripped is null) throw new System.InvalidOperationException("Fixture parse returned null.");
 byte[] reEmitted = OpenEhrJson.Serialize(roundTripped);
 System.Console.WriteLine($"json round-trip: archetype={roundTripped.ArchetypeNodeId} bytes={reEmitted.Length}");
+
+// Phase 4: parse a FLAT JSON fixture, re-emit as FLAT, and re-parse to
+// confirm the schemaless façade is AOT-safe (no reflection, all STJ
+// source-gen).
+using Stream flatStream = asm.GetManifestResourceStream("minimal_metadata_flat.json")
+    ?? throw new System.InvalidOperationException("Embedded FLAT fixture missing.");
+using MemoryStream flatMs = new();
+flatStream.CopyTo(flatMs);
+byte[] flatBytes = flatMs.ToArray();
+Composition? flatParsed = DotnetOpenEhr.Serialization.Json.Flat.OpenEhrFlatJson.ParseComposition(flatBytes);
+if (flatParsed is null) throw new System.InvalidOperationException("FLAT parse returned null.");
+byte[] flatReEmitted = DotnetOpenEhr.Serialization.Json.Flat.OpenEhrFlatJson.Serialize(flatParsed, "minimal");
+Composition? flatRoundTripped = DotnetOpenEhr.Serialization.Json.Flat.OpenEhrFlatJson.ParseComposition(flatReEmitted);
+if (flatRoundTripped is null) throw new System.InvalidOperationException("FLAT re-parse returned null.");
+using JsonDocument flatDoc = JsonDocument.Parse(flatReEmitted);
+int flatKeyCount = 0;
+foreach (JsonProperty _ in flatDoc.RootElement.EnumerateObject()) flatKeyCount++;
+System.Console.WriteLine($"flat round-trip: keys={flatKeyCount}");
 
 System.Console.WriteLine("smoke ok");
 return 0;

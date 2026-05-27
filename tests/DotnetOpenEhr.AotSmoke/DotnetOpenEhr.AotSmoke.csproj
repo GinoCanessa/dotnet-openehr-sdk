@@ -29,11 +29,16 @@
     <ProjectReference Include="..\..\src\DotnetOpenEhr.Foundation\DotnetOpenEhr.Foundation.csproj" />
     <ProjectReference Include="..\..\src\DotnetOpenEhr.Rm\DotnetOpenEhr.Rm.csproj" />
     <ProjectReference Include="..\..\src\DotnetOpenEhr.Serialization.Json\DotnetOpenEhr.Serialization.Json.csproj" />
+    <ProjectReference Include="..\..\src\DotnetOpenEhr.Serialization.Json.Flat\DotnetOpenEhr.Serialization.Json.Flat.csproj" />
+    <ProjectReference Include="..\..\src\DotnetOpenEhr.Templates.Abstractions\DotnetOpenEhr.Templates.Abstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="..\DotnetOpenEhr.IntegrationTests\Fixtures\Canonical\kds_procedure_bundle.json">
       <LogicalName>kds_procedure_bundle.json</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\DotnetOpenEhr.Serialization.Json.Flat.Tests\Fixtures\Flat\minimal_metadata_flat.json">
+      <LogicalName>minimal_metadata_flat.json</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
 

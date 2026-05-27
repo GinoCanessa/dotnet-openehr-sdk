@@ -1,0 +1,18 @@
+{
+  "minimal/category|code": "433",
+  "minimal/category|value": "event",
+  "minimal/category|terminology": "openehr",
+  "minimal/context/start_time": "2024-05-27T10:25:03",
+  "minimal/context/_end_time": "2024-05-27T10:55:03",
+  "minimal/context/location": "Ward 4",
+  "minimal/context/setting|value": "home",
+  "minimal/context/setting|code": "225",
+  "minimal/context/setting|terminology": "openehr",
+  "minimal/context/_health_care_facility|name": "Example General Hospital",
+  "minimal/language|terminology": "ISO_639-1",
+  "minimal/language|code": "en",
+  "minimal/territory|code": "DE",
+  "minimal/territory|terminology": "ISO_3166-1",
+  "minimal/composer|name": "Max Mustermann",
+  "minimal/_uid": "40199372-4084-4c31-a169-b513b34e1ccc::local.ehrbase.org::1"
+}

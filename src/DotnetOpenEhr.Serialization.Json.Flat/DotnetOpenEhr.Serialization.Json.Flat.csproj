@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>DotnetOpenEhr.Serialization.Json.Flat</RootNamespace>
+    <AssemblyName>DotnetOpenEhr.Serialization.Json.Flat</AssemblyName>
+    <PackageId>DotnetOpenEhr.Serialization.Json.Flat</PackageId>
+    <Description>
+      FLAT openEHR JSON serializer for DotnetOpenEhr. Round-trips the
+      openEHR FLAT JSON dialect (slash-delimited path keys, scalar
+      values) into the DotnetOpenEhr.Rm strongly-typed Reference Model.
+      Schemaless mode resolves polymorphism via monomorphic-RM lookup
+      plus inline _type discriminators; schema-driven mode delegates to
+      DotnetOpenEhr.Templates.Abstractions.ITemplateSchema. Trim-safe
+      and Native-AOT-safe. Single TFM net10.0.
+    </Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DotnetOpenEhr.Rm\DotnetOpenEhr.Rm.csproj" />
+    <ProjectReference Include="..\DotnetOpenEhr.Templates.Abstractions\DotnetOpenEhr.Templates.Abstractions.csproj" />
+    <ProjectReference Include="..\DotnetOpenEhr.Serialization.Json\DotnetOpenEhr.Serialization.Json.csproj"
+                      PrivateAssets="All" />
+  </ItemGroup>
+
+</Project>
