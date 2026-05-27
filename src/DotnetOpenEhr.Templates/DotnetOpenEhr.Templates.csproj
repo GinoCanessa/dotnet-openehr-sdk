@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>DotnetOpenEhr.Templates</RootNamespace>
+    <AssemblyName>DotnetOpenEhr.Templates</AssemblyName>
+    <PackageId>DotnetOpenEhr.Templates</PackageId>
+    <Description>
+      openEHR Operational Template (OPT2) parser and concrete
+      OperationalTemplate model for .NET. Reuses the ADL2 parser from
+      DotnetOpenEhr.Archetypes for the bulk of the AOM2 tree and adds
+      OPT2-specific extensions (component_terminologies) plus an
+      ITemplateSchema implementation suitable for driving the
+      template-aware FLAT serializer. Trim-safe and Native-AOT-safe.
+      Single TFM net10.0.
+    </Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DotnetOpenEhr.Foundation\DotnetOpenEhr.Foundation.csproj" />
+    <ProjectReference Include="..\DotnetOpenEhr.Odin\DotnetOpenEhr.Odin.csproj" />
+    <ProjectReference Include="..\DotnetOpenEhr.Rm\DotnetOpenEhr.Rm.csproj" />
+    <ProjectReference Include="..\DotnetOpenEhr.Archetypes\DotnetOpenEhr.Archetypes.csproj" />
+    <ProjectReference Include="..\DotnetOpenEhr.Bmm\DotnetOpenEhr.Bmm.csproj" />
+    <ProjectReference Include="..\DotnetOpenEhr.Bmm.Rm\DotnetOpenEhr.Bmm.Rm.csproj" />
+    <ProjectReference Include="..\DotnetOpenEhr.Templates.Abstractions\DotnetOpenEhr.Templates.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>

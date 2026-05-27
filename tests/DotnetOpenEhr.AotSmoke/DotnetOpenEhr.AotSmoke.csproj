@@ -35,6 +35,7 @@
     <ProjectReference Include="..\..\src\DotnetOpenEhr.Serialization.Json\DotnetOpenEhr.Serialization.Json.csproj" />
     <ProjectReference Include="..\..\src\DotnetOpenEhr.Serialization.Json.Flat\DotnetOpenEhr.Serialization.Json.Flat.csproj" />
     <ProjectReference Include="..\..\src\DotnetOpenEhr.Templates.Abstractions\DotnetOpenEhr.Templates.Abstractions.csproj" />
+    <ProjectReference Include="..\..\src\DotnetOpenEhr.Templates\DotnetOpenEhr.Templates.csproj" />
     <ProjectReference Include="..\..\src\DotnetOpenEhr.Terminology\DotnetOpenEhr.Terminology.csproj" />
   </ItemGroup>
 

@@ -183,6 +183,64 @@ foreach (DotnetOpenEhr.Archetypes.Validation.ArchetypeIssue issue in archetypeIs
 }
 System.Console.WriteLine($"archetype: {parsedArchetype.ArchetypeId} issues={archetypeErrors}");
 
+// Phase 8a: parse a tiny inline OPT2 and report its node count. Confirms
+// the Opt2Parser + concrete OperationalTemplate publish cleanly under
+// PublishAot (component_terminologies extraction is pre-pass + ODIN).
+const string opt2Src = """
+    operational_template (adl_version=2.0.6; rm_release=1.1.0; generated)
+        openEHR-EHR-OBSERVATION.aot_smoke.v1.0.0
+
+    language
+        original_language = <[ISO_639-1::en]>
+
+    description
+        lifecycle_state = <"unmanaged">
+
+    definition
+        OBSERVATION[id1] matches {
+            data matches {
+                HISTORY[id2] matches {
+                    events matches {
+                        POINT_EVENT[id3] matches {
+                            data matches {
+                                ITEM_TREE[id4] matches {
+                                    items matches {
+                                        ELEMENT[id5] matches {
+                                            value matches {
+                                                DV_TEXT[id6]
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+    terminology
+        term_definitions = <
+            ["en"] = <
+                ["id1"] = <text = <"AOT smoke"> description = <"AOT smoke">>
+            >
+        >
+
+    component_terminologies
+        component_terminologies = <
+            ["openEHR-EHR-OBSERVATION.aot_smoke.v1.0.0"] = <
+                term_definitions = <
+                    ["en"] = <
+                        ["id1"] = <text = <"AOT smoke"> description = <"AOT smoke">>
+                    >
+                >
+            >
+        >
+    """;
+DotnetOpenEhr.Templates.OperationalTemplate opt2 =
+    DotnetOpenEhr.Templates.Opt2Parser.Parse(opt2Src);
+System.Console.WriteLine($"opt2: {opt2.ArchetypeId} nodes={opt2.Nodes.Count}");
+
 System.Console.WriteLine("smoke ok");
 return 0;
 

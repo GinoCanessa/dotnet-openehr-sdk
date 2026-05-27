@@ -1,0 +1,80 @@
+operational_template (adl_version=2.0.6; rm_release=1.1.0; generated)
+    openEHR-EHR-COMPOSITION.report.v1.0.0
+
+language
+    original_language = <[ISO_639-1::en]>
+
+description
+    lifecycle_state = <"unmanaged">
+    details = <
+        ["en"] = <
+            language = <[ISO_639-1::en]>
+            purpose = <"Hand-authored OPT2 fixture with multiple component terminologies.">
+        >
+    >
+
+definition
+    COMPOSITION[id1] matches {
+        content matches {
+            OBSERVATION[id2] occurrences matches {0..*} matches {
+                data matches {
+                    HISTORY[id3] matches {
+                        events matches {
+                            POINT_EVENT[id4] occurrences matches {0..*} matches {
+                                data matches {
+                                    ITEM_TREE[id5] matches {
+                                        items matches {
+                                            ELEMENT[id6] matches {
+                                                value matches {
+                                                    DV_TEXT[id7]
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            SECTION[id8] occurrences matches {0..1} matches { }
+        }
+    }
+
+terminology
+    term_definitions = <
+        ["en"] = <
+            ["id1"] = <
+                text = <"Report composition">
+                description = <"Report composition root.">
+            >
+            ["id2"] = <
+                text = <"observation">
+                description = <"clinical observation entry">
+            >
+            ["id3"] = <text = <"history"> description = <"history">>
+            ["id4"] = <text = <"any event"> description = <"any event">>
+            ["id5"] = <text = <"tree"> description = <"tree">>
+            ["id6"] = <text = <"notes"> description = <"free text notes">>
+            ["id7"] = <text = <"notes value"> description = <"notes value">>
+            ["id8"] = <text = <"summary"> description = <"summary section">>
+        >
+    >
+
+component_terminologies
+    component_terminologies = <
+        ["openEHR-EHR-OBSERVATION.notes.v1.0.0"] = <
+            term_definitions = <
+                ["en"] = <
+                    ["id1"] = <text = <"Clinical notes"> description = <"Free-text notes.">>
+                >
+            >
+        >
+        ["openEHR-EHR-SECTION.summary.v1.0.0"] = <
+            term_definitions = <
+                ["en"] = <
+                    ["id1"] = <text = <"Summary"> description = <"Summary section.">>
+                >
+            >
+        >
+    >

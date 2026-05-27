@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>DotnetOpenEhr.Templates.Tests</RootNamespace>
+    <AssemblyName>DotnetOpenEhr.Templates.Tests</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DotnetOpenEhr.Templates\DotnetOpenEhr.Templates.csproj" />
+    <ProjectReference Include="..\..\src\DotnetOpenEhr.Templates.Abstractions\DotnetOpenEhr.Templates.Abstractions.csproj" />
+    <ProjectReference Include="..\..\src\DotnetOpenEhr.Archetypes\DotnetOpenEhr.Archetypes.csproj" />
+    <ProjectReference Include="..\..\src\DotnetOpenEhr.Bmm.Rm\DotnetOpenEhr.Bmm.Rm.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Fixtures\Opt2\*.opt2" />
+    <EmbeddedResource Include="Fixtures\Opt2\*.opt" />
+  </ItemGroup>
+
+</Project>
