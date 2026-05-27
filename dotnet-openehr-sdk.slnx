@@ -11,10 +11,12 @@
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/DotnetOpenEhr.Foundation/DotnetOpenEhr.Foundation.csproj" />
+    <Project Path="src/DotnetOpenEhr.Rm/DotnetOpenEhr.Rm.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/DotnetOpenEhr.AotSmoke/DotnetOpenEhr.AotSmoke.csproj" />
     <Project Path="tests/DotnetOpenEhr.Foundation.Tests/DotnetOpenEhr.Foundation.Tests.csproj" />
+    <Project Path="tests/DotnetOpenEhr.Rm.Tests/DotnetOpenEhr.Rm.Tests.csproj" />
   </Folder>
 </Solution>
 

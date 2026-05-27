@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\DotnetOpenEhr.Foundation\DotnetOpenEhr.Foundation.csproj" />
+    <ProjectReference Include="..\..\src\DotnetOpenEhr.Rm\DotnetOpenEhr.Rm.csproj" />
   </ItemGroup>
 
 </Project>
