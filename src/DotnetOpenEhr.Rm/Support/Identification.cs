@@ -16,6 +16,7 @@ namespace DotnetOpenEhr.Rm.Support;
 [JsonDerivedType(typeof(ArchetypeId),     "ARCHETYPE_ID")]
 [JsonDerivedType(typeof(TemplateId),      "TEMPLATE_ID")]
 [JsonDerivedType(typeof(TerminologyId),   "TERMINOLOGY_ID")]
+[JsonDerivedType(typeof(GenericId),       "GENERIC_ID")]
 public abstract class ObjectId
 {
     [JsonPropertyName("value")]
@@ -71,12 +72,26 @@ public sealed class TerminologyId : ObjectId
 {
 }
 
+// SPEC: openEHR BASE Identification — GENERIC_ID. Used inside an
+// OBJECT_REF whose id is not one of the strongly-typed forms (HIER_,
+// OBJECT_VERSION_, ARCHETYPE_, TEMPLATE_, TERMINOLOGY_).
+/// <summary>
+/// Generic identifier carrying a free-form <c>value</c> and a
+/// <c>scheme</c> that names the issuing identifier scheme.
+/// </summary>
+public sealed class GenericId : ObjectId
+{
+    [JsonPropertyName("scheme")]
+    public string Scheme { get; set; } = string.Empty;
+}
+
 // SPEC: Support Information Model.html#_identifiers (OBJECT_REF).
 /// <summary>
 /// Reference to an object inside an openEHR or other namespace, by
 /// <c>id_namespace</c> + <c>type</c> + <c>id</c>.
 /// </summary>
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "_type")]
+[JsonDerivedType(typeof(ObjectRef), "OBJECT_REF")]
 [JsonDerivedType(typeof(PartyRef), "PARTY_REF")]
 public class ObjectRef
 {

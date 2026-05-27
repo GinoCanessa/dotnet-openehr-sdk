@@ -18,7 +18,13 @@ public sealed class IsoLexicalConverter<T> : JsonConverter<T>
     {
         if (reader.TokenType == JsonTokenType.Null) return null;
         string text = reader.GetString() ?? throw new JsonException("Expected ISO lexical string.");
-        return Parse(text) ?? throw new JsonException($"'{text}' is not a valid {typeof(T).Name}.");
+        T? parsed = Parse(text);
+        if (parsed is not null) return parsed;
+        if (typeof(T) == typeof(IsoDuration) && TryParseZeroDuration(text, out IsoDuration? zero))
+        {
+            return (T)(object)zero;
+        }
+        throw new JsonException($"'{text}' is not a valid {typeof(T).Name}.");
     }
 
     public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
@@ -56,5 +62,58 @@ public sealed class IsoLexicalConverter<T> : JsonConverter<T>
             IsoDuration dur => dur.OriginalLexicalForm,
             _ => throw new NotSupportedException($"{value.GetType().Name} is not a supported Iso type.")
         };
+    }
+
+    // Fallback for legitimate but Foundation-strict-parser-rejected
+    // "zero duration" lexical forms (PT0S, PT0H, PT0M, P0D). The
+    // Foundation IsoDuration parser rejects PT-only forms whose time
+    // components are all zero (see IsoDuration.TryParse), but the
+    // openEHR canonical wire form regularly emits "PT0S" for an empty
+    // sampling period. Round-trip integration over real KDS fixtures
+    // depends on accepting these without losing the lexical form.
+    private static bool TryParseZeroDuration(string text, [NotNullWhen(true)] out IsoDuration? value)
+    {
+        value = null;
+        if (string.IsNullOrEmpty(text)) return false;
+        bool negative = false;
+        int idx = 0;
+        if (text[0] == '-') { negative = true; idx = 1; }
+        else if (text[0] == '+') { idx = 1; }
+        if (idx >= text.Length || text[idx] != 'P') return false;
+        idx++;
+        bool sawComponent = false;
+        bool inTime = false;
+        while (idx < text.Length)
+        {
+            char c = text[idx];
+            if (c == 'T') { inTime = true; idx++; continue; }
+            // Accept digits + optional decimal point, must equal zero.
+            int numStart = idx;
+            while (idx < text.Length && (char.IsDigit(text[idx]) || text[idx] == '.' || text[idx] == ','))
+            {
+                idx++;
+            }
+            if (numStart == idx || idx >= text.Length) return false;
+            string numText = text.Substring(numStart, idx - numStart).Replace(',', '.');
+            if (!decimal.TryParse(numText, System.Globalization.NumberStyles.Number,
+                System.Globalization.CultureInfo.InvariantCulture, out decimal num))
+            {
+                return false;
+            }
+            if (num != 0m) return false;
+            char unit = text[idx++];
+            if (inTime)
+            {
+                if (unit is not ('H' or 'M' or 'S')) return false;
+            }
+            else
+            {
+                if (unit is not ('Y' or 'M' or 'W' or 'D')) return false;
+            }
+            sawComponent = true;
+        }
+        if (!sawComponent) return false;
+        value = new IsoDuration(isNegative: negative, originalLexicalForm: text);
+        return true;
     }
 }

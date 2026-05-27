@@ -98,6 +98,7 @@ public static class RmTypeName
             ("FEEDER_AUDIT_DETAILS",   typeof(Common.FeederAuditDetails)),
             ("PARTY_IDENTIFIED",       typeof(Common.PartyIdentified)),
             ("PARTY_RELATED",          typeof(Common.PartyRelated)),
+            ("PARTY_SELF",             typeof(Common.PartySelf)),
             ("PARTICIPATION",          typeof(Common.Participation)),
             ("AUDIT_DETAILS",          typeof(Common.AuditDetails)),
             ("ATTESTATION",            typeof(Common.Attestation)),
@@ -114,6 +115,7 @@ public static class RmTypeName
             ("TERMINOLOGY_ID",         typeof(Support.TerminologyId)),
             ("OBJECT_REF",             typeof(Support.ObjectRef)),
             ("PARTY_REF",              typeof(Support.PartyRef)),
+            ("GENERIC_ID",             typeof(Support.GenericId)),
         ];
 
         SystemTypeByRmNameStore = new Dictionary<string, Type>(entries.Length, StringComparer.Ordinal);

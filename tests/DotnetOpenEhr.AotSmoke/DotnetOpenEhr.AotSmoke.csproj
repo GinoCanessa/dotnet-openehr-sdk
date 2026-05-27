@@ -28,6 +28,13 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\DotnetOpenEhr.Foundation\DotnetOpenEhr.Foundation.csproj" />
     <ProjectReference Include="..\..\src\DotnetOpenEhr.Rm\DotnetOpenEhr.Rm.csproj" />
+    <ProjectReference Include="..\..\src\DotnetOpenEhr.Serialization.Json\DotnetOpenEhr.Serialization.Json.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\DotnetOpenEhr.IntegrationTests\Fixtures\Canonical\kds_procedure_bundle.json">
+      <LogicalName>kds_procedure_bundle.json</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

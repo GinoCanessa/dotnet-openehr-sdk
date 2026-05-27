@@ -52,7 +52,7 @@ public abstract class Entry : ContentItem
     [JsonPropertyName("other_participations")]
     public IList<Participation>? OtherParticipations { get; set; }
 
-    [JsonPropertyName("work_flow_id")]
+    [JsonPropertyName("workflow_id")]
     public Support.ObjectRef? WorkflowId { get; set; }
 }
 

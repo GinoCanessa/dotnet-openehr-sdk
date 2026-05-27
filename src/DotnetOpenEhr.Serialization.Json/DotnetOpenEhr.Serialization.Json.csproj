@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>DotnetOpenEhr.Serialization.Json</RootNamespace>
+    <AssemblyName>DotnetOpenEhr.Serialization.Json</AssemblyName>
+    <PackageId>DotnetOpenEhr.Serialization.Json</PackageId>
+    <Description>
+      Canonical / STRUCTURED openEHR JSON serializer for DotnetOpenEhr.
+      Round-trips an openEHR canonical JSON Composition into the
+      DotnetOpenEhr.Rm strongly-typed Reference Model via
+      System.Text.Json source generation only — zero runtime reflection,
+      Native-AOT and trimmer safe. Single TFM net10.0.
+    </Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DotnetOpenEhr.Rm\DotnetOpenEhr.Rm.csproj" />
+  </ItemGroup>
+
+</Project>

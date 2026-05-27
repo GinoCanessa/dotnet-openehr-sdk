@@ -10,10 +10,21 @@ namespace DotnetOpenEhr.Rm.Common;
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "_type")]
 [JsonDerivedType(typeof(PartyIdentified), "PARTY_IDENTIFIED")]
 [JsonDerivedType(typeof(PartyRelated),    "PARTY_RELATED")]
+[JsonDerivedType(typeof(PartySelf),       "PARTY_SELF")]
 public abstract class PartyProxy
 {
     [JsonPropertyName("external_ref")]
     public Support.PartyRef? ExternalRef { get; set; }
+}
+
+// SPEC: Common Information Model.html#_party_self_class (Section 4.3.2).
+/// <summary>
+/// Proxy whose referent is the subject of the record itself. Carries
+/// only the optional <c>external_ref</c> inherited from
+/// <see cref="PartyProxy"/>; never a name or identifiers.
+/// </summary>
+public sealed class PartySelf : PartyProxy
+{
 }
 
 // SPEC: Common Information Model.html#_party_identified_class (Section 4.3.3).
