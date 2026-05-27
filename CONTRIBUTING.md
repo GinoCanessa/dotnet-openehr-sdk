@@ -63,9 +63,28 @@ Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
 
 ## License notes
 
-`src/` and every shipping NuGet package are **MIT-only**. Test
-fixtures under `tests/**/Fixtures/` may be **CC-BY-SA 3.0** (openEHR
-CKM artefacts and openEHR JSON samples copied from upstream); when
-they are, the fixture directory carries an `ATTRIBUTION.md` listing
-the source URL, identifier/version, and license. **Do not copy
-fixture material into `src/`.**
+The repository uses a **hybrid license stack**; please match the rule
+that applies to where you are working:
+
+- **`src/` source code** is **MIT-only**. Any new code you write in
+  `src/` must be MIT-licensable and contributed under MIT.
+- **Bundled openEHR specification artefacts** live under
+  `src/DotnetOpenEhr.Bmm.Rm/Resources/` and ship under the
+  [Apache License 2.0](LICENSE-Apache-2.0) as redistributions of
+  upstream openEHR specification material. The containing package,
+  `DotnetOpenEhr.Bmm.Rm`, declares the SPDX expression
+  `MIT AND Apache-2.0` and ships
+  `src/DotnetOpenEhr.Bmm.Rm/THIRD_PARTY_NOTICES.md` plus the top-level
+  [`NOTICE`](NOTICE) file. **If you update the bundled BMM files**,
+  bump the pinned upstream commit SHA in both the `NOTICE` and the
+  package's `THIRD_PARTY_NOTICES.md`, and keep the SPDX expression and
+  Apache-2.0 attribution intact.
+- **New bundled spec artefacts** (e.g. additional openEHR schemas
+  redistributed verbatim) must follow the same pattern: SPDX-declared
+  dual license on the containing package, a `THIRD_PARTY_NOTICES.md`
+  alongside the resources, and an entry in the top-level `NOTICE`.
+- **Test fixtures** under `tests/**/Fixtures/` may be **CC-BY-SA 3.0**
+  (openEHR CKM artefacts and openEHR JSON samples copied from
+  upstream); when they are, the fixture directory carries an
+  `ATTRIBUTION.md` listing the source URL, identifier/version, and
+  license. **Do not copy fixture material into `src/`.**

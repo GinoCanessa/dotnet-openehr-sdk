@@ -29,6 +29,7 @@ identifier so consumers only pay for what they use:
 | `DotnetOpenEhr.Odin` | ODIN parser/serializer. |
 | `DotnetOpenEhr.Terminology` | openEHR Support Terminology (built-in groups). |
 | `DotnetOpenEhr.Bmm` | Basic Meta-Model (BMM) object model + parser. |
+| `DotnetOpenEhr.Bmm.Rm` | Canonical openEHR RM BMM schemas (embedded resources, dual-licensed). |
 | `DotnetOpenEhr.Archetypes` | ADL2 / AOM2 parser + object model. |
 | `DotnetOpenEhr.Templates` | OPT2 parser + template-driven validation. |
 | `DotnetOpenEhr.Aql` | AQL parser, AST, in-memory tree-walking evaluator. |
@@ -61,9 +62,26 @@ dotnet publish tests/DotnetOpenEhr.AotSmoke -c Release -r linux-x64 -p:PublishAo
 
 ## License
 
-[MIT](LICENSE). Note: test fixtures under `tests/**/Fixtures/` may be
-licensed CC-BY-SA 3.0 (see each `ATTRIBUTION.md`). Shipping `src/`
-assemblies and NuGet packages are MIT-only.
+This repository ships a hybrid license stack:
+
+- **Source code** (everything under `src/`, `tests/`, and the build
+  scripts) — [MIT](LICENSE). New contributions to source code must be
+  MIT-only.
+- **Bundled openEHR specification artefacts** — the canonical BMM
+  schema files embedded by `DotnetOpenEhr.Bmm.Rm` (under
+  `src/DotnetOpenEhr.Bmm.Rm/Resources/`) are copies of upstream openEHR
+  specification material redistributed under the
+  [Apache License 2.0](LICENSE-Apache-2.0). See [`NOTICE`](NOTICE) and
+  [`src/DotnetOpenEhr.Bmm.Rm/THIRD_PARTY_NOTICES.md`](src/DotnetOpenEhr.Bmm.Rm/THIRD_PARTY_NOTICES.md)
+  for attribution and the pinned upstream commit SHA.
+- **Test fixtures** under `tests/**/Fixtures/` may carry their own
+  licenses (commonly CC-BY-SA 3.0); see each fixture directory's
+  `ATTRIBUTION.md`.
+
+The shipping NuGet packages are MIT-only, with the single exception of
+`DotnetOpenEhr.Bmm.Rm`, which is published under the SPDX expression
+`MIT AND Apache-2.0` to honour the upstream openEHR license on the
+embedded BMM resources.
 
 ## Contributing & security
 

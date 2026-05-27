@@ -136,6 +136,12 @@ const string bmmFragment = """
 DotnetOpenEhr.Bmm.BmmModel bmm = DotnetOpenEhr.Bmm.BmmParser.Parse(bmmFragment);
 System.Console.WriteLine($"bmm parse ok: classes={bmm.ClassDefinitions.Count}");
 
+// Phase 7a: load the bundled canonical openEHR RM BMM and report the
+// merged concrete-class count. Exercises the embedded-resource loader
+// plus the BMM parser's container/generic type_def support.
+DotnetOpenEhr.Bmm.BmmModel rmBmm = DotnetOpenEhr.Bmm.Rm.OpenEhrRmBmm.LoadDefault();
+System.Console.WriteLine($"rm-bmm: classes={rmBmm.ClassDefinitions.Count}");
+
 System.Console.WriteLine("smoke ok");
 return 0;
 

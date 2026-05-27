@@ -25,6 +25,7 @@ public enum OdinTokenKind
     LessEqual,        // <=
     GreaterEqual,     // >=
     PlusMinus,        // ± or +/-
+    Star,             // * (interval unbounded sentinel)
 
     Identifier,
     IntegerLiteral,

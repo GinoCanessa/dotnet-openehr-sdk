@@ -1,0 +1,45 @@
+DotnetOpenEhr SDK
+Copyright (c) 2026 Gino Canessa and the DotnetOpenEhr SDK contributors
+
+This product bundles material from third-party sources. The bundled
+artefacts listed below are distributed under the Apache License, Version
+2.0 (see LICENSE-Apache-2.0). All hand-written code under `src/` and the
+shipping NuGet packages that contain only that code remain licensed
+under the MIT License (see LICENSE).
+
+Each bundled artefact is delivered to consumers as part of a specific
+NuGet package; that package's `THIRD_PARTY_NOTICES.md` carries the
+per-file upstream path, commit SHA, and applicable license.
+
+------------------------------------------------------------------------
+DotnetOpenEhr.Bmm.Rm — openEHR Reference Model BMM schemas
+------------------------------------------------------------------------
+
+The `DotnetOpenEhr.Bmm.Rm` NuGet package embeds the canonical openEHR
+Reference Model BMM schemas, sourced from:
+
+  Repository: https://github.com/openEHR/specifications-ITS-BMM
+  Commit:     0003c592b2a74d6b3af21b0b43b3cc0e5e0ddd3c
+  License:    Apache License, Version 2.0
+
+Embedded files (per release directory under `components/`):
+
+  BASE/Release-1.2.0/
+    openehr_base_120.bmm
+    openehr_base_base_types_120.bmm
+    openehr_base_foundation_types_120.bmm
+    openehr_base_resource_120.bmm
+
+  RM/Release-1.1.0/
+    openehr_rm_110.bmm
+    openehr_rm_data_types_110.bmm
+    openehr_rm_demographic_110.bmm
+    openehr_rm_ehr_110.bmm
+    openehr_rm_ehr_extract_110.bmm
+    openehr_rm_structures_110.bmm
+
+Original copyright notices are preserved verbatim in each embedded file.
+The `DotnetOpenEhr.Bmm.Rm` NuGet package declares an SPDX dual-license
+expression `MIT AND Apache-2.0`: the assembly's own code (loader,
+embedded-resource glue) is MIT; the embedded `.bmm` artefacts remain
+Apache-2.0.

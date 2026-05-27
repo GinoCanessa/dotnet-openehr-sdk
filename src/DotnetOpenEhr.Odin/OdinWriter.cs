@@ -276,12 +276,17 @@ public static class OdinWriter
         }
         else if (interval.Lower is not null)
         {
+            // Canonical form: |>=N..*| or |>N..*| - matches the BMM
+            // spec's preferred unbounded-upper syntax (ODIN spec 7.2).
             output.Write(interval.LowerIncluded ? ">=" : ">");
             WriteScalar(output, interval.Lower);
+            output.Write("..*");
         }
         else if (interval.Upper is not null)
         {
-            output.Write(interval.UpperIncluded ? "<=" : "<");
+            // Canonical form: |*..N| or |*..<N|.
+            output.Write("*..");
+            if (!interval.UpperIncluded) output.Write('<');
             WriteScalar(output, interval.Upper);
         }
         output.Write('|');

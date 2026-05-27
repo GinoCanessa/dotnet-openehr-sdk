@@ -61,7 +61,13 @@ public static class BmmParser
         }
 
         string version = RequireString(obj, "bmm_version", path: "");
-        string modelName = RequireString(obj, "model_name", path: "");
+        string modelName = OptionalString(obj, "model_name")
+            ?? OptionalString(obj, "schema_name")
+            ?? throw new BmmParseException(
+                "required attribute 'model_name' (or 'schema_name') missing.",
+                line: 0,
+                column: 0,
+                path: "model_name");
         string? rmPublisher = OptionalString(obj, "rm_publisher");
         string? rmRelease = OptionalString(obj, "rm_release");
 
@@ -234,20 +240,42 @@ public static class BmmParser
     private static BmmProperty ParseProperty(string defaultName, OdinObject obj, string path)
     {
         string name = OptionalString(obj, "name") ?? defaultName;
-        string typeText = RequireString(obj, "type", path);
         BmmType type;
-        try
+        if (obj.TryGet("type", out OdinValue? typeValue))
         {
-            type = BmmTypeStringParser.Parse(typeText);
+            if (typeValue is not OdinString typeStr)
+            {
+                throw new BmmParseException(
+                    $"attribute 'type' must be a string, found {typeValue.Kind}.",
+                    line: 0,
+                    column: 0,
+                    path: AppendPath(path, "type"));
+            }
+            try
+            {
+                type = BmmTypeStringParser.Parse(typeStr.Value);
+            }
+            catch (FormatException ex)
+            {
+                throw new BmmParseException(
+                    $"invalid type expression '{typeStr.Value}': {ex.Message}",
+                    line: 0,
+                    column: 0,
+                    path: AppendPath(path, "type"),
+                    ex);
+            }
         }
-        catch (FormatException ex)
+        else if (obj.TryGet("type_def", out OdinValue? typeDefValue))
+        {
+            type = ParseTypeDef(typeDefValue, AppendPath(path, "type_def"));
+        }
+        else
         {
             throw new BmmParseException(
-                $"invalid type expression '{typeText}': {ex.Message}",
+                "property requires either 'type' or 'type_def'.",
                 line: 0,
                 column: 0,
-                path: AppendPath(path, "type"),
-                ex);
+                path: path);
         }
 
         Cardinality? cardinality = ParseCardinality(obj, path);
@@ -264,6 +292,149 @@ public static class BmmParser
             isMandatory,
             isComputed,
             isImRuntime);
+    }
+
+    private static BmmType ParseTypeDef(OdinValue value, string path)
+    {
+        if (value is not OdinObject obj)
+        {
+            throw new BmmParseException(
+                $"'type_def' must be an ODIN object, found {value.Kind}.",
+                line: 0,
+                column: 0,
+                path: path);
+        }
+
+        // Container variant: container_type = <"List"> with either an inner
+        // simple type (type = <"X">) or a nested type_def for generics.
+        if (obj.TryGet("container_type", out OdinValue? containerVal))
+        {
+            if (containerVal is not OdinString containerName)
+            {
+                throw new BmmParseException(
+                    $"'container_type' must be a string, found {containerVal.Kind}.",
+                    line: 0,
+                    column: 0,
+                    path: AppendPath(path, "container_type"));
+            }
+            BmmType inner;
+            if (obj.TryGet("type", out OdinValue? innerType))
+            {
+                if (innerType is not OdinString innerStr)
+                {
+                    throw new BmmParseException(
+                        $"container 'type' must be a string, found {innerType.Kind}.",
+                        line: 0,
+                        column: 0,
+                        path: AppendPath(path, "type"));
+                }
+                try
+                {
+                    inner = BmmTypeStringParser.Parse(innerStr.Value);
+                }
+                catch (FormatException ex)
+                {
+                    throw new BmmParseException(
+                        $"invalid container inner type '{innerStr.Value}': {ex.Message}",
+                        line: 0,
+                        column: 0,
+                        path: AppendPath(path, "type"),
+                        ex);
+                }
+            }
+            else if (obj.TryGet("type_def", out OdinValue? innerTypeDef))
+            {
+                inner = ParseTypeDef(innerTypeDef, AppendPath(path, "type_def"));
+            }
+            else
+            {
+                throw new BmmParseException(
+                    "container property requires either 'type' or nested 'type_def'.",
+                    line: 0,
+                    column: 0,
+                    path: path);
+            }
+            return new BmmContainerType(containerName.Value, [inner]);
+        }
+
+        // Generic variant: root_type + (generic_parameter_defs | generic_parameters).
+        if (obj.TryGet("root_type", out OdinValue? rootTypeVal))
+        {
+            if (rootTypeVal is not OdinString rootTypeName)
+            {
+                throw new BmmParseException(
+                    $"'root_type' must be a string, found {rootTypeVal.Kind}.",
+                    line: 0,
+                    column: 0,
+                    path: AppendPath(path, "root_type"));
+            }
+            List<BmmType> args = [];
+            if (obj.TryGet("generic_parameter_defs", out OdinValue? gpdVal))
+            {
+                if (gpdVal is not OdinHash gpdHash)
+                {
+                    throw new BmmParseException(
+                        $"'generic_parameter_defs' must be an ODIN hash, found {gpdVal.Kind}.",
+                        line: 0,
+                        column: 0,
+                        path: AppendPath(path, "generic_parameter_defs"));
+                }
+                foreach (KeyValuePair<string, OdinValue> kvp in gpdHash.Entries)
+                {
+                    args.Add(ParseTypeDef(kvp.Value, AppendPath(AppendPath(path, "generic_parameter_defs"), kvp.Key)));
+                }
+            }
+            else
+            {
+                IReadOnlyList<string> generics = ParseStringContainer(obj, "generic_parameters", path);
+                foreach (string g in generics)
+                {
+                    args.Add(BmmTypeStringParser.Parse(g));
+                }
+            }
+            if (args.Count == 0)
+            {
+                throw new BmmParseException(
+                    "generic 'type_def' requires at least one generic parameter.",
+                    line: 0,
+                    column: 0,
+                    path: path);
+            }
+            return new BmmGenericType(rootTypeName.Value, args);
+        }
+
+        // Simple variant used inside generic_parameter_defs entries:
+        //   ["K"] = (P_BMM_SIMPLE_TYPE) <type = <"String">>
+        if (obj.TryGet("type", out OdinValue? simpleTypeVal))
+        {
+            if (simpleTypeVal is not OdinString simpleTypeStr)
+            {
+                throw new BmmParseException(
+                    $"'type' must be a string, found {simpleTypeVal.Kind}.",
+                    line: 0,
+                    column: 0,
+                    path: AppendPath(path, "type"));
+            }
+            try
+            {
+                return BmmTypeStringParser.Parse(simpleTypeStr.Value);
+            }
+            catch (FormatException ex)
+            {
+                throw new BmmParseException(
+                    $"invalid type expression '{simpleTypeStr.Value}': {ex.Message}",
+                    line: 0,
+                    column: 0,
+                    path: AppendPath(path, "type"),
+                    ex);
+            }
+        }
+
+        throw new BmmParseException(
+            "'type_def' must declare either 'container_type', 'root_type', or 'type'.",
+            line: 0,
+            column: 0,
+            path: path);
     }
 
     private static Cardinality? ParseCardinality(OdinObject obj, string path)

@@ -364,6 +364,15 @@ public static class OdinParser
         {
             state.Consume();
             lower = ParseIntervalEndpoint(ref state);
+            // Allow optional explicit unbounded upper: |>=N..*|.
+            OdinTokenSnapshot afterLower = state.Peek();
+            if (afterLower.Kind == OdinTokenKind.Range)
+            {
+                state.Consume();
+                ExpectStar(ref state);
+                ExpectPipe(ref state, openPipe);
+                return new OdinInterval(lower, true, null, true);
+            }
             ExpectPipe(ref state, openPipe);
             return new OdinInterval(lower, true, null, true);
         }
@@ -381,6 +390,36 @@ public static class OdinParser
             upper = ParseIntervalEndpoint(ref state);
             ExpectPipe(ref state, openPipe);
             return new OdinInterval(null, true, upper, false);
+        }
+        if (t.Kind == OdinTokenKind.Star)
+        {
+            // |*..M| - unbounded lower, finite upper.
+            state.Consume();
+            OdinTokenSnapshot afterStar = state.Peek();
+            if (afterStar.Kind != OdinTokenKind.Range)
+            {
+                throw new OdinParseException(
+                    $"Expected '..' after '*' in interval; found {afterStar.Kind} '{afterStar.Text}'.",
+                    afterStar.Line,
+                    afterStar.Column);
+            }
+            state.Consume();
+            OdinTokenSnapshot beforeUpper = state.Peek();
+            if (beforeUpper.Kind == OdinTokenKind.Star)
+            {
+                throw new OdinParseException(
+                    "Interval '|*..*|' is not valid: at least one bound must be finite.",
+                    beforeUpper.Line,
+                    beforeUpper.Column);
+            }
+            if (beforeUpper.Kind == OdinTokenKind.LeftAngle)
+            {
+                state.Consume();
+                upperIncluded = false;
+            }
+            upper = ParseIntervalEndpoint(ref state);
+            ExpectPipe(ref state, openPipe);
+            return new OdinInterval(null, true, upper, upperIncluded);
         }
 
         bool hasLowerOpenMarker = false;
@@ -421,8 +460,15 @@ public static class OdinParser
                 afterFirst.Column);
         }
         state.Consume();
-        OdinTokenSnapshot beforeUpper = state.Peek();
-        if (beforeUpper.Kind == OdinTokenKind.LeftAngle)
+        OdinTokenSnapshot beforeUpper2 = state.Peek();
+        if (beforeUpper2.Kind == OdinTokenKind.Star)
+        {
+            // |N..*| - finite lower, unbounded upper.
+            state.Consume();
+            ExpectPipe(ref state, openPipe);
+            return new OdinInterval(lower, !hasLowerOpenMarker, null, true);
+        }
+        if (beforeUpper2.Kind == OdinTokenKind.LeftAngle)
         {
             state.Consume();
             upperIncluded = false;
@@ -430,6 +476,19 @@ public static class OdinParser
         upper = ParseIntervalEndpoint(ref state);
         ExpectPipe(ref state, openPipe);
         return new OdinInterval(lower, !hasLowerOpenMarker, upper, upperIncluded);
+    }
+
+    private static void ExpectStar(ref ParserState state)
+    {
+        OdinTokenSnapshot t = state.Peek();
+        if (t.Kind != OdinTokenKind.Star)
+        {
+            throw new OdinParseException(
+                $"Expected '*' as unbounded upper sentinel; found {t.Kind} '{t.Text}'.",
+                t.Line,
+                t.Column);
+        }
+        state.Consume();
     }
 
     private static void ExpectPipe(ref ParserState state, OdinTokenSnapshot openPipe)

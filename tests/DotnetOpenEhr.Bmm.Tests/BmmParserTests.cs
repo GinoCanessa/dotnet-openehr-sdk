@@ -42,7 +42,7 @@ public class BmmParserTests
                     ["identities"] = <
                         name = <"identities">
                         type = <"List<PARTY_IDENTITY>">
-                        cardinality = <|>=1|>
+                        cardinality = <|>=1..*|>
                         existence = <|1..1|>
                     >
                 >

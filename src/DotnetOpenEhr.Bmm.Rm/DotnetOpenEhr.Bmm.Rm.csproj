@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>DotnetOpenEhr.Bmm.Rm</PackageId>
+    <Description>Bundled canonical openEHR Reference Model BMM schemas (Release 1.1.0 + BASE 1.2.0), packaged as embedded resources with a typed loader. Code is MIT; bundled BMM artefacts remain Apache-2.0 (see THIRD_PARTY_NOTICES.md and the top-level NOTICE file).</Description>
+    <PackageLicenseExpression>MIT AND Apache-2.0</PackageLicenseExpression>
+    <PackageReadmeFile>THIRD_PARTY_NOTICES.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DotnetOpenEhr.Bmm\DotnetOpenEhr.Bmm.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\*.bmm" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="THIRD_PARTY_NOTICES.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>

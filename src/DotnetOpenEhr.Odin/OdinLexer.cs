@@ -131,6 +131,13 @@ public ref struct OdinLexer
             case '\u00b1':
                 Advance(1);
                 return MakeToken(OdinTokenKind.PlusMinus, startPos, 1, startLine, startCol);
+            case '*':
+                // GRAMMAR: spec 7.2 - '*' is the unbounded sentinel inside
+                // intervals (e.g. |0..*|, |*..5|). The lexer is
+                // context-free; the parser rejects '*' outside intervals
+                // and rejects the degenerate |*..*| form.
+                Advance(1);
+                return MakeToken(OdinTokenKind.Star, startPos, 1, startLine, startCol);
             case '+':
                 // GRAMMAR: spec 7.2 - interval plus/minus form '+/-'.
                 if (PeekAt(_pos + 1) == '/' && PeekAt(_pos + 2) == '-')
