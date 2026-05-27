@@ -1,0 +1,19 @@
+<Project>
+
+  <!--
+    Guard: every project under src/ that ships as a NuGet package must
+    have <IsAotCompatible>true</IsAotCompatible> and
+    <IsTrimmable>true</IsTrimmable>. The Directory.Build.props above
+    defaults these on for shipping projects, so this target catches a
+    project that explicitly opts out without justification.
+  -->
+  <Target Name="_RequireAotFlagsOnShippingProjects"
+          BeforeTargets="CoreCompile"
+          Condition="'$(_IsShippingProject)' == 'true'">
+    <Error Condition="'$(IsAotCompatible)' != 'true'"
+           Text="Shipping project '$(MSBuildProjectName)' must set &lt;IsAotCompatible&gt;true&lt;/IsAotCompatible&gt;." />
+    <Error Condition="'$(IsTrimmable)' != 'true'"
+           Text="Shipping project '$(MSBuildProjectName)' must set &lt;IsTrimmable&gt;true&lt;/IsTrimmable&gt;." />
+  </Target>
+
+</Project>

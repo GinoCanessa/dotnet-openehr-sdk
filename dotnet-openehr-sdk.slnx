@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/solution items/">
+    <File Path=".editorconfig" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
+    <File Path="Directory.Packages.props" />
+    <File Path="LICENSE" />
+    <File Path="README.md" />
+    <File Path="global.json" />
+    <File Path="nuget.config" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/DotnetOpenEhr.AotSmoke/DotnetOpenEhr.AotSmoke.csproj" />
+  </Folder>
+</Solution>

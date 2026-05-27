@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>DotnetOpenEhr.AotSmoke</RootNamespace>
+    <AssemblyName>DotnetOpenEhr.AotSmoke</AssemblyName>
+
+    <!--
+      AOT/trim posture lives in the project itself rather than coming
+      from Directory.Build.props (which only applies to shipping
+      projects). The smoke app is the gate.
+    -->
+    <PublishAot>true</PublishAot>
+    <IsAotCompatible>true</IsAotCompatible>
+    <IsTrimmable>true</IsTrimmable>
+    <TrimMode>full</TrimMode>
+    <InvariantGlobalization>true</InvariantGlobalization>
+
+    <!-- Surface trim/AOT diagnostics as errors so the smoke really bites. -->
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <TrimmerSingleWarn>false</TrimmerSingleWarn>
+    <SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
+    <WarningsAsErrors>$(WarningsAsErrors);IL2026;IL2046;IL2057;IL2067;IL2070;IL2072;IL2075;IL3050;IL3051;IL3052;IL3053;IL3054;IL3055;IL3056</WarningsAsErrors>
+
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+</Project>
