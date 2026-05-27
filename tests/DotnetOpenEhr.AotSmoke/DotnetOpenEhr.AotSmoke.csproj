@@ -25,4 +25,8 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DotnetOpenEhr.Foundation\DotnetOpenEhr.Foundation.csproj" />
+  </ItemGroup>
+
 </Project>

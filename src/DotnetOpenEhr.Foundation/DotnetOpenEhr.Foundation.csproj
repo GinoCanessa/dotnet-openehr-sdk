@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>DotnetOpenEhr.Foundation</RootNamespace>
+    <AssemblyName>DotnetOpenEhr.Foundation</AssemblyName>
+    <PackageId>DotnetOpenEhr.Foundation</PackageId>
+    <Description>
+      openEHR Foundation Types for .NET: ISO 8601 date / time / duration /
+      timezone value types preserving original lexical form, plus
+      Interval&lt;T&gt;, Cardinality, and TerminologyCode. Trim-safe and
+      Native-AOT-safe. Single TFM net10.0.
+    </Description>
+  </PropertyGroup>
+
+</Project>

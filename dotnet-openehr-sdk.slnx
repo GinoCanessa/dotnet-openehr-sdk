@@ -9,7 +9,12 @@
     <File Path="global.json" />
     <File Path="nuget.config" />
   </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/DotnetOpenEhr.Foundation/DotnetOpenEhr.Foundation.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/DotnetOpenEhr.AotSmoke/DotnetOpenEhr.AotSmoke.csproj" />
+    <Project Path="tests/DotnetOpenEhr.Foundation.Tests/DotnetOpenEhr.Foundation.Tests.csproj" />
   </Folder>
 </Solution>
+
