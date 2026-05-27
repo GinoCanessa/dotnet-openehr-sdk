@@ -142,6 +142,47 @@ System.Console.WriteLine($"bmm parse ok: classes={bmm.ClassDefinitions.Count}");
 DotnetOpenEhr.Bmm.BmmModel rmBmm = DotnetOpenEhr.Bmm.Rm.OpenEhrRmBmm.LoadDefault();
 System.Console.WriteLine($"rm-bmm: classes={rmBmm.ClassDefinitions.Count}");
 
+// Phase 7f: parse a tiny inline ADL2 archetype and cross-validate against
+// the canonical RM BMM. Confirms the validator + the rest of the pipeline
+// publish cleanly under PublishAot.
+const string adlSrc = """
+    archetype (adl_version=2.0.6; rm_release=1.1.0)
+        openEHR-EHR-OBSERVATION.minimal.v1.0.0
+
+    language
+        original_language = <[ISO_639-1::en]>
+
+    description
+        lifecycle_state = <"unmanaged">
+
+    definition
+        OBSERVATION[id1] matches { }
+
+    terminology
+        term_definitions = <
+            ["en"] = <
+                ["id1"] = <
+                    text = <"Minimal observation">
+                    description = <"Minimal observation">
+                >
+            >
+        >
+    """;
+DotnetOpenEhr.Archetypes.Aom2.Archetype parsedArchetype =
+    DotnetOpenEhr.Archetypes.Adl2.Adl2Parser.Parse(adlSrc);
+DotnetOpenEhr.Archetypes.Validation.ArchetypeBmmValidator archetypeValidator = new();
+System.Collections.Generic.IReadOnlyList<DotnetOpenEhr.Archetypes.Validation.ArchetypeIssue> archetypeIssues =
+    archetypeValidator.Validate(parsedArchetype, rmBmm);
+int archetypeErrors = 0;
+foreach (DotnetOpenEhr.Archetypes.Validation.ArchetypeIssue issue in archetypeIssues)
+{
+    if (issue.Severity == DotnetOpenEhr.Archetypes.Validation.ArchetypeIssueSeverity.Error)
+    {
+        archetypeErrors++;
+    }
+}
+System.Console.WriteLine($"archetype: {parsedArchetype.ArchetypeId} issues={archetypeErrors}");
+
 System.Console.WriteLine("smoke ok");
 return 0;
 

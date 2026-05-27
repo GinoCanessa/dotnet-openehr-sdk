@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\DotnetOpenEhr.Archetypes\DotnetOpenEhr.Archetypes.csproj" />
+    <ProjectReference Include="..\..\src\DotnetOpenEhr.Bmm.Rm\DotnetOpenEhr.Bmm.Rm.csproj" />
   </ItemGroup>
 
   <ItemGroup>

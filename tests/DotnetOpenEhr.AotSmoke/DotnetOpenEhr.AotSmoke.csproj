@@ -26,6 +26,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\DotnetOpenEhr.Archetypes\DotnetOpenEhr.Archetypes.csproj" />
     <ProjectReference Include="..\..\src\DotnetOpenEhr.Bmm\DotnetOpenEhr.Bmm.csproj" />
     <ProjectReference Include="..\..\src\DotnetOpenEhr.Bmm.Rm\DotnetOpenEhr.Bmm.Rm.csproj" />
     <ProjectReference Include="..\..\src\DotnetOpenEhr.Foundation\DotnetOpenEhr.Foundation.csproj" />
