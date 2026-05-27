@@ -1,0 +1,3 @@
+[
+  { "path": "/content[id1]/data[id2]/events[id3]/data[id4]/items[id5]/value/magnitude", "ruleId": "QUANTITY_002_MAGNITUDE_OUT_OF_RANGE", "severity": "Error" }
+]

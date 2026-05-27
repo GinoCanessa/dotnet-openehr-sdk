@@ -1,0 +1,100 @@
+{
+  "_type": "COMPOSITION",
+  "language": {
+    "terminology_id": {
+      "value": "ISO_639-1"
+    },
+    "code_string": "en"
+  },
+  "territory": {
+    "terminology_id": {
+      "value": "ISO_3166-1"
+    },
+    "code_string": "US"
+  },
+  "category": {
+    "defining_code": {
+      "terminology_id": {
+        "value": "openehr"
+      },
+      "code_string": "433"
+    },
+    "value": "event"
+  },
+  "composer": {
+    "_type": "PARTY_IDENTIFIED",
+    "name": "Bootstrap"
+  },
+  "content": [
+    {
+      "_type": "OBSERVATION",
+      "data": {
+        "origin": {
+          "value": "0001-01-01T00"
+        },
+        "events": [
+          {
+            "_type": "POINT_EVENT",
+            "time": {
+              "value": "0001-01-01T00"
+            },
+            "data": {
+              "_type": "ITEM_TREE",
+              "items": [
+                {
+                  "_type": "ELEMENT",
+                  "value": {
+                    "_type": "DV_QUANTITY",
+                    "magnitude": 999,
+                    "units": "mm[Hg]",
+                    "accuracy": 0,
+                    "accuracy_is_percent": false
+                  },
+                  "name": {
+                    "value": "id5"
+                  },
+                  "archetype_node_id": "id5"
+                }
+              ],
+              "name": {
+                "value": "id4"
+              },
+              "archetype_node_id": "id4"
+            },
+            "name": {
+              "value": "id3"
+            },
+            "archetype_node_id": "id3"
+          }
+        ],
+        "name": {
+          "value": "id2"
+        },
+        "archetype_node_id": "id2"
+      },
+      "language": {
+        "terminology_id": {
+          "value": "ISO_639-1"
+        },
+        "code_string": "en"
+      },
+      "encoding": {
+        "terminology_id": {
+          "value": "IANA_character-sets"
+        },
+        "code_string": "UTF-8"
+      },
+      "subject": {
+        "_type": "PARTY_SELF"
+      },
+      "name": {
+        "value": "Blood pressure"
+      },
+      "archetype_node_id": "id1"
+    }
+  ],
+  "name": {
+    "value": "Blood pressure composition"
+  },
+  "archetype_node_id": "id100"
+}

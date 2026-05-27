@@ -1,0 +1,3 @@
+[
+  { "path": "/content[id1]/data[id2]/events[id3]/data[id4]/items[id5]", "ruleId": "OCC_001_OCCURRENCES_VIOLATION", "severity": "Error" }
+]

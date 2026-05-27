@@ -1,0 +1,3 @@
+[
+  { "path": "/content[id1]/data[id2]/events[id3]/data[id4]/items[id5]/value/units", "ruleId": "QUANTITY_001_WRONG_UNITS", "severity": "Error" }
+]

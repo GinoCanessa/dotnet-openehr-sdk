@@ -1,0 +1,3 @@
+[
+  { "path": "/content[id1]/data[id2]/events[id3]/data[id4]/items[id9]/value/defining_code", "ruleId": "TERM_002_BINDING_NOT_RESOLVED", "severity": "NotValidated" }
+]

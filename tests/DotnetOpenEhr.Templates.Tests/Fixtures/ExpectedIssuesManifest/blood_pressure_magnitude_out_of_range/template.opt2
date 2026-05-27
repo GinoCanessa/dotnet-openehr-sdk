@@ -1,0 +1,94 @@
+operational_template (adl_version=2.0.6; rm_release=1.1.0; generated)
+    openEHR-EHR-COMPOSITION.blood_pressure.v1.0.0
+
+language
+    original_language = <[ISO_639-1::en]>
+
+description
+    lifecycle_state = <"unmanaged">
+    details = <
+        ["en"] = <
+            language = <[ISO_639-1::en]>
+            purpose = <"Phase 8e expected-issues manifest fixture.">
+        >
+    >
+
+definition
+    COMPOSITION[id100] matches {
+        content matches {
+            OBSERVATION[id1] occurrences matches {1..1} matches {
+                data matches {
+                    HISTORY[id2] matches {
+                        events cardinality matches {0..1} matches {
+                            POINT_EVENT[id3] occurrences matches {0..*} matches {
+                                data matches {
+                                    ITEM_TREE[id4] matches {
+                                        items matches {
+                                            ELEMENT[id5] occurrences matches {1..1} matches {
+                                                value matches {
+                                                    DV_QUANTITY[id6] matches {
+                                                        magnitude matches {|0.0..300.0|}
+                                                        units matches {"mm[Hg]"}
+                                                    }
+                                                }
+                                            }
+                                            ELEMENT[id7] occurrences matches {0..1} matches {
+                                                value matches {
+                                                    DV_CODED_TEXT[id8] matches {
+                                                        defining_code matches {[ac1]}
+                                                    }
+                                                }
+                                            }
+                                            ELEMENT[id9] occurrences matches {0..1} matches {
+                                                value matches {
+                                                    DV_CODED_TEXT[id10] matches {
+                                                        defining_code matches {[ac2]}
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+terminology
+    term_definitions = <
+        ["en"] = <
+            ["id100"] = <text = <"Blood pressure composition"> description = <"Blood pressure composition">>
+            ["id1"] = <text = <"Blood pressure"> description = <"Blood pressure">>
+            ["id2"] = <text = <"history"> description = <"history">>
+            ["id3"] = <text = <"any event"> description = <"any event">>
+            ["id4"] = <text = <"tree"> description = <"tree">>
+            ["id5"] = <text = <"systolic"> description = <"systolic value">>
+            ["id6"] = <text = <"systolic value"> description = <"systolic value">>
+            ["id7"] = <text = <"position"> description = <"position">>
+            ["id8"] = <text = <"position value"> description = <"position value">>
+            ["id9"] = <text = <"interpretation"> description = <"interpretation">>
+            ["id10"] = <text = <"interpretation value"> description = <"interpretation value">>
+            ["at1"] = <text = <"standing"> description = <"standing">>
+            ["at2"] = <text = <"sitting"> description = <"sitting">>
+            ["at3"] = <text = <"lying"> description = <"lying">>
+            ["at4"] = <text = <"normal"> description = <"normal">>
+        >
+    >
+    value_sets = <
+        ["ac1"] = <
+            id = <"ac1">
+            members = <"at1", "at2", "at3">
+        >
+        ["ac2"] = <
+            id = <"ac2">
+            members = <"at4">
+        >
+    >
+    constraint_bindings = <
+        ["SNOMED-CT"] = <
+            ["ac2"] = <"http://snomed.info/sct/?fhir_vs=ecl/12345">
+        >
+    >

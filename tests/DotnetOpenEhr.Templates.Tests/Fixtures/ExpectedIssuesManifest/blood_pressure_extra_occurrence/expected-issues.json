@@ -1,0 +1,3 @@
+[
+  { "path": "/content[id1]/data[id2]/events", "ruleId": "CARD_001_CARDINALITY_VIOLATION", "severity": "Error" }
+]
