@@ -7,7 +7,7 @@ namespace DotnetOpenEhr.Archetypes.Aom2;
 /// The <c>rules</c> section of an archetype, captured as raw text in
 /// v1. A structured rules AST is deferred to a follow-up phase.
 /// </summary>
-public sealed class RulesSection
+public sealed class RulesSection : ArchetypeModelObject
 {
     public string RawText { get; set; } = string.Empty;
 }

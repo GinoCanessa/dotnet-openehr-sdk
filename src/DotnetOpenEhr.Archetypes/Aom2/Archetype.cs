@@ -25,6 +25,15 @@ public abstract class Archetype : AuthoredResource
     public ArchetypeTerminology Terminology { get; set; } = new();
     public RulesSection? Rules { get; set; }
     public new ResourceAnnotations? Annotations { get; set; }
+
+    /// <summary>
+    /// Header metadata read from the parenthesised block on the
+    /// archetype declaration line, e.g.
+    /// <c>(adl_version=2.0.6; rm_release=1.1.0; generated)</c>. Stored as
+    /// raw key→value pairs in source order. Keys with no <c>=value</c>
+    /// (e.g. <c>generated</c>) map to an empty string.
+    /// </summary>
+    public Dictionary<string, string> HeaderMetadata { get; set; } = [];
 }
 
 /// <summary>

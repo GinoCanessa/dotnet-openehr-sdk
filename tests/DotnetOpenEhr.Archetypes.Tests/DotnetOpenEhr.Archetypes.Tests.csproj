@@ -18,4 +18,8 @@
     <ProjectReference Include="..\..\src\DotnetOpenEhr.Archetypes\DotnetOpenEhr.Archetypes.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="Fixtures\Adl\*.adls" />
+  </ItemGroup>
+
 </Project>
