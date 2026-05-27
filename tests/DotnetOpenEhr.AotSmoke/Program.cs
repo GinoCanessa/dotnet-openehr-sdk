@@ -99,6 +99,15 @@ int flatKeyCount = 0;
 foreach (JsonProperty _ in flatDoc.RootElement.EnumerateObject()) flatKeyCount++;
 System.Console.WriteLine($"flat round-trip: keys={flatKeyCount}");
 
+// Phase 5: parse and re-serialize an ODIN snippet end-to-end (lexer,
+// parser, writer all hand-written and AOT-safe).
+const string odinSrc = "<[\"en\"] = (RESOURCE_DESCRIPTION_ITEM) <language = <[ISO_639-1::en]> purpose = <\"demo\">>>";
+DotnetOpenEhr.Odin.OdinValue odinParsed = DotnetOpenEhr.Odin.OdinParser.Parse(odinSrc);
+string odinCompact = DotnetOpenEhr.Odin.OdinWriter.Write(odinParsed, DotnetOpenEhr.Odin.OdinWriteOptions.Compact);
+DotnetOpenEhr.Odin.OdinValue odinReparsed = DotnetOpenEhr.Odin.OdinParser.Parse(odinCompact);
+DotnetOpenEhr.Odin.Values.OdinHash odinHash = odinReparsed.AsHash();
+System.Console.WriteLine($"odin parse ok: keys={odinHash.Entries.Count}");
+
 System.Console.WriteLine("smoke ok");
 return 0;
 

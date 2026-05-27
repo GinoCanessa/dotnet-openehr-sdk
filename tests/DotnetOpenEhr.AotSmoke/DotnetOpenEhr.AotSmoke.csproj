@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\DotnetOpenEhr.Foundation\DotnetOpenEhr.Foundation.csproj" />
+    <ProjectReference Include="..\..\src\DotnetOpenEhr.Odin\DotnetOpenEhr.Odin.csproj" />
     <ProjectReference Include="..\..\src\DotnetOpenEhr.Rm\DotnetOpenEhr.Rm.csproj" />
     <ProjectReference Include="..\..\src\DotnetOpenEhr.Serialization.Json\DotnetOpenEhr.Serialization.Json.csproj" />
     <ProjectReference Include="..\..\src\DotnetOpenEhr.Serialization.Json.Flat\DotnetOpenEhr.Serialization.Json.Flat.csproj" />

@@ -11,6 +11,7 @@
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/DotnetOpenEhr.Foundation/DotnetOpenEhr.Foundation.csproj" />
+    <Project Path="src/DotnetOpenEhr.Odin/DotnetOpenEhr.Odin.csproj" />
     <Project Path="src/DotnetOpenEhr.Rm/DotnetOpenEhr.Rm.csproj" />
     <Project Path="src/DotnetOpenEhr.Serialization.Json/DotnetOpenEhr.Serialization.Json.csproj" />
     <Project Path="src/DotnetOpenEhr.Serialization.Json.Flat/DotnetOpenEhr.Serialization.Json.Flat.csproj" />
@@ -20,6 +21,7 @@
     <Project Path="tests/DotnetOpenEhr.AotSmoke/DotnetOpenEhr.AotSmoke.csproj" />
     <Project Path="tests/DotnetOpenEhr.Foundation.Tests/DotnetOpenEhr.Foundation.Tests.csproj" />
     <Project Path="tests/DotnetOpenEhr.IntegrationTests/DotnetOpenEhr.IntegrationTests.csproj" />
+    <Project Path="tests/DotnetOpenEhr.Odin.Tests/DotnetOpenEhr.Odin.Tests.csproj" />
     <Project Path="tests/DotnetOpenEhr.Rm.Tests/DotnetOpenEhr.Rm.Tests.csproj" />
     <Project Path="tests/DotnetOpenEhr.Serialization.Json.Flat.Tests/DotnetOpenEhr.Serialization.Json.Flat.Tests.csproj" />
     <Project Path="tests/DotnetOpenEhr.Serialization.Json.Tests/DotnetOpenEhr.Serialization.Json.Tests.csproj" />

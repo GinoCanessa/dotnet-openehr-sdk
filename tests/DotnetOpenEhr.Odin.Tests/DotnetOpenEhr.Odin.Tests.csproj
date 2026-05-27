@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>DotnetOpenEhr.Odin.Tests</RootNamespace>
+    <AssemblyName>DotnetOpenEhr.Odin.Tests</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DotnetOpenEhr.Odin\DotnetOpenEhr.Odin.csproj" />
+    <ProjectReference Include="..\..\src\DotnetOpenEhr.Foundation\DotnetOpenEhr.Foundation.csproj" />
+  </ItemGroup>
+
+</Project>
