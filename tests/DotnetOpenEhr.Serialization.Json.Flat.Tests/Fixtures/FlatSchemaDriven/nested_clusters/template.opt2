@@ -1,0 +1,77 @@
+operational_template (adl_version=2.0.6; rm_release=1.1.0; generated)
+    openEHR-EHR-COMPOSITION.nested_clusters.v1.0.0
+
+language
+    original_language = <[ISO_639-1::en]>
+
+description
+    lifecycle_state = <"unmanaged">
+    details = <
+        ["en"] = <
+            language = <[ISO_639-1::en]>
+            purpose = <"Hand-authored OPT2 fixture exercising nested CLUSTER inside an ITEM_TREE.">
+        >
+    >
+
+definition
+    COMPOSITION[id1] matches {
+        content matches {
+            OBSERVATION[id2] occurrences matches {0..1} matches {
+                data matches {
+                    HISTORY[id3] matches {
+                        events matches {
+                            POINT_EVENT[id4] occurrences matches {0..1} matches {
+                                data matches {
+                                    ITEM_TREE[id5] matches {
+                                        items matches {
+                                            CLUSTER[id6] occurrences matches {0..*} matches {
+                                                items matches {
+                                                    ELEMENT[id7] matches {
+                                                        value matches {
+                                                            DV_COUNT[id8]
+                                                        }
+                                                    }
+                                                    ELEMENT[id9] matches {
+                                                        value matches {
+                                                            DV_BOOLEAN[id10]
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+terminology
+    term_definitions = <
+        ["en"] = <
+            ["id1"] = <text = <"Nested clusters"> description = <"Composition with nested cluster.">>
+            ["id2"] = <text = <"observation"> description = <"Clinical observation.">>
+            ["id3"] = <text = <"history"> description = <"Event history.">>
+            ["id4"] = <text = <"any event"> description = <"Sample event.">>
+            ["id5"] = <text = <"tree"> description = <"Item tree.">>
+            ["id6"] = <text = <"cluster"> description = <"Nested cluster.">>
+            ["id7"] = <text = <"count"> description = <"Cluster count element.">>
+            ["id8"] = <text = <"count value"> description = <"Cluster count value.">>
+            ["id9"] = <text = <"flag"> description = <"Cluster boolean flag.">>
+            ["id10"] = <text = <"flag value"> description = <"Cluster boolean flag value.">>
+        >
+    >
+
+component_terminologies
+    component_terminologies = <
+        ["openEHR-EHR-COMPOSITION.nested_clusters.v1.0.0"] = <
+            term_definitions = <
+                ["en"] = <
+                    ["id1"] = <text = <"Nested clusters"> description = <"Composition with nested cluster.">>
+                >
+            >
+        >
+    >

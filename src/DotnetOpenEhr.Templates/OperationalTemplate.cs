@@ -47,7 +47,16 @@ public sealed class OperationalTemplate
     public Dictionary<ArchetypeHRID, ArchetypeTerminology> ComponentTerminologies { get; set; } = [];
 
     /// <inheritdoc />
-    public string TemplateId => ArchetypeId?.ToString() ?? string.Empty;
+    /// <remarks>
+    /// For an OPT-backed schema the canonical FLAT-friendly id is the
+    /// archetype HRID's <c>concept_id</c> component (e.g. <c>blood_pressure</c>
+    /// from <c>openEHR-EHR-COMPOSITION.blood_pressure.v1.0.0</c>). The
+    /// full HRID is unusable as a FLAT path segment because it carries
+    /// uppercase letters and <c>.</c> characters that the FLAT path
+    /// grammar rejects. Callers that need the full HRID can read
+    /// <see cref="DotnetOpenEhr.Archetypes.Aom2.Archetype.ArchetypeId"/>.
+    /// </remarks>
+    public string TemplateId => ArchetypeId?.ConceptId ?? string.Empty;
 
     /// <inheritdoc />
     public IReadOnlyCollection<TemplateNode> Nodes => _nodes;

@@ -1,0 +1,60 @@
+operational_template (adl_version=2.0.6; rm_release=1.1.0; generated)
+    openEHR-EHR-COMPOSITION.multi_section.v1.0.0
+
+language
+    original_language = <[ISO_639-1::en]>
+
+description
+    lifecycle_state = <"unmanaged">
+    details = <
+        ["en"] = <
+            language = <[ISO_639-1::en]>
+            purpose = <"Hand-authored OPT2 fixture with two sibling SECTIONs, each carrying one EVALUATION entry.">
+        >
+    >
+
+definition
+    COMPOSITION[id1] matches {
+        content matches {
+            SECTION[id2] occurrences matches {0..*} matches {
+                items matches {
+                    EVALUATION[id3] occurrences matches {0..1} matches {
+                        data matches {
+                            ITEM_TREE[id4] matches {
+                                items matches {
+                                    ELEMENT[id5] matches {
+                                        value matches {
+                                            DV_TEXT[id6]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+terminology
+    term_definitions = <
+        ["en"] = <
+            ["id1"] = <text = <"Multi-section composition"> description = <"Composition with two sibling sections.">>
+            ["id2"] = <text = <"section"> description = <"Generic section.">>
+            ["id3"] = <text = <"evaluation"> description = <"Evaluation entry.">>
+            ["id4"] = <text = <"tree"> description = <"Item tree.">>
+            ["id5"] = <text = <"note"> description = <"Free-text note.">>
+            ["id6"] = <text = <"note value"> description = <"Free-text note value.">>
+        >
+    >
+
+component_terminologies
+    component_terminologies = <
+        ["openEHR-EHR-COMPOSITION.multi_section.v1.0.0"] = <
+            term_definitions = <
+                ["en"] = <
+                    ["id1"] = <text = <"Multi-section composition"> description = <"Composition with two sibling sections.">>
+                >
+            >
+        >
+    >

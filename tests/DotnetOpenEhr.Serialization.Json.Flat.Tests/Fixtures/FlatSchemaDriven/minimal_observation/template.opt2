@@ -1,0 +1,68 @@
+operational_template (adl_version=2.0.6; rm_release=1.1.0; generated)
+    openEHR-EHR-COMPOSITION.minimal_observation.v1.0.0
+
+language
+    original_language = <[ISO_639-1::en]>
+
+description
+    lifecycle_state = <"unmanaged">
+    details = <
+        ["en"] = <
+            language = <[ISO_639-1::en]>
+            purpose = <"Hand-authored OPT2 used by FlatSchemaDriven round-trip tests.">
+        >
+    >
+
+definition
+    COMPOSITION[id1] matches {
+        content matches {
+            OBSERVATION[id2] occurrences matches {0..1} matches {
+                data matches {
+                    HISTORY[id3] matches {
+                        events matches {
+                            POINT_EVENT[id4] occurrences matches {0..1} matches {
+                                data matches {
+                                    ITEM_TREE[id5] matches {
+                                        items matches {
+                                            ELEMENT[id6] matches {
+                                                value matches {
+                                                    DV_QUANTITY[id7] matches {
+                                                        magnitude matches {|0.0..1000.0|}
+                                                        units matches {"mm[Hg]"}
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+terminology
+    term_definitions = <
+        ["en"] = <
+            ["id1"] = <text = <"Minimal observation"> description = <"Minimal observation root.">>
+            ["id2"] = <text = <"observation"> description = <"Clinical observation.">>
+            ["id3"] = <text = <"history"> description = <"Event history.">>
+            ["id4"] = <text = <"any event"> description = <"Sample event.">>
+            ["id5"] = <text = <"tree"> description = <"Item tree.">>
+            ["id6"] = <text = <"systolic"> description = <"Systolic blood pressure.">>
+            ["id7"] = <text = <"systolic value"> description = <"Systolic value.">>
+        >
+    >
+
+component_terminologies
+    component_terminologies = <
+        ["openEHR-EHR-COMPOSITION.minimal_observation.v1.0.0"] = <
+            term_definitions = <
+                ["en"] = <
+                    ["id1"] = <text = <"Minimal observation"> description = <"Minimal observation root.">>
+                >
+            >
+        >
+    >

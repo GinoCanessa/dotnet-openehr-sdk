@@ -241,6 +241,150 @@ DotnetOpenEhr.Templates.OperationalTemplate opt2 =
     DotnetOpenEhr.Templates.Opt2Parser.Parse(opt2Src);
 System.Console.WriteLine($"opt2: {opt2.ArchetypeId} nodes={opt2.Nodes.Count}");
 
+// Phase 8d: schema-driven FLAT round-trip. Build a tiny COMPOSITION OPT2
+// + matching Composition, FLAT-serialise using the template as schema,
+// re-parse, and report the FLAT key count + a structural sanity check.
+const string flatSchemaSrc = """
+    operational_template (adl_version=2.0.6; rm_release=1.1.0; generated)
+        openEHR-EHR-COMPOSITION.aot_flat_smoke.v1.0.0
+
+    language
+        original_language = <[ISO_639-1::en]>
+
+    description
+        lifecycle_state = <"unmanaged">
+
+    definition
+        COMPOSITION[id1] matches {
+            content matches {
+                OBSERVATION[id2] occurrences matches {0..1} matches {
+                    data matches {
+                        HISTORY[id3] matches {
+                            events matches {
+                                POINT_EVENT[id4] occurrences matches {0..1} matches {
+                                    data matches {
+                                        ITEM_TREE[id5] matches {
+                                            items matches {
+                                                ELEMENT[id6] matches {
+                                                    value matches {
+                                                        DV_TEXT[id7]
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+    terminology
+        term_definitions = <
+            ["en"] = <
+                ["id1"] = <text = <"AOT flat smoke"> description = <"AOT flat smoke">>
+                ["id2"] = <text = <"observation"> description = <"observation">>
+                ["id3"] = <text = <"history"> description = <"history">>
+                ["id4"] = <text = <"event"> description = <"event">>
+                ["id5"] = <text = <"tree"> description = <"tree">>
+                ["id6"] = <text = <"element"> description = <"element">>
+                ["id7"] = <text = <"value"> description = <"value">>
+            >
+        >
+
+    component_terminologies
+        component_terminologies = <
+            ["openEHR-EHR-COMPOSITION.aot_flat_smoke.v1.0.0"] = <
+                term_definitions = <
+                    ["en"] = <
+                        ["id1"] = <text = <"AOT flat smoke"> description = <"AOT flat smoke">>
+                    >
+                >
+            >
+        >
+    """;
+DotnetOpenEhr.Templates.OperationalTemplate flatTemplate =
+    DotnetOpenEhr.Templates.Opt2Parser.Parse(flatSchemaSrc);
+
+DotnetOpenEhr.Rm.Composition.Composition flatComp = new()
+{
+    Name = new DotnetOpenEhr.Rm.DataTypes.Text.DvText(flatTemplate.TemplateId),
+    ArchetypeNodeId = "openEHR-EHR-COMPOSITION.aot_flat_smoke.v1.0.0",
+    Language = new DotnetOpenEhr.Rm.DataTypes.Text.CodePhrase
+    {
+        TerminologyId = new DotnetOpenEhr.Rm.Support.TerminologyId { Value = "ISO_639-1" },
+        CodeString = "en",
+    },
+    Territory = new DotnetOpenEhr.Rm.DataTypes.Text.CodePhrase
+    {
+        TerminologyId = new DotnetOpenEhr.Rm.Support.TerminologyId { Value = "ISO_3166-1" },
+        CodeString = "GB",
+    },
+    Category = new DotnetOpenEhr.Rm.DataTypes.Text.DvCodedText
+    {
+        Value = "event",
+        DefiningCode = new DotnetOpenEhr.Rm.DataTypes.Text.CodePhrase
+        {
+            TerminologyId = new DotnetOpenEhr.Rm.Support.TerminologyId { Value = "openehr" },
+            CodeString = "433",
+        },
+    },
+    Composer = new DotnetOpenEhr.Rm.Common.PartyIdentified { Name = "AOT" },
+    Content =
+    [
+        new DotnetOpenEhr.Rm.Composition.Observation
+        {
+            Name = new DotnetOpenEhr.Rm.DataTypes.Text.DvText("observation"),
+            ArchetypeNodeId = "id2",
+            Subject = new DotnetOpenEhr.Rm.Common.PartySelf(),
+            Data = new DotnetOpenEhr.Rm.DataStructures.History
+            {
+                Name = new DotnetOpenEhr.Rm.DataTypes.Text.DvText("history"),
+                ArchetypeNodeId = "id3",
+                Origin = new DotnetOpenEhr.Rm.DataTypes.DateTime.DvDateTime(
+                    DotnetOpenEhr.Foundation.Iso.IsoDateTime.Parse("2024-08-23T08:15:00Z")),
+                Events =
+                [
+                    new DotnetOpenEhr.Rm.DataStructures.PointEvent
+                    {
+                        Name = new DotnetOpenEhr.Rm.DataTypes.Text.DvText("event"),
+                        ArchetypeNodeId = "id4",
+                        Time = new DotnetOpenEhr.Rm.DataTypes.DateTime.DvDateTime(
+                            DotnetOpenEhr.Foundation.Iso.IsoDateTime.Parse("2024-08-23T08:15:00Z")),
+                        Data = new DotnetOpenEhr.Rm.DataStructures.ItemTree
+                        {
+                            Name = new DotnetOpenEhr.Rm.DataTypes.Text.DvText("tree"),
+                            ArchetypeNodeId = "id5",
+                            Items =
+                            [
+                                new DotnetOpenEhr.Rm.DataStructures.Element
+                                {
+                                    Name = new DotnetOpenEhr.Rm.DataTypes.Text.DvText("element"),
+                                    ArchetypeNodeId = "id6",
+                                    Value = new DotnetOpenEhr.Rm.DataTypes.Text.DvText("hello aot"),
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+};
+
+byte[] flatSchemaBytes = DotnetOpenEhr.Serialization.Json.Flat.OpenEhrFlatJson.Serialize(flatComp, flatTemplate);
+System.Collections.Generic.IReadOnlyList<
+    System.Collections.Generic.KeyValuePair<
+        DotnetOpenEhr.Serialization.Json.Flat.FlatPath,
+        System.Text.Json.JsonElement>> flatSchemaPairs =
+    DotnetOpenEhr.Serialization.Json.Flat.FlatJsonReader.Read(flatSchemaBytes);
+DotnetOpenEhr.Rm.Composition.Composition? flatSchemaRoundTripped =
+    DotnetOpenEhr.Serialization.Json.Flat.OpenEhrFlatJson.ParseComposition(flatSchemaBytes, flatTemplate);
+int flatSchemaContentCount = flatSchemaRoundTripped?.Content?.Count ?? 0;
+System.Console.WriteLine($"flat schema-driven: keys={flatSchemaPairs.Count} content={flatSchemaContentCount}");
+
 System.Console.WriteLine("smoke ok");
 return 0;
 

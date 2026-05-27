@@ -4,6 +4,7 @@ using DotnetOpenEhr.Rm.Composition;
 using DotnetOpenEhr.Rm.DataTypes.Basic;
 using DotnetOpenEhr.Rm.DataTypes.DateTime;
 using DotnetOpenEhr.Rm.DataTypes.Text;
+using DotnetOpenEhr.Templates.Abstractions;
 
 namespace DotnetOpenEhr.Serialization.Json.Flat;
 
@@ -45,6 +46,49 @@ public static class FlatJsonWriter
         ArgumentNullException.ThrowIfNull(composition);
         ArgumentException.ThrowIfNullOrEmpty(templateId);
         WriteCore(output, composition, templateId);
+    }
+
+    /// <summary>
+    /// Schema-driven overload: emits Composition root metadata, the
+    /// EventContext, and the full archetypable content tree using
+    /// <paramref name="schema"/> as the FLAT-path root authority.
+    /// Deferred Phase-4 work: the archetype-content walker is
+    /// implemented in <see cref="FlatJsonContentWriter"/>.
+    /// </summary>
+    public static byte[] Write(Composition composition, ITemplateSchema schema)
+    {
+        ArgumentNullException.ThrowIfNull(composition);
+        ArgumentNullException.ThrowIfNull(schema);
+        using MemoryStream output = new();
+        WriteCore(output, composition, schema);
+        return output.ToArray();
+    }
+
+    /// <summary>
+    /// Schema-driven stream overload — same contract as
+    /// <see cref="Write(Composition, ITemplateSchema)"/>.
+    /// </summary>
+    public static void Write(Stream output, Composition composition, ITemplateSchema schema)
+    {
+        ArgumentNullException.ThrowIfNull(output);
+        ArgumentNullException.ThrowIfNull(composition);
+        ArgumentNullException.ThrowIfNull(schema);
+        WriteCore(output, composition, schema);
+    }
+
+    private static void WriteCore(Stream output, Composition composition, ITemplateSchema schema)
+    {
+        JsonWriterOptions opts = new()
+        {
+            Indented = false,
+            SkipValidation = false,
+        };
+        using Utf8JsonWriter writer = new(output, opts);
+        writer.WriteStartObject();
+        WriteCompositionBody(writer, composition, schema.TemplateId);
+        FlatJsonContentWriter.WriteContent(writer, composition, schema);
+        writer.WriteEndObject();
+        writer.Flush();
     }
 
     private static void WriteCore(Stream output, Composition composition, string templateId)

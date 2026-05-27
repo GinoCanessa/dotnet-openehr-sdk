@@ -22,11 +22,14 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\DotnetOpenEhr.Serialization.Json.Flat\DotnetOpenEhr.Serialization.Json.Flat.csproj" />
     <ProjectReference Include="..\..\src\DotnetOpenEhr.Serialization.Json\DotnetOpenEhr.Serialization.Json.csproj" />
+    <ProjectReference Include="..\..\src\DotnetOpenEhr.Templates\DotnetOpenEhr.Templates.csproj" />
     <ProjectReference Include="..\..\src\DotnetOpenEhr.Templates.Abstractions\DotnetOpenEhr.Templates.Abstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Fixtures\Flat\*.json" />
+    <EmbeddedResource Include="Fixtures\FlatSchemaDriven\**\*.json" />
+    <EmbeddedResource Include="Fixtures\FlatSchemaDriven\**\*.opt2" />
   </ItemGroup>
 
 </Project>

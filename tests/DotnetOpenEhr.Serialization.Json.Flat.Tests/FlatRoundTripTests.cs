@@ -8,9 +8,9 @@ namespace DotnetOpenEhr.Serialization.Json.Flat.Tests;
 /// Data-driven verification of the lossless-catalogue: for every
 /// fixture in the <c>schemaless-roundtrip</c> bucket, parsing and
 /// re-serialising is byte-equivalent after canonical key ordering.
-/// For every fixture in the <c>schema-required</c> bucket, schemaless
-/// parse throws <see cref="FlatSchemaRequiredException"/> with the
-/// exact unresolved-path list captured in the manifest.
+/// Phase 8d retired the <c>schema-required</c> bucket; the
+/// schema-driven round-trip is exercised by
+/// <see cref="FlatSchemaDrivenRoundTripTests"/>.
 /// </summary>
 public sealed class FlatRoundTripTests
 {
@@ -21,17 +21,6 @@ public sealed class FlatRoundTripTests
         foreach (CatalogueEntry e in Catalogue.Fixtures)
         {
             if (string.Equals(e.Bucket, "schemaless-roundtrip", StringComparison.Ordinal))
-            {
-                yield return new TheoryDataRow<string>(e.File);
-            }
-        }
-    }
-
-    public static IEnumerable<TheoryDataRow<string>> SchemaRequiredFixtures()
-    {
-        foreach (CatalogueEntry e in Catalogue.Fixtures)
-        {
-            if (string.Equals(e.Bucket, "schema-required", StringComparison.Ordinal))
             {
                 yield return new TheoryDataRow<string>(e.File);
             }
@@ -56,25 +45,5 @@ public sealed class FlatRoundTripTests
         byte[] reemittedCanonical = FlatJsonWriter.WriteCanonical(reemittedEntries);
 
         Assert.Equal(originalCanonical, reemittedCanonical);
-    }
-
-    [Theory]
-    [MemberData(nameof(SchemaRequiredFixtures))]
-    public void SchemalessParse_OnSchemaRequiredFixture_ThrowsWithExpectedPaths(string fixture)
-    {
-        CatalogueEntry entry = Catalogue.GetByFile(fixture);
-        byte[] data = FixtureLoader.Load(fixture);
-
-        FlatSchemaRequiredException ex = Assert.Throws<FlatSchemaRequiredException>(
-            () => OpenEhrFlatJson.ParseComposition(data));
-
-        Assert.Equal(entry.TemplateId, ex.TemplateId);
-
-        List<string> expected = [.. entry.UnresolvedPaths];
-        List<string> actual = [.. ex.UnresolvedPaths];
-        expected.Sort(StringComparer.Ordinal);
-        actual.Sort(StringComparer.Ordinal);
-
-        Assert.Equal(expected, actual);
     }
 }

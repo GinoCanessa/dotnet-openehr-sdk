@@ -60,24 +60,40 @@ public static class OpenEhrFlatJson
     public static byte[] Serialize(Composition composition, string templateId)
         => FlatJsonWriter.Write(composition, templateId);
 
+    /// <summary>
+    /// Schema-driven serialisation: emits Composition metadata + the
+    /// full archetype-content tree using <paramref name="schema"/> as
+    /// the FLAT-path root authority. Deferred Phase-4 work.
+    /// </summary>
+    public static byte[] Serialize(Composition composition, ITemplateSchema schema)
+        => FlatJsonWriter.Write(composition, schema);
+
     private static Composition? ParseEntries(
         IReadOnlyList<KeyValuePair<FlatPath, JsonElement>> entries,
         ITemplateSchema? schema)
     {
         if (entries.Count == 0) return null;
 
-        // Determine the template id: the first segment of any path that
-        // isn't the ehrbase-specific magic prefix "ctx" (which carries
-        // context defaults outside the template tree). If only "ctx"
-        // paths are present, fall back to that.
-        string templateId = entries[0].Key.TemplateId;
-        foreach (KeyValuePair<FlatPath, JsonElement> entry in entries)
+        // When a schema is supplied, use its TemplateId verbatim as the
+        // root path segment (so the schema's TryResolveType index keys
+        // line up). Otherwise fall back to the heuristic of "first
+        // non-ctx path head".
+        string templateId;
+        if (schema is not null && !string.IsNullOrEmpty(schema.TemplateId))
         {
-            string head = entry.Key.TemplateId;
-            if (!string.IsNullOrEmpty(head) && !string.Equals(head, "ctx", StringComparison.Ordinal))
+            templateId = schema.TemplateId;
+        }
+        else
+        {
+            templateId = entries[0].Key.TemplateId;
+            foreach (KeyValuePair<FlatPath, JsonElement> entry in entries)
             {
-                templateId = head;
-                break;
+                string head = entry.Key.TemplateId;
+                if (!string.IsNullOrEmpty(head) && !string.Equals(head, "ctx", StringComparison.Ordinal))
+                {
+                    templateId = head;
+                    break;
+                }
             }
         }
         if (string.IsNullOrEmpty(templateId))
@@ -100,24 +116,22 @@ public static class OpenEhrFlatJson
                 continue;
             }
 
-            // Schema-driven mode: if the schema resolves this path,
-            // accept its resolution. The metadata applier still needs
-            // to know where to put the value; if it can't, the path is
-            // unresolved so a Phase 8 template-aware body walker can
-            // claim it.
-            if (schema is not null && schema.TryResolveType(entry.Key.OriginalForm.AsSpan(), out _))
+            // Metadata-applier first; it covers the Composition root
+            // properties and EventContext, which the schema-driven
+            // content walker does not own.
+            if (TryApplyMetadataEntry(composition, templateId, entry))
             {
-                if (!TryApplyMetadataEntry(composition, templateId, entry))
-                {
-                    unresolved.Add(entry.Key.OriginalForm);
-                }
                 continue;
             }
 
-            if (!TryApplyMetadataEntry(composition, templateId, entry))
+            // Schema-driven mode: hand the entry to the content parser.
+            if (schema is not null
+                && FlatJsonContentParser.TryApplyContentEntry(composition, templateId, entry, schema))
             {
-                unresolved.Add(entry.Key.OriginalForm);
+                continue;
             }
+
+            unresolved.Add(entry.Key.OriginalForm);
         }
 
         if (unresolved.Count > 0)

@@ -1,0 +1,55 @@
+operational_template (adl_version=2.0.6; rm_release=1.1.0; generated)
+    openEHR-EHR-COMPOSITION.evaluation_entry.v1.0.0
+
+language
+    original_language = <[ISO_639-1::en]>
+
+description
+    lifecycle_state = <"unmanaged">
+    details = <
+        ["en"] = <
+            language = <[ISO_639-1::en]>
+            purpose = <"Hand-authored OPT2 fixture with a single EVALUATION carrying a coded element.">
+        >
+    >
+
+definition
+    COMPOSITION[id1] matches {
+        content matches {
+            EVALUATION[id2] occurrences matches {0..1} matches {
+                data matches {
+                    ITEM_TREE[id3] matches {
+                        items matches {
+                            ELEMENT[id4] matches {
+                                value matches {
+                                    DV_CODED_TEXT[id5]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+terminology
+    term_definitions = <
+        ["en"] = <
+            ["id1"] = <text = <"Evaluation composition"> description = <"Composition holding a single evaluation.">>
+            ["id2"] = <text = <"evaluation"> description = <"Evaluation entry.">>
+            ["id3"] = <text = <"tree"> description = <"Item tree.">>
+            ["id4"] = <text = <"problem"> description = <"Problem code.">>
+            ["id5"] = <text = <"problem value"> description = <"Problem coded value.">>
+        >
+    >
+
+component_terminologies
+    component_terminologies = <
+        ["openEHR-EHR-COMPOSITION.evaluation_entry.v1.0.0"] = <
+            term_definitions = <
+                ["en"] = <
+                    ["id1"] = <text = <"Evaluation composition"> description = <"Composition holding a single evaluation.">>
+                >
+            >
+        >
+    >
