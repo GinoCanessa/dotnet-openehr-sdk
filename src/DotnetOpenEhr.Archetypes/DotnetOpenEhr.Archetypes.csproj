@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>DotnetOpenEhr.Archetypes</RootNamespace>
+    <AssemblyName>DotnetOpenEhr.Archetypes</AssemblyName>
+    <PackageId>DotnetOpenEhr.Archetypes</PackageId>
+    <Description>
+      openEHR Archetype Object Model (AOM2) for .NET: hand-authored,
+      polymorphic, mutable data classes covering identification helpers,
+      the Resource layer, the constraint hierarchy (C_OBJECT, C_ATTRIBUTE,
+      C_PRIMITIVE_OBJECT and friends), the terminology container, and the
+      Archetype/Template/OperationalTemplate roots. Ships the structural
+      surface only; the ADL2 parser/serializer lands in later phases.
+      Trim-safe and Native-AOT-safe. Single TFM net10.0.
+    </Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DotnetOpenEhr.Foundation\DotnetOpenEhr.Foundation.csproj" />
+    <ProjectReference Include="..\DotnetOpenEhr.Odin\DotnetOpenEhr.Odin.csproj" />
+    <ProjectReference Include="..\DotnetOpenEhr.Bmm\DotnetOpenEhr.Bmm.csproj" />
+    <ProjectReference Include="..\DotnetOpenEhr.Bmm.Rm\DotnetOpenEhr.Bmm.Rm.csproj" />
+    <ProjectReference Include="..\DotnetOpenEhr.Terminology\DotnetOpenEhr.Terminology.csproj" />
+  </ItemGroup>
+
+</Project>
