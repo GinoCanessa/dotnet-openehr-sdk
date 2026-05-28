@@ -1,19 +1,18 @@
 # DotnetOpenEhr documentation
 
 This folder will collect end-user and contributor documentation as the
-SDK comes online phase by phase.
+SDK comes online.
 
-Planned docs (landing alongside the phases that produce them):
+Planned docs:
 
 - [`getting-started.md`](getting-started.md) — install, parse a
-  Composition, validate against an OPT, run an AQL query (Phase 11).
+  Composition, validate against an OPT, run an AQL query.
 - [`package-map.md`](package-map.md) — which package to install when
-  (Phase 11; the short table is also in the top-level `README.md`).
-- [`aot.md`](aot.md) — AOT/trim posture and supported scenarios
-  (Phase 11).
+  (the short table is also in the top-level `README.md`).
+- [`aot.md`](aot.md) — AOT/trim posture and supported scenarios.
 - [`canonical-json-ordering.md`](canonical-json-ordering.md) — the
   documented sibling-key ordering used for byte-equivalent canonical
-  round-trip (Phase 3).
+  round-trip.
 
 ## openEHR specs (source of truth)
 

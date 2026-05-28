@@ -2,10 +2,10 @@
 
 ## Background
 
-Phase 3 of the DotnetOpenEhr SDK delivers a lossless round-trip from
-the canonical openEHR JSON wire form into the strongly-typed
-`DotnetOpenEhr.Rm` Reference Model. The Phase 3 plan called for two
-layers of round-trip verification:
+The DotnetOpenEhr.Serialization.Json package delivers a lossless
+round-trip from the canonical openEHR JSON wire form into the
+strongly-typed `DotnetOpenEhr.Rm` Reference Model. Round-trip
+verification is layered:
 
 1. **Structural equivalence.** Parse → re-serialize → parse → assert
    deep equality of the two object graphs.
@@ -29,9 +29,9 @@ referenceable normative document at the time of writing. Without an
 authoritative ordering specification, implementing a faithful canonical
 normaliser is a research task, not a coding task.
 
-Phase 3 therefore ships a **pragmatic normaliser**
-(`CanonicalJsonNormaliser` in the IntegrationTests project) that
-implements three deterministic rules:
+DotnetOpenEhr.Serialization.Json therefore ships a **pragmatic
+normaliser** (`CanonicalJsonNormaliser` in the IntegrationTests
+project) that implements three deterministic rules:
 
 1. **Whitespace.** All insignificant whitespace is removed.
 2. **Object-key ordering.** Sibling keys inside every JSON object are
@@ -77,11 +77,11 @@ following on top of the pragmatic rules above:
   trailing-zero rendering of true JSON numbers
   (`120.000` ↔ `120.0` ↔ `120`).
 
-## Re-visiting in Phase 10
+## Future work
 
-Phase 10 (AOT / trim gate hardening) will re-open this normaliser when
-the canonical openEHR ordering rules have been studied in depth. The
-intended outcome is to upgrade the byte-equivalence test from
-best-effort to **gating** by either (a) hand-coding the RM-attribute
-ordering table and a discriminator inclusion policy, or (b) adopting an
-authoritative specification if one becomes available before then.
+Future hardening will re-open this normaliser once the canonical
+openEHR ordering rules have been studied in depth. The intended
+outcome is to upgrade the byte-equivalence test from best-effort to
+**gating** by either (a) hand-coding the RM-attribute ordering table
+and a discriminator inclusion policy, or (b) adopting an authoritative
+specification if one becomes available.

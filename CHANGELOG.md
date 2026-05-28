@@ -28,41 +28,41 @@ First public alpha. Installs as a granular set of twelve
   [`getting-started.md`](docs/getting-started.md),
   [`package-map.md`](docs/package-map.md),
   [`aot.md`](docs/aot.md).
-- **Phase 0 — Repo & build foundation:** .NET 10 / C# 14 single-TFM
+- **Repo & build foundation:** .NET 10 / C# 14 single-TFM
   solution, central package management, MinVer + SourceLink, shared
   AOT/trim posture for every `src/` project, `_IsShippingProject` guard
   in `Directory.Build.targets`.
-- **Phase 1 — `DotnetOpenEhr.Foundation`:** ISO 8601 date/time/duration/
+- **`DotnetOpenEhr.Foundation`:** ISO 8601 date/time/duration/
   timezone value types preserving original lexical form,
   `Interval<T>`, `Cardinality`, `TerminologyCode`.
-- **Phase 2 — `DotnetOpenEhr.Rm`:** hand-authored, polymorphic,
+- **`DotnetOpenEhr.Rm`:** hand-authored, polymorphic,
   source-generator-friendly Reference Model and Data Types (Common,
   Data Types, Data Structures, EHR, Demographic, Identification).
-- **Phase 3 — `DotnetOpenEhr.Serialization.Json`:** canonical /
+- **`DotnetOpenEhr.Serialization.Json`:** canonical /
   STRUCTURED openEHR JSON round-trip via STJ source generation only.
   Includes documented sibling-key ordering for byte-equivalent
   round-trip ([`docs/canonical-json-ordering.md`](docs/canonical-json-ordering.md)).
-- **Phase 4 — `DotnetOpenEhr.Templates.Abstractions` +
+- **`DotnetOpenEhr.Templates.Abstractions` +
   `DotnetOpenEhr.Serialization.Json.Flat`:** FLAT openEHR JSON
   serializer with schemaless + schema-driven modes, sharing the
   source-generated context with the canonical serializer.
-- **Phase 5 — `DotnetOpenEhr.Terminology`:** openEHR Support
+- **`DotnetOpenEhr.Terminology`:** openEHR Support
   Terminology groups embedded as JSON resources with an AOT-safe
   lookup API.
-- **Phase 6 — `DotnetOpenEhr.Odin`:** standalone hand-written ODIN
+- **`DotnetOpenEhr.Odin`:** standalone hand-written ODIN
   parser, AST, and writer.
-- **Phase 7 — `DotnetOpenEhr.Bmm` + `DotnetOpenEhr.Bmm.Rm`:** BMM
+- **`DotnetOpenEhr.Bmm` + `DotnetOpenEhr.Bmm.Rm`:** BMM
   object model and parser plus the canonical openEHR RM BMM schemas
   (BASE 1.2.0, RM 1.1.0) bundled as embedded resources with a typed
   loader. `DotnetOpenEhr.Bmm.Rm` ships under SPDX `MIT AND Apache-2.0`
   to honour the upstream openEHR license.
-- **Phase 8 — `DotnetOpenEhr.Archetypes`:** ADL2 / AOM2 parser and
+- **`DotnetOpenEhr.Archetypes`:** ADL2 / AOM2 parser and
   object model.
-- **Phase 9 — `DotnetOpenEhr.Templates`:** OPT2 parser, concrete
+- **`DotnetOpenEhr.Templates`:** OPT2 parser, concrete
   `OperationalTemplate` model, `ITemplateSchema` implementation, and
   `OperationalTemplateValidator` for template-driven Composition
   validation.
-- **Phase 10 — `DotnetOpenEhr.Aql`:** hand-written AQL lexer, parser,
+- **`DotnetOpenEhr.Aql`:** hand-written AQL lexer, parser,
   AST, and tree-walking in-memory evaluator (FROM / CONTAINS,
   three-valued WHERE, SELECT / DISTINCT, multi-column ORDER BY, LIMIT /
   OFFSET, parameter binding, sync + streaming `IAsyncEnumerable`

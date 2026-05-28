@@ -9,9 +9,7 @@ work with the strongly-typed Reference Model and Data Types, validate
 Compositions against operational templates, and evaluate AQL queries
 over in-memory data — all trim-safe and Native-AOT-safe.
 
-> **Status:** pre-alpha. APIs are unstable. v1 will ship as
-> `0.1.0-alpha.*` on NuGet once Phase 11 of the implementation plan
-> lands.
+> **Status:** alpha. APIs are unstable.
 
 ## Package map
 
@@ -33,8 +31,6 @@ identifier so consumers only pay for what they use:
 | `DotnetOpenEhr.Archetypes` | ADL2 / AOM2 parser + object model. |
 | `DotnetOpenEhr.Templates` | OPT2 parser + template-driven validation. |
 | `DotnetOpenEhr.Aql` | AQL parser, AST, in-memory tree-walking evaluator. |
-
-A fuller `docs/package-map.md` lands with Phase 11.
 
 ## Build / Test / AOT
 
