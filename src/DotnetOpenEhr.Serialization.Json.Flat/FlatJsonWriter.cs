@@ -16,10 +16,10 @@ namespace DotnetOpenEhr.Serialization.Json.Flat;
 /// FLAT keys with their primitive-value attributes.
 /// </summary>
 /// <remarks>
-/// Phase 4 schemaless writer scope: covers Composition root metadata
-/// and EventContext. Content emission is intentionally limited to the
+/// Schemaless writer scope: covers Composition root metadata and
+/// EventContext. Content emission is intentionally limited to the
 /// values reachable without a template — clinical content under
-/// archetype roots is deferred to the template-aware Phase 8 writer.
+/// archetype roots is deferred to the template-aware writer.
 /// </remarks>
 public static class FlatJsonWriter
 {
@@ -52,8 +52,8 @@ public static class FlatJsonWriter
     /// Schema-driven overload: emits Composition root metadata, the
     /// EventContext, and the full archetypable content tree using
     /// <paramref name="schema"/> as the FLAT-path root authority.
-    /// Deferred Phase-4 work: the archetype-content walker is
-    /// implemented in <see cref="FlatJsonContentWriter"/>.
+    /// The archetype-content walker is implemented in
+    /// <see cref="FlatJsonContentWriter"/>.
     /// </summary>
     public static byte[] Write(Composition composition, ITemplateSchema schema)
     {

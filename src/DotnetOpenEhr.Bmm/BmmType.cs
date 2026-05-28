@@ -2,7 +2,7 @@ namespace DotnetOpenEhr.Bmm;
 
 /// <summary>
 /// Discriminator for the closed set of BMM type forms supported by the
-/// Phase-6 parser.
+/// BMM parser.
 /// </summary>
 public enum BmmTypeKind
 {
@@ -18,8 +18,8 @@ public enum BmmTypeKind
 /// </summary>
 /// <remarks>
 /// Type references are <em>raw</em>: <see cref="TypeName"/> is the source
-/// string. Later phases (RM resolution) bind these to <see cref="BmmClass"/>
-/// instances; the Phase-6 parser does not.
+/// string. RM-resolution layers bind these to <see cref="BmmClass"/>
+/// instances; the BMM parser does not.
 /// </remarks>
 public abstract class BmmType
 {

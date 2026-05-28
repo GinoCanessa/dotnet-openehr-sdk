@@ -9,8 +9,8 @@ namespace DotnetOpenEhr.Bmm;
 /// Parses BMM schema source (an ODIN document) into a <see cref="BmmModel"/>.
 /// </summary>
 /// <remarks>
-/// Scope cap for Phase 6: the parser recognises the subset of BMM
-/// productions actually emitted by the openEHR RM-family BMM files, namely:
+/// Scope cap: the parser recognises the subset of BMM productions
+/// actually emitted by the openEHR RM-family BMM files, namely:
 /// <list type="bullet">
 ///   <item>top-level metadata: <c>bmm_version</c>, <c>rm_publisher</c>,
 ///   <c>rm_release</c>, <c>model_name</c>, <c>schema_name</c>;</item>

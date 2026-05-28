@@ -27,7 +27,7 @@ namespace DotnetOpenEhr.Serialization.Json.Flat;
 /// each emitted value is read from the live object graph so the
 /// writer does not require the schema to be exhaustive.
 ///
-/// MVP scope (Phase 8d subset, documented in plan deviation): covers
+/// MVP scope: covers
 /// SECTION / OBSERVATION / EVALUATION / ADMIN_ENTRY content items;
 /// HISTORY + POINT_EVENT (event time + data); ITEM_TREE / ITEM_LIST /
 /// ITEM_SINGLE; CLUSTER nesting; ELEMENT values of DV_TEXT,
@@ -36,7 +36,7 @@ namespace DotnetOpenEhr.Serialization.Json.Flat;
 /// and a <c>_archetype_node_id</c> sidecar so the parser can rebuild
 /// the same RM shape.
 ///
-/// Out-of-scope for Phase 8d (will be added when fixtures need them):
+/// Out-of-scope for the MVP (will be added when fixtures need them):
 /// INSTRUCTION/ACTION sub-structures, ITEM_TABLE, INTERVAL_EVENT
 /// extras (width/sample_count/math_function), DV_PROPORTION/DV_ORDINAL/
 /// DV_SCALE/DV_IDENTIFIER, encapsulated data values, feeder audits,
@@ -87,9 +87,9 @@ internal static class FlatJsonContentWriter
                 WriteItemStructure(writer, $"{path}/data", a.Data);
                 break;
             // Instruction / Action are intentionally out-of-scope for
-            // the Phase 8d MVP; the visible tree is still emitted via
-            // the locatable header so partial round-trip remains
-            // possible if a future phase fills in the gap.
+            // the MVP; the visible tree is still emitted via the
+            // locatable header so partial round-trip remains possible
+            // if a later change fills in the gap.
             default:
                 break;
         }
@@ -148,7 +148,7 @@ internal static class FlatJsonContentWriter
             case ItemSingle single:
                 WriteItem(writer, $"{path}/item", single.Item);
                 break;
-            // ItemTable is out-of-scope for Phase 8d MVP.
+            // ItemTable is out-of-scope for the MVP.
             default:
                 break;
         }

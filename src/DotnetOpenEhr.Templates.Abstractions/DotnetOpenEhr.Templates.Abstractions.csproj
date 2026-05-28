@@ -7,9 +7,9 @@
     <Description>
       Seam abstractions used by openEHR template-aware components in
       DotnetOpenEhr. Defines ITemplateSchema and supporting DTOs so the
-      FLAT JSON serializer (Phase 4) and the OPT-backed
-      OperationalTemplate (Phase 8) can interoperate without a circular
-      reference. Trim-safe and Native-AOT-safe. Single TFM net10.0.
+      FLAT JSON serializer and the OPT-backed OperationalTemplate can
+      interoperate without a circular reference. Trim-safe and
+      Native-AOT-safe. Single TFM net10.0.
     </Description>
   </PropertyGroup>
 

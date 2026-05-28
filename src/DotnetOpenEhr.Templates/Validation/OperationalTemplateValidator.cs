@@ -341,7 +341,7 @@ public sealed class OperationalTemplateValidator
     }
 
     // ------------------------------------------------------------------
-    // Data-type constraint validation (Phase 8c)
+    // Data-type constraint validation
     // ------------------------------------------------------------------
 
     // Deviation: the ADL2 parser materialises DV_QUANTITY / DV_CODED_TEXT /

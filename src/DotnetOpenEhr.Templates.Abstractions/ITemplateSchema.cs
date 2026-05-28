@@ -5,7 +5,7 @@ namespace DotnetOpenEhr.Templates.Abstractions;
 /// that template-aware serializers need at runtime: resolving the
 /// concrete RM type of a node addressed by a FLAT path. Implementers
 /// include the stub <see cref="EmptyTemplateSchema"/> and the
-/// production OPT-backed schema shipped in Phase 8.
+/// production OPT-backed schema shipped with DotnetOpenEhr.Templates.
 /// </summary>
 public interface ITemplateSchema
 {

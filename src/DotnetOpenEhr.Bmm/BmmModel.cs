@@ -5,7 +5,7 @@ namespace DotnetOpenEhr.Bmm;
 /// <c>BMM_SCHEMA</c> meta-type in the BMM 2.x specification.
 /// </summary>
 /// <remarks>
-/// Phase-6 scope: only the metadata + <c>packages</c> + <c>class_definitions</c>
+/// Scope: only the metadata + <c>packages</c> + <c>class_definitions</c>
 /// productions used by the openEHR RM family BMMs are materialised. See
 /// <see cref="BmmParser"/> for the explicit list.
 /// </remarks>

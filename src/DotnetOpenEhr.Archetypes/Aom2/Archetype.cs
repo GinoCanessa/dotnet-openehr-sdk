@@ -9,8 +9,8 @@ namespace DotnetOpenEhr.Archetypes.Aom2;
 // Concrete subtypes (this file): AuthoredArchetype, Template,
 // TemplateOverlay, OperationalTemplate. OperationalTemplate is
 // non-sealed and has a protected internal constructor so the
-// DotnetOpenEhr.Templates package (Phase 8a) can subclass it as sealed
-// and add OPT-specific members.
+// DotnetOpenEhr.Templates package can subclass it as sealed and add
+// OPT-specific members.
 
 /// <summary>
 /// Abstract base of every openEHR archetype.
@@ -65,10 +65,10 @@ public sealed class TemplateOverlay : Archetype
 /// <remarks>
 /// Declared here as a non-sealed class with a
 /// <see langword="protected internal"/> constructor so the
-/// <c>DotnetOpenEhr.Templates</c> package (Phase 8a) can subclass it as
+/// <c>DotnetOpenEhr.Templates</c> package can subclass it as
 /// <see langword="sealed"/> and add OPT-specific members. Direct
 /// instantiation from outside the assembly is not supported; consumers
-/// should use the templates package once it ships.
+/// should use the templates package.
 /// </remarks>
 public class OperationalTemplate : Archetype
 {

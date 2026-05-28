@@ -139,7 +139,7 @@ public static class OdinParser
         if (first.Kind == OdinTokenKind.AtSign)
         {
             // SPEC: schema_identifier ::= '@' schema '=' URI ; we accept
-            // and skip it. Phase 5 does not interpret schemas.
+            // and skip it. This parser does not interpret schemas.
             state.Consume();
             OdinTokenSnapshot ident = state.Peek();
             if (ident.Kind != OdinTokenKind.Identifier)
@@ -150,9 +150,9 @@ public static class OdinParser
             state.Expect(OdinTokenKind.Equals, "'='");
             // The URI is hard to tokenise; skip everything until newline by
             // collecting Identifier/Slash/Colon tokens isn't viable from
-            // here. Bail out instead: declare unsupported for Phase 5.
+            // here. Bail out instead: declare unsupported.
             throw new OdinParseException(
-                "Schema identifier headers are not supported by the Phase 5 ODIN parser.",
+                "Schema identifier headers are not supported by this ODIN parser.",
                 ident.Line,
                 ident.Column);
         }

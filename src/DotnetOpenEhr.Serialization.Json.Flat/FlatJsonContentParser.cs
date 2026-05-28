@@ -22,9 +22,8 @@ namespace DotnetOpenEhr.Serialization.Json.Flat;
 /// <see cref="OpenEhrFlatJson"/>.
 /// </summary>
 /// <remarks>
-/// Phase 8d MVP scope mirrors <see cref="FlatJsonContentWriter"/>;
-/// see that type's remarks for the list of supported / unsupported
-/// RM shapes.
+/// MVP scope mirrors <see cref="FlatJsonContentWriter"/>; see that
+/// type's remarks for the list of supported / unsupported RM shapes.
 /// </remarks>
 internal static class FlatJsonContentParser
 {

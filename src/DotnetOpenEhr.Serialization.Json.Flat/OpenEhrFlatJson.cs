@@ -22,7 +22,7 @@ namespace DotnetOpenEhr.Serialization.Json.Flat;
 /// root) cannot be resolved without an OPT and triggers
 /// <see cref="FlatSchemaRequiredException"/>. Schema-driven mode
 /// delegates type resolution to an <see cref="ITemplateSchema"/>; the
-/// production OPT-backed schema arrives in Phase 8.
+/// production OPT-backed schema arrives with DotnetOpenEhr.Templates.
 /// </remarks>
 public static class OpenEhrFlatJson
 {
@@ -63,7 +63,7 @@ public static class OpenEhrFlatJson
     /// <summary>
     /// Schema-driven serialisation: emits Composition metadata + the
     /// full archetype-content tree using <paramref name="schema"/> as
-    /// the FLAT-path root authority. Deferred Phase-4 work.
+    /// the FLAT-path root authority.
     /// </summary>
     public static byte[] Serialize(Composition composition, ITemplateSchema schema)
         => FlatJsonWriter.Write(composition, schema);
@@ -110,7 +110,7 @@ public static class OpenEhrFlatJson
             if (!string.Equals(head, templateId, StringComparison.Ordinal))
             {
                 // Non-template prefixes (e.g. ehrbase "ctx" defaults)
-                // and any cross-template mixing are out of Phase 4
+                // and any cross-template mixing are out of the
                 // schemaless scope. Mark them unresolved.
                 unresolved.Add(entry.Key.OriginalForm);
                 continue;

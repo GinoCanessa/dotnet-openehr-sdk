@@ -3,7 +3,7 @@ using System.Text;
 namespace DotnetOpenEhr.Archetypes.Adl2;
 
 /// <summary>
-/// Hand-written ADL2 tokenizer. Mirrors the shape of the Phase-5
+/// Hand-written ADL2 tokenizer. Mirrors the shape of the ODIN
 /// <c>OdinLexer</c>: a <see cref="ReadOnlySpan{T}"/>-backed
 /// <c>ref struct</c> that tracks 1-based line / column and allocates
 /// only when materialising decoded lexeme contents (strings, regexes,
