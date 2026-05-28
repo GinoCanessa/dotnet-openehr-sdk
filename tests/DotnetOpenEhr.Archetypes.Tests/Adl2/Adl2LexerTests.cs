@@ -10,7 +10,7 @@ namespace DotnetOpenEhr.Archetypes.Tests.Adl2;
 /// Per-token positive and negative coverage of <see cref="Adl2Lexer"/>:
 /// punctuation, keywords vs identifiers, the three terminology code
 /// flavours, path segments with embedded predicates, regex disambiguation,
-/// interval literals (including the <c>*</c> sentinel from Phase 7a),
+/// interval literals (including the <c>*</c> sentinel),
 /// archetype HRID context-switching, and the ODIN block hand-off
 /// (including round-tripping the inner span through <see cref="OdinParser"/>).
 /// </summary>
@@ -596,7 +596,7 @@ public class Adl2LexerTests
         Assert.Equal(Adl2TokenKind.Identifier, nonWs[2]);
     }
 
-    // ---- Intervals (depends on Phase 7a Star support) ----------------------
+    // ---- Intervals (depends on Star token support) ----------------------
 
     [Fact]
     public void Interval_zero_to_one()

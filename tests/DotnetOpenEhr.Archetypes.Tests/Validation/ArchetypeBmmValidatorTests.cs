@@ -53,11 +53,12 @@ public class ArchetypeBmmValidatorTests
         Assert.Empty(errors);
     }
 
-    // Pre-Phase-7f the ADL2 parser does not recognise bare ISO 8601
-    // duration literals such as `PT24H` and materialises them as
-    // CComplexObject with the literal text as RmTypeName. The validator
-    // correctly flags those as BMM_001; filter them here so the cross-
-    // check focuses on the validator under test.
+    // Filters out a known shape produced by the current ADL2 parser:
+    // bare ISO 8601 duration literals such as `PT24H` are materialised
+    // as CComplexObject with the literal as RmTypeName, which the BMM
+    // validator then flags as BMM_001. Keeping the filter focuses this
+    // cross-check on the validator. Whether the parser still emits this
+    // shape is tracked separately.
     private static bool IsKnownParserLimitation(ArchetypeIssue issue)
     {
         if (issue.Code != ArchetypeIssueCodes.UnknownRmType)

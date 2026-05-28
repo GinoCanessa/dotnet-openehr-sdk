@@ -1,10 +1,8 @@
 // DotnetOpenEhr AOT/trim smoke test.
 //
-// This executable is published with PublishAot=true in CI. Its only
-// job is to exercise the publishable SDK surface end-to-end so that
-// any new trim/AOT warning fails the build. Phases 1..9 each extend
-// this file as their packages come online; Phase 0 ships only the
-// console banner so the gate is alive from day one.
+// This file exercises every shipping package end-to-end under
+// PublishAot=true; new packages add a new section here as they come
+// online, and any new trim/AOT warning fails the build.
 
 using System.IO;
 using System.Reflection;
@@ -69,8 +67,9 @@ System.Console.WriteLine($"obs: {obs.ArchetypeNodeId}");
 System.Console.WriteLine($"quantity: {sbp}");
 System.Console.WriteLine($"registry entries: {RmTypeName.AllRmNames.Count}");
 
-// Phase 3: parse a canonical fixture and re-serialize, fully AOT-safe
-// via the STJ source generator (no runtime reflection).
+// DotnetOpenEhr.Serialization.Json: parse a canonical fixture and
+// re-serialize, fully AOT-safe via the STJ source generator (no
+// runtime reflection).
 Assembly asm = typeof(Program).Assembly;
 using Stream fixtureStream = asm.GetManifestResourceStream("kds_procedure_bundle.json")
     ?? throw new System.InvalidOperationException("Embedded fixture missing.");
@@ -81,9 +80,9 @@ if (roundTripped is null) throw new System.InvalidOperationException("Fixture pa
 byte[] reEmitted = OpenEhrJson.Serialize(roundTripped);
 System.Console.WriteLine($"json round-trip: archetype={roundTripped.ArchetypeNodeId} bytes={reEmitted.Length}");
 
-// Phase 4: parse a FLAT JSON fixture, re-emit as FLAT, and re-parse to
-// confirm the schemaless façade is AOT-safe (no reflection, all STJ
-// source-gen).
+// DotnetOpenEhr.Serialization.Json.Flat: parse a FLAT JSON fixture,
+// re-emit as FLAT, and re-parse to confirm the schemaless façade is
+// AOT-safe (no reflection, all STJ source-gen).
 using Stream flatStream = asm.GetManifestResourceStream("minimal_metadata_flat.json")
     ?? throw new System.InvalidOperationException("Embedded FLAT fixture missing.");
 using MemoryStream flatMs = new();
@@ -99,8 +98,8 @@ int flatKeyCount = 0;
 foreach (JsonProperty _ in flatDoc.RootElement.EnumerateObject()) flatKeyCount++;
 System.Console.WriteLine($"flat round-trip: keys={flatKeyCount}");
 
-// Phase 5: parse and re-serialize an ODIN snippet end-to-end (lexer,
-// parser, writer all hand-written and AOT-safe).
+// DotnetOpenEhr.Odin: parse and re-serialize an ODIN snippet end-to-end
+// (lexer, parser, writer all hand-written and AOT-safe).
 const string odinSrc = "<[\"en\"] = (RESOURCE_DESCRIPTION_ITEM) <language = <[ISO_639-1::en]> purpose = <\"demo\">>>";
 DotnetOpenEhr.Odin.OdinValue odinParsed = DotnetOpenEhr.Odin.OdinParser.Parse(odinSrc);
 string odinCompact = DotnetOpenEhr.Odin.OdinWriter.Write(odinParsed, DotnetOpenEhr.Odin.OdinWriteOptions.Compact);
@@ -108,8 +107,9 @@ DotnetOpenEhr.Odin.OdinValue odinReparsed = DotnetOpenEhr.Odin.OdinParser.Parse(
 DotnetOpenEhr.Odin.Values.OdinHash odinHash = odinReparsed.AsHash();
 System.Console.WriteLine($"odin parse ok: keys={odinHash.Entries.Count}");
 
-// Phase 6: terminology lookup via the embedded resource + STJ source-gen
-// pipeline, and a small BMM fragment parse end-to-end.
+// DotnetOpenEhr.Terminology / DotnetOpenEhr.Bmm: terminology lookup via
+// the embedded resource + STJ source-gen pipeline, and a small BMM
+// fragment parse end-to-end.
 bool nullFlavour253 = DotnetOpenEhr.Terminology.OpenEhrTerminology.IsValidCode("null_flavours", "253");
 System.Console.WriteLine($"terminology: null_flavours[253]={nullFlavour253.ToString().ToLowerInvariant()}");
 
@@ -136,15 +136,15 @@ const string bmmFragment = """
 DotnetOpenEhr.Bmm.BmmModel bmm = DotnetOpenEhr.Bmm.BmmParser.Parse(bmmFragment);
 System.Console.WriteLine($"bmm parse ok: classes={bmm.ClassDefinitions.Count}");
 
-// Phase 7a: load the bundled canonical openEHR RM BMM and report the
-// merged concrete-class count. Exercises the embedded-resource loader
-// plus the BMM parser's container/generic type_def support.
+// DotnetOpenEhr.Bmm.Rm: load the bundled canonical openEHR RM BMM and
+// report the merged concrete-class count. Exercises the embedded-resource
+// loader plus the BMM parser's container/generic type_def support.
 DotnetOpenEhr.Bmm.BmmModel rmBmm = DotnetOpenEhr.Bmm.Rm.OpenEhrRmBmm.LoadDefault();
 System.Console.WriteLine($"rm-bmm: classes={rmBmm.ClassDefinitions.Count}");
 
-// Phase 7f: parse a tiny inline ADL2 archetype and cross-validate against
-// the canonical RM BMM. Confirms the validator + the rest of the pipeline
-// publish cleanly under PublishAot.
+// DotnetOpenEhr.Archetypes: parse a tiny inline ADL2 archetype and
+// cross-validate against the canonical RM BMM. Confirms the validator +
+// the rest of the pipeline publish cleanly under PublishAot.
 const string adlSrc = """
     archetype (adl_version=2.0.6; rm_release=1.1.0)
         openEHR-EHR-OBSERVATION.minimal.v1.0.0
@@ -183,9 +183,10 @@ foreach (DotnetOpenEhr.Archetypes.Validation.ArchetypeIssue issue in archetypeIs
 }
 System.Console.WriteLine($"archetype: {parsedArchetype.ArchetypeId} issues={archetypeErrors}");
 
-// Phase 8a: parse a tiny inline OPT2 and report its node count. Confirms
-// the Opt2Parser + concrete OperationalTemplate publish cleanly under
-// PublishAot (component_terminologies extraction is pre-pass + ODIN).
+// DotnetOpenEhr.Templates: parse a tiny inline OPT2 and report its node
+// count. Confirms the Opt2Parser + concrete OperationalTemplate publish
+// cleanly under PublishAot (component_terminologies extraction is
+// pre-pass + ODIN).
 const string opt2Src = """
     operational_template (adl_version=2.0.6; rm_release=1.1.0; generated)
         openEHR-EHR-OBSERVATION.aot_smoke.v1.0.0
@@ -241,8 +242,9 @@ DotnetOpenEhr.Templates.OperationalTemplate opt2 =
     DotnetOpenEhr.Templates.Opt2Parser.Parse(opt2Src);
 System.Console.WriteLine($"opt2: {opt2.ArchetypeId} nodes={opt2.Nodes.Count}");
 
-// Phase 8d: schema-driven FLAT round-trip. Build a tiny COMPOSITION OPT2
-// + matching Composition, FLAT-serialise using the template as schema,
+// DotnetOpenEhr.Templates / DotnetOpenEhr.Serialization.Json.Flat:
+// schema-driven FLAT round-trip. Build a tiny COMPOSITION OPT2 +
+// matching Composition, FLAT-serialise using the template as schema,
 // re-parse, and report the FLAT key count + a structural sanity check.
 const string flatSchemaSrc = """
     operational_template (adl_version=2.0.6; rm_release=1.1.0; generated)
@@ -385,8 +387,8 @@ DotnetOpenEhr.Rm.Composition.Composition? flatSchemaRoundTripped =
 int flatSchemaContentCount = flatSchemaRoundTripped?.Content?.Count ?? 0;
 System.Console.WriteLine($"flat schema-driven: keys={flatSchemaPairs.Count} content={flatSchemaContentCount}");
 
-// Phase 9c: parse a one-line AQL query and evaluate it against an
-// in-memory list of Compositions. Confirms the parser + tree-walking
+// DotnetOpenEhr.Aql: parse a one-line AQL query and evaluate it against
+// an in-memory list of Compositions. Confirms the parser + tree-walking
 // evaluator publish cleanly under PublishAot (no Expression.Compile,
 // no reflection-based traversal).
 System.Collections.Generic.List<DotnetOpenEhr.Rm.Composition.Composition> aqlSource =
@@ -476,7 +478,7 @@ DotnetOpenEhr.Aql.Evaluation.AqlEvaluator aqlEvaluator = new();
 System.Collections.Generic.IReadOnlyList<object?[]> aqlRows = aqlEvaluator.Evaluate(aqlQuery, aqlSource);
 System.Console.WriteLine($"aql: rows={aqlRows.Count}");
 
-// Phase 10: coverage gate. Every shipping NuGet package the SDK
+// Shipping-assembly coverage gate. Every shipping NuGet package the SDK
 // publishes must be transitively loaded by the smoke run; otherwise
 // PublishAot would silently skip its IL2*/IL3* analysis. We use
 // AppDomain.GetAssemblies() rather than enumerating ProjectReference

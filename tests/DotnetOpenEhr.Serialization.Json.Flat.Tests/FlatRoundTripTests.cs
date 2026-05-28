@@ -8,8 +8,7 @@ namespace DotnetOpenEhr.Serialization.Json.Flat.Tests;
 /// Data-driven verification of the lossless-catalogue: for every
 /// fixture in the <c>schemaless-roundtrip</c> bucket, parsing and
 /// re-serialising is byte-equivalent after canonical key ordering.
-/// Phase 8d retired the <c>schema-required</c> bucket; the
-/// schema-driven round-trip is exercised by
+/// The schema-driven round-trip is exercised by
 /// <see cref="FlatSchemaDrivenRoundTripTests"/>.
 /// </summary>
 public sealed class FlatRoundTripTests

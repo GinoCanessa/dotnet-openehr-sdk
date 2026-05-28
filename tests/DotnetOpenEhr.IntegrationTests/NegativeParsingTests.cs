@@ -15,8 +15,8 @@ namespace DotnetOpenEhr.IntegrationTests;
 /// is omitted — every property in the RM falls back to its property
 /// initializer. Enforcing presence would require marking dozens of
 /// properties <c>required</c> across the RM, which is out of scope for
-/// Phase 3. The negative coverage here therefore concentrates on the
-/// failure modes the round-trip integration can actually hit:
+/// this serializer. The negative coverage here therefore concentrates on
+/// the failure modes the round-trip integration can actually hit:
 /// malformed JSON, unknown polymorphic discriminators, and wrong root
 /// type.
 /// </remarks>

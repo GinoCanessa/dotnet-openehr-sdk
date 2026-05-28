@@ -14,8 +14,8 @@ using Xunit;
 namespace DotnetOpenEhr.Templates.Tests.Validation;
 
 /// <summary>
-/// Coverage for the data-type constraint evaluator added in Phase 8c
-/// to <see cref="OperationalTemplateValidator"/>. Each test pairs a
+/// Coverage for the data-type constraint evaluator in
+/// <see cref="OperationalTemplateValidator"/>. Each test pairs a
 /// tiny inline OPT2 that exercises exactly one rule with a single
 /// Composition leaf and asserts the expected zero/one issue.
 /// </summary>

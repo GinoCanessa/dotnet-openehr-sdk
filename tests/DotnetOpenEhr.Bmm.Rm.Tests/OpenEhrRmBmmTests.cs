@@ -21,7 +21,7 @@ public class OpenEhrRmBmmTests
     private static readonly string[] s_documentedRmToBmmMisses =
     [
         // VERSIONED_COMPOSITION exists as a typed RM façade in
-        // DotnetOpenEhr.Rm (Phase 2) but the canonical openEHR RM 1.1.0
+        // DotnetOpenEhr.Rm but the canonical openEHR RM 1.1.0
         // BMM models it only as the generic instantiation
         // VERSIONED_OBJECT<COMPOSITION> in EHR_EXTRACT, not as a
         // dedicated BMM class. This is an upstream modelling choice,
@@ -32,7 +32,7 @@ public class OpenEhrRmBmmTests
     /// <summary>
     /// Concrete BMM class names that intentionally have no direct
     /// <see cref="System.Type"/> counterpart in <c>DotnetOpenEhr.Rm</c>
-    /// (typically because Phase 2 of the SDK has not yet modelled them).
+    /// (typically because DotnetOpenEhr.Rm does not yet model them).
     /// Documenting them keeps the reverse-direction test honest.
     /// </summary>
     private static readonly HashSet<string> s_documentedBmmToRmMisses =
@@ -108,7 +108,7 @@ public class OpenEhrRmBmmTests
                 missing.Add(kvp.Key);
             }
         }
-        // Phase 2 of the SDK only models a subset of the openEHR RM
+        // DotnetOpenEhr.Rm only models a subset of the openEHR RM
         // (the concrete classes listed in RmTypeName). The BMM ships
         // many more concrete types (foundation types, identification
         // helpers, EHR Extract scaffolding, etc.) that are not yet in
@@ -116,6 +116,6 @@ public class OpenEhrRmBmmTests
         // it for diagnosis rather than failing on every absence.
         Assert.True(
             missing.Count > 0,
-            "Expected some concrete BMM classes to be outside the typed RM registry (Phase 2 is a subset).");
+            "Expected some concrete BMM classes to be outside the typed RM registry (DotnetOpenEhr.Rm models a subset).");
     }
 }

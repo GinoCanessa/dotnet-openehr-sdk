@@ -14,7 +14,7 @@ using Xunit;
 namespace DotnetOpenEhr.Serialization.Json.Flat.Tests;
 
 /// <summary>
-/// Phase 8d: end-to-end schema-driven FLAT round-trip over hand-authored
+/// End-to-end schema-driven FLAT round-trip over hand-authored
 /// OPT2 + canonical Composition pairs. For every pair under
 /// <c>Fixtures/FlatSchemaDriven/</c>:
 /// <list type="number">
