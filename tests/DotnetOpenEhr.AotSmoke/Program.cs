@@ -385,6 +385,97 @@ DotnetOpenEhr.Rm.Composition.Composition? flatSchemaRoundTripped =
 int flatSchemaContentCount = flatSchemaRoundTripped?.Content?.Count ?? 0;
 System.Console.WriteLine($"flat schema-driven: keys={flatSchemaPairs.Count} content={flatSchemaContentCount}");
 
+// Phase 9c: parse a one-line AQL query and evaluate it against an
+// in-memory list of Compositions. Confirms the parser + tree-walking
+// evaluator publish cleanly under PublishAot (no Expression.Compile,
+// no reflection-based traversal).
+System.Collections.Generic.List<DotnetOpenEhr.Rm.Composition.Composition> aqlSource =
+[
+    new DotnetOpenEhr.Rm.Composition.Composition
+    {
+        Name = new DotnetOpenEhr.Rm.DataTypes.Text.DvText("Alpha"),
+        ArchetypeNodeId = "openEHR-EHR-COMPOSITION.encounter.v1",
+        Uid = new DotnetOpenEhr.Rm.Support.HierObjectId { Value = "aql-1" },
+        Language = new DotnetOpenEhr.Rm.DataTypes.Text.CodePhrase
+        {
+            TerminologyId = new DotnetOpenEhr.Rm.Support.TerminologyId { Value = "ISO_639-1" },
+            CodeString = "en",
+        },
+        Territory = new DotnetOpenEhr.Rm.DataTypes.Text.CodePhrase
+        {
+            TerminologyId = new DotnetOpenEhr.Rm.Support.TerminologyId { Value = "ISO_3166-1" },
+            CodeString = "GB",
+        },
+        Category = new DotnetOpenEhr.Rm.DataTypes.Text.DvCodedText
+        {
+            Value = "event",
+            DefiningCode = new DotnetOpenEhr.Rm.DataTypes.Text.CodePhrase
+            {
+                TerminologyId = new DotnetOpenEhr.Rm.Support.TerminologyId { Value = "openehr" },
+                CodeString = "433",
+            },
+        },
+        Composer = new DotnetOpenEhr.Rm.Common.PartyIdentified { Name = "AOT" },
+    },
+    new DotnetOpenEhr.Rm.Composition.Composition
+    {
+        Name = new DotnetOpenEhr.Rm.DataTypes.Text.DvText("Bravo"),
+        ArchetypeNodeId = "openEHR-EHR-COMPOSITION.encounter.v1",
+        Uid = new DotnetOpenEhr.Rm.Support.HierObjectId { Value = "aql-2" },
+        Language = new DotnetOpenEhr.Rm.DataTypes.Text.CodePhrase
+        {
+            TerminologyId = new DotnetOpenEhr.Rm.Support.TerminologyId { Value = "ISO_639-1" },
+            CodeString = "en",
+        },
+        Territory = new DotnetOpenEhr.Rm.DataTypes.Text.CodePhrase
+        {
+            TerminologyId = new DotnetOpenEhr.Rm.Support.TerminologyId { Value = "ISO_3166-1" },
+            CodeString = "GB",
+        },
+        Category = new DotnetOpenEhr.Rm.DataTypes.Text.DvCodedText
+        {
+            Value = "event",
+            DefiningCode = new DotnetOpenEhr.Rm.DataTypes.Text.CodePhrase
+            {
+                TerminologyId = new DotnetOpenEhr.Rm.Support.TerminologyId { Value = "openehr" },
+                CodeString = "433",
+            },
+        },
+        Composer = new DotnetOpenEhr.Rm.Common.PartyIdentified { Name = "AOT" },
+    },
+    new DotnetOpenEhr.Rm.Composition.Composition
+    {
+        Name = new DotnetOpenEhr.Rm.DataTypes.Text.DvText("Charlie"),
+        ArchetypeNodeId = "openEHR-EHR-COMPOSITION.encounter.v1",
+        Uid = new DotnetOpenEhr.Rm.Support.HierObjectId { Value = "aql-3" },
+        Language = new DotnetOpenEhr.Rm.DataTypes.Text.CodePhrase
+        {
+            TerminologyId = new DotnetOpenEhr.Rm.Support.TerminologyId { Value = "ISO_639-1" },
+            CodeString = "en",
+        },
+        Territory = new DotnetOpenEhr.Rm.DataTypes.Text.CodePhrase
+        {
+            TerminologyId = new DotnetOpenEhr.Rm.Support.TerminologyId { Value = "ISO_3166-1" },
+            CodeString = "GB",
+        },
+        Category = new DotnetOpenEhr.Rm.DataTypes.Text.DvCodedText
+        {
+            Value = "event",
+            DefiningCode = new DotnetOpenEhr.Rm.DataTypes.Text.CodePhrase
+            {
+                TerminologyId = new DotnetOpenEhr.Rm.Support.TerminologyId { Value = "openehr" },
+                CodeString = "433",
+            },
+        },
+        Composer = new DotnetOpenEhr.Rm.Common.PartyIdentified { Name = "AOT" },
+    },
+];
+DotnetOpenEhr.Aql.Ast.AqlQuery aqlQuery =
+    DotnetOpenEhr.Aql.AqlParser.Parse("SELECT c FROM EHR e CONTAINS COMPOSITION c");
+DotnetOpenEhr.Aql.Evaluation.AqlEvaluator aqlEvaluator = new();
+System.Collections.Generic.IReadOnlyList<object?[]> aqlRows = aqlEvaluator.Evaluate(aqlQuery, aqlSource);
+System.Console.WriteLine($"aql: rows={aqlRows.Count}");
+
 System.Console.WriteLine("smoke ok");
 return 0;
 

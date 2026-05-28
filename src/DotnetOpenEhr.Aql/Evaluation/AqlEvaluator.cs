@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using DotnetOpenEhr.Aql.Ast;
 using DotnetOpenEhr.Foundation.Iso;
@@ -24,8 +25,10 @@ namespace DotnetOpenEhr.Aql.Evaluation;
 /// Tree-walking interpreter that evaluates a parsed <see cref="AqlQuery"/>
 /// over an in-memory sequence of <see cref="Composition"/> instances.
 /// Implements FROM / CONTAINS source binding, WHERE filtering with
-/// three-valued logic, SELECT projection, and DISTINCT row de-duplication.
-/// ORDER BY / LIMIT / OFFSET are deferred to Phase 9c.
+/// three-valued logic, SELECT projection, DISTINCT row de-duplication,
+/// ORDER BY (multi-column ASC/DESC, stable), and LIMIT / OFFSET.
+/// A streaming overload — <see cref="EvaluateAsync(AqlQuery, IAsyncEnumerable{Composition}, CancellationToken)"/>
+/// — yields rows as the source streams in.
 /// </summary>
 /// <remarks>
 /// The evaluator is hand-written (no Reflection.Emit, no Expression.Compile,
@@ -57,39 +60,223 @@ public sealed class AqlEvaluator
         ArgumentNullException.ThrowIfNull(parameters);
 
         List<object?[]> rows = [];
+        List<object?[]>? sortKeys = query.OrderBy is not null ? [] : null;
         HashSet<RowKey>? seen = query.Select.Distinct ? [] : null;
 
         foreach (Composition comp in source)
         {
             ct.ThrowIfCancellationRequested();
-            foreach (Binding binding in ExpandFrom(query.From, comp, parameters))
-            {
-                ct.ThrowIfCancellationRequested();
-                if (query.Where is not null)
-                {
-                    object? result = EvalExpr(query.Where.Predicate, binding, parameters);
-                    if (result is not bool b || !b)
-                    {
-                        continue;
-                    }
-                }
-                object?[] row = new object?[query.Select.Columns.Count];
-                for (int i = 0; i < query.Select.Columns.Count; i++)
-                {
-                    row[i] = EvalExpr(query.Select.Columns[i].Expr, binding, parameters);
-                }
-                if (seen is not null)
-                {
-                    if (!seen.Add(new RowKey(row)))
-                    {
-                        continue;
-                    }
-                }
-                rows.Add(row);
-            }
+            ProjectComposition(query, comp, parameters, seen, rows, sortKeys, ct);
         }
 
-        return rows;
+        if (query.OrderBy is not null && sortKeys is not null)
+        {
+            SortRowsByKeys(rows, sortKeys, query.OrderBy);
+        }
+        return ApplyOffsetLimit(rows, query.Offset, query.Limit);
+    }
+
+    /// <summary>
+    /// Async streaming evaluation: yields rows as the source streams in.
+    /// </summary>
+    /// <remarks>
+    /// When <see cref="AqlQuery.OrderBy"/> is set the implementation must
+    /// buffer the entire projected result set before yielding any row
+    /// (a sort needs to see every key). Without an ORDER BY clause, rows
+    /// are streamed as the source produces them; <c>LIMIT</c> stops
+    /// requesting rows after the cap is reached and <c>OFFSET</c> skips
+    /// rows without materialising them.
+    /// </remarks>
+    public IAsyncEnumerable<object?[]> EvaluateAsync(
+        AqlQuery query,
+        IAsyncEnumerable<Composition> source,
+        CancellationToken ct = default)
+        => EvaluateAsync(query, source, EmptyParameters, ct);
+
+    /// <summary>
+    /// Async streaming evaluation with parameter bindings.
+    /// </summary>
+    /// <remarks>
+    /// See the parameterless overload for ORDER BY buffering semantics.
+    /// </remarks>
+    public IAsyncEnumerable<object?[]> EvaluateAsync(
+        AqlQuery query,
+        IAsyncEnumerable<Composition> source,
+        IReadOnlyDictionary<string, object?> parameters,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(query);
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(parameters);
+        return EvaluateAsyncCore(query, source, parameters, ct);
+    }
+
+    private async IAsyncEnumerable<object?[]> EvaluateAsyncCore(
+        AqlQuery query,
+        IAsyncEnumerable<Composition> source,
+        IReadOnlyDictionary<string, object?> parameters,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        int offset = query.Offset ?? 0;
+        int limit = query.Limit ?? int.MaxValue;
+        if (limit <= 0) yield break;
+
+        HashSet<RowKey>? seen = query.Select.Distinct ? [] : null;
+
+        if (query.OrderBy is not null)
+        {
+            // ORDER BY forces a full buffer before any yield: we can't
+            // know the first sorted row until every key is in hand.
+            List<object?[]> buffered = [];
+            List<object?[]> sortKeys = [];
+            await foreach (Composition comp in source.WithCancellation(ct).ConfigureAwait(false))
+            {
+                ct.ThrowIfCancellationRequested();
+                ProjectComposition(query, comp, parameters, seen, buffered, sortKeys, ct);
+            }
+            SortRowsByKeys(buffered, sortKeys, query.OrderBy);
+            IReadOnlyList<object?[]> sliced = ApplyOffsetLimit(buffered, query.Offset, query.Limit);
+            foreach (object?[] row in sliced)
+            {
+                ct.ThrowIfCancellationRequested();
+                yield return row;
+            }
+            yield break;
+        }
+
+        int skipped = 0;
+        int yielded = 0;
+        List<object?[]> perComp = [];
+        await foreach (Composition comp in source.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            perComp.Clear();
+            ProjectComposition(query, comp, parameters, seen, perComp, sortKeys: null, ct);
+            foreach (object?[] row in perComp)
+            {
+                ct.ThrowIfCancellationRequested();
+                if (skipped < offset)
+                {
+                    skipped++;
+                    continue;
+                }
+                yield return row;
+                yielded++;
+                if (yielded >= limit) yield break;
+            }
+        }
+    }
+
+    // -----------------------------------------------------------------
+    // Shared projection: emits zero or more rows for a single
+    // Composition, optionally also recording the matching ORDER BY
+    // sort-key tuple in a parallel list.
+    // -----------------------------------------------------------------
+
+    private void ProjectComposition(
+        AqlQuery query,
+        Composition comp,
+        IReadOnlyDictionary<string, object?> parameters,
+        HashSet<RowKey>? seen,
+        List<object?[]> rows,
+        List<object?[]>? sortKeys,
+        CancellationToken ct)
+    {
+        foreach (Binding binding in ExpandFrom(query.From, comp, parameters))
+        {
+            ct.ThrowIfCancellationRequested();
+            if (query.Where is not null)
+            {
+                object? result = EvalExpr(query.Where.Predicate, binding, parameters);
+                if (result is not bool b || !b)
+                {
+                    continue;
+                }
+            }
+            object?[] row = new object?[query.Select.Columns.Count];
+            for (int i = 0; i < query.Select.Columns.Count; i++)
+            {
+                row[i] = EvalExpr(query.Select.Columns[i].Expr, binding, parameters);
+            }
+            if (seen is not null)
+            {
+                if (!seen.Add(new RowKey(row)))
+                {
+                    continue;
+                }
+            }
+            rows.Add(row);
+            if (sortKeys is not null && query.OrderBy is not null)
+            {
+                object?[] keys = new object?[query.OrderBy.Items.Count];
+                for (int i = 0; i < query.OrderBy.Items.Count; i++)
+                {
+                    keys[i] = EvalExpr(query.OrderBy.Items[i].Expr, binding, parameters);
+                }
+                sortKeys.Add(keys);
+            }
+        }
+    }
+
+    // -----------------------------------------------------------------
+    // ORDER BY / OFFSET / LIMIT post-processing.
+    // -----------------------------------------------------------------
+
+    private static void SortRowsByKeys(
+        List<object?[]> rows,
+        List<object?[]> sortKeys,
+        OrderByClause orderBy)
+    {
+        int n = rows.Count;
+        if (n < 2) return;
+        int[] indices = new int[n];
+        for (int i = 0; i < n; i++) indices[i] = i;
+
+        // Index-based sort with explicit tie-break on original
+        // position. Array.Sort is not documented as stable so we
+        // enforce stability ourselves.
+        Comparison<int> cmp = (a, b) =>
+        {
+            for (int k = 0; k < orderBy.Items.Count; k++)
+            {
+                int c = CompareOrderKeys(sortKeys[a][k], sortKeys[b][k], orderBy.Items[k].Direction);
+                if (c != 0) return c;
+            }
+            return a.CompareTo(b);
+        };
+        Array.Sort(indices, cmp);
+
+        object?[][] reordered = new object?[n][];
+        for (int i = 0; i < n; i++) reordered[i] = rows[indices[i]];
+        rows.Clear();
+        rows.AddRange(reordered);
+    }
+
+    // Null-handling convention: nulls sort *last* on ASC and *first*
+    // on DESC. (Equivalent to treating null as +infinity.)
+    private static int CompareOrderKeys(object? a, object? b, AqlOrderDirection dir)
+    {
+        if (a is null && b is null) return 0;
+        if (a is null) return dir == AqlOrderDirection.Ascending ? 1 : -1;
+        if (b is null) return dir == AqlOrderDirection.Ascending ? -1 : 1;
+        int? cmp = CompareValues(a, b);
+        int v = cmp ?? 0;
+        return dir == AqlOrderDirection.Ascending ? v : -v;
+    }
+
+    private static IReadOnlyList<object?[]> ApplyOffsetLimit(
+        List<object?[]> rows,
+        int? offsetN,
+        int? limitN)
+    {
+        int offset = offsetN ?? 0;
+        int limit = limitN ?? int.MaxValue;
+        if (offset <= 0 && limit >= rows.Count) return rows;
+        if (offset >= rows.Count || limit <= 0) return [];
+        int take = Math.Min(limit, rows.Count - offset);
+        List<object?[]> result = new(take);
+        for (int i = 0; i < take; i++) result.Add(rows[offset + i]);
+        return result;
     }
 
     // -----------------------------------------------------------------
