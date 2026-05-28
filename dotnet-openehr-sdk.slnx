@@ -13,6 +13,7 @@
     <Project Path="src/DotnetOpenEhr.Bmm/DotnetOpenEhr.Bmm.csproj" />
     <Project Path="src/DotnetOpenEhr.Bmm.Rm/DotnetOpenEhr.Bmm.Rm.csproj" />
     <Project Path="src/DotnetOpenEhr.Archetypes/DotnetOpenEhr.Archetypes.csproj" />
+    <Project Path="src/DotnetOpenEhr.Aql/DotnetOpenEhr.Aql.csproj" />
     <Project Path="src/DotnetOpenEhr.Foundation/DotnetOpenEhr.Foundation.csproj" />
     <Project Path="src/DotnetOpenEhr.Odin/DotnetOpenEhr.Odin.csproj" />
     <Project Path="src/DotnetOpenEhr.Rm/DotnetOpenEhr.Rm.csproj" />
@@ -27,6 +28,7 @@
     <Project Path="tests/DotnetOpenEhr.Bmm.Tests/DotnetOpenEhr.Bmm.Tests.csproj" />
     <Project Path="tests/DotnetOpenEhr.Bmm.Rm.Tests/DotnetOpenEhr.Bmm.Rm.Tests.csproj" />
     <Project Path="tests/DotnetOpenEhr.Archetypes.Tests/DotnetOpenEhr.Archetypes.Tests.csproj" />
+    <Project Path="tests/DotnetOpenEhr.Aql.Tests/DotnetOpenEhr.Aql.Tests.csproj" />
     <Project Path="tests/DotnetOpenEhr.Foundation.Tests/DotnetOpenEhr.Foundation.Tests.csproj" />
     <Project Path="tests/DotnetOpenEhr.IntegrationTests/DotnetOpenEhr.IntegrationTests.csproj" />
     <Project Path="tests/DotnetOpenEhr.Odin.Tests/DotnetOpenEhr.Odin.Tests.csproj" />

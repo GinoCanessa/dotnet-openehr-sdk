@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>DotnetOpenEhr.Aql</RootNamespace>
+    <AssemblyName>DotnetOpenEhr.Aql</AssemblyName>
+    <PackageId>DotnetOpenEhr.Aql</PackageId>
+    <Description>
+      Hand-written AQL (Archetype Query Language) lexer, parser, and AST
+      for the openEHR DotnetOpenEhr SDK. Produces a strongly-typed AST
+      from the AQL surface syntax. Evaluation is provided by sibling
+      packages. Trim-safe and Native-AOT-safe. Single TFM net10.0.
+    </Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DotnetOpenEhr.Foundation\DotnetOpenEhr.Foundation.csproj" />
+    <ProjectReference Include="..\DotnetOpenEhr.Rm\DotnetOpenEhr.Rm.csproj" />
+  </ItemGroup>
+
+</Project>
