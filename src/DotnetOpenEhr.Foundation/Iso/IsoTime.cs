@@ -163,6 +163,11 @@ public sealed class IsoTime : IEquatable<IsoTime>, IComparable<IsoTime>, ICompar
     public int CompareTo(IsoTime? other)
     {
         if (other is null) return 1;
+        if (TimeZone is not null && other.TimeZone is not null)
+        {
+            return ToReferenceDayUtcSeconds().CompareTo(other.ToReferenceDayUtcSeconds());
+        }
+
         int cmp = Hour.CompareTo(other.Hour);
         if (cmp != 0) return cmp;
         cmp = (Minute ?? 0).CompareTo(other.Minute ?? 0);
@@ -193,6 +198,21 @@ public sealed class IsoTime : IEquatable<IsoTime>, IComparable<IsoTime>, ICompar
         => HashCode.Combine(Hour, Minute, Second, FractionalSecond, TimeZone);
 
     public override string ToString() => OriginalLexicalForm;
+
+    internal decimal ToReferenceDayUtcSeconds()
+    {
+        IsoTimeZone timeZone = TimeZone
+            ?? throw new InvalidOperationException("A timezone is required for UTC reference-day comparison.");
+        decimal localSeconds =
+            Hour * 3600m
+            + (Minute ?? 0) * 60m
+            + (Second ?? 0)
+            + (FractionalSecond ?? 0m);
+        decimal offsetSeconds =
+            (timeZone.Hours * 3600m + timeZone.Minutes * 60m)
+            * (timeZone.IsNegative ? -1m : 1m);
+        return localSeconds - offsetSeconds;
+    }
 
     private static string FormatCanonical(
         int hour, int? minute, int? second, decimal? fractional, IsoTimeZone? zone)

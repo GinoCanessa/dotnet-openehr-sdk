@@ -48,6 +48,33 @@ public class IsoDurationTests
         Assert.Throws<FormatException>(() => IsoDuration.Parse(text));
     }
 
+    [Theory]
+    [InlineData("P2147483648Y")]
+    [InlineData("P2147483648M")]
+    [InlineData("P2147483648W")]
+    [InlineData("P2147483648D")]
+    [InlineData("PT2147483648H")]
+    [InlineData("PT2147483648M")]
+    public void IsoDuration_TryParse_OversizedIntegerComponent_ReturnsFalse(string text)
+    {
+        bool parsed = IsoDuration.TryParse(text, out IsoDuration? value);
+
+        Assert.False(parsed);
+        Assert.Null(value);
+    }
+
+    [Theory]
+    [InlineData("P2147483648Y")]
+    [InlineData("P2147483648M")]
+    [InlineData("P2147483648W")]
+    [InlineData("P2147483648D")]
+    [InlineData("PT2147483648H")]
+    [InlineData("PT2147483648M")]
+    public void IsoDuration_Parse_OversizedIntegerComponent_ThrowsFormatException(string text)
+    {
+        Assert.Throws<FormatException>(() => IsoDuration.Parse(text));
+    }
+
     [Fact]
     public void Canonical_format_matches_input_when_constructed_from_components()
     {

@@ -61,6 +61,16 @@ public sealed class IsoDateTime : IEquatable<IsoDateTime>, IComparable<IsoDateTi
     public int CompareTo(IsoDateTime? other)
     {
         if (other is null) return 1;
+        if (Date.Precision == IsoDatePrecision.Day
+            && other.Date.Precision == IsoDatePrecision.Day
+            && Time?.TimeZone is not null
+            && other.Time?.TimeZone is not null)
+        {
+            decimal leftUtcSeconds = ToUtcTimelineSeconds(Date, Time);
+            decimal rightUtcSeconds = ToUtcTimelineSeconds(other.Date, other.Time);
+            return leftUtcSeconds.CompareTo(rightUtcSeconds);
+        }
+
         int cmp = Date.CompareTo(other.Date);
         if (cmp != 0) return cmp;
         if (Time is null && other.Time is null) return 0;
@@ -84,6 +94,9 @@ public sealed class IsoDateTime : IEquatable<IsoDateTime>, IComparable<IsoDateTi
     public override int GetHashCode() => HashCode.Combine(Date, Time);
 
     public override string ToString() => OriginalLexicalForm;
+
+    private static decimal ToUtcTimelineSeconds(IsoDate date, IsoTime time)
+        => date.ToDateOnly().DayNumber * 86400m + time.ToReferenceDayUtcSeconds();
 
     private static string FormatCanonical(IsoDate date, IsoTime? time)
         => time is null ? date.OriginalLexicalForm : $"{date.OriginalLexicalForm}T{time.OriginalLexicalForm}";

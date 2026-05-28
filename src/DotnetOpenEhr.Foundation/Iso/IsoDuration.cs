@@ -144,7 +144,7 @@ public sealed class IsoDuration : IEquatable<IsoDuration>, IComparable<IsoDurati
 
     private static bool TryToInt(decimal d, out int result)
     {
-        if (d != decimal.Truncate(d))
+        if (d != decimal.Truncate(d) || d > int.MaxValue)
         {
             result = 0;
             return false;

@@ -48,4 +48,24 @@ public class IsoTimeTests
     {
         Assert.Throws<FormatException>(() => IsoTime.Parse(text));
     }
+
+    [Fact]
+    public void IsoTime_CompareTo_OrdersOffsetTimesByReferenceDayInstant()
+    {
+        IsoTime earlier = IsoTime.Parse("10:00:00+02:00");
+        IsoTime later = IsoTime.Parse("09:00:00Z");
+        IsoTime equivalent = IsoTime.Parse("08:00:00Z");
+
+        Assert.True(earlier.CompareTo(later) < 0);
+        Assert.Equal(0, earlier.CompareTo(equivalent));
+    }
+
+    [Fact]
+    public void IsoTime_CompareTo_PreservesLocalOrdering_WhenTimezoneMissing()
+    {
+        IsoTime withTimezone = IsoTime.Parse("10:00:00+02:00");
+        IsoTime withoutTimezone = IsoTime.Parse("09:00:00");
+
+        Assert.True(withTimezone.CompareTo(withoutTimezone) > 0);
+    }
 }
