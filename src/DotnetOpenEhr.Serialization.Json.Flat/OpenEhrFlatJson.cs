@@ -139,7 +139,11 @@ public static class OpenEhrFlatJson
             throw new FlatSchemaRequiredException(templateId, unresolved);
         }
 
-        composition.Name = new DvText(templateId);
+        if (composition.Name is null || string.IsNullOrEmpty(composition.Name.Value))
+        {
+            composition.Name = new DvText(templateId);
+        }
+
         if (string.IsNullOrEmpty(composition.ArchetypeNodeId))
         {
             composition.ArchetypeNodeId = $"openEHR-EHR-COMPOSITION.{templateId}.v1";
@@ -173,6 +177,8 @@ public static class OpenEhrFlatJson
 
         return body switch
         {
+            "name" => TrySetRootName(composition, attribute, entry.Value),
+            "_archetype_node_id" => TrySetRootArchetypeNodeId(composition, attribute, entry.Value),
             "category" => TrySetDvCodedText(composition.Category, attribute, entry.Value),
             "language" => TrySetCodePhrase(composition.Language, attribute, entry.Value),
             "territory" => TrySetCodePhrase(composition.Territory, attribute, entry.Value),
@@ -185,6 +191,20 @@ public static class OpenEhrFlatJson
             "context/_health_care_facility" => TrySetHealthCareFacilityAttr(composition, attribute, entry.Value),
             _ => false,
         };
+    }
+
+    private static bool TrySetRootName(Composition composition, string attribute, JsonElement value)
+    {
+        if (!string.Equals(attribute, "|value", StringComparison.Ordinal)) return false;
+        composition.Name = new DvText(value.GetString() ?? string.Empty);
+        return true;
+    }
+
+    private static bool TrySetRootArchetypeNodeId(Composition composition, string attribute, JsonElement value)
+    {
+        if (attribute.Length != 0) return false;
+        composition.ArchetypeNodeId = value.GetString() ?? string.Empty;
+        return true;
     }
 
     private static EventContext EnsureContext(Composition composition)

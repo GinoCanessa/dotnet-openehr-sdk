@@ -27,6 +27,9 @@ namespace DotnetOpenEhr.Serialization.Json.Flat;
 /// </remarks>
 internal static class FlatJsonContentParser
 {
+    private const int MaxRepeatIndex = 4096;
+    private const int MaxSparseGap = 128;
+
     /// <summary>Attempts to attach <paramref name="entry"/> to the content tree.
     /// Returns <c>false</c> when the path is not a content path so the caller
     /// can fall back to other resolution strategies.</summary>
@@ -55,17 +58,17 @@ internal static class FlatJsonContentParser
             return false;
         }
 
-        List<Segment> segments = SplitSegments(body);
+        List<Segment> segments = SplitSegments(body, full);
         if (segments.Count == 0) return false;
 
-        return Navigate(composition, templateId, segments, attribute, entry.Value, schema);
+        return Navigate(composition, templateId, segments, attribute, entry.Value, schema, full);
     }
 
     /// <summary>One slash-delimited segment of a FLAT path. <see cref="Index"/>
     /// is <c>null</c> when the segment has no <c>:N</c> repeat index.</summary>
     private readonly record struct Segment(string Name, int? Index);
 
-    private static List<Segment> SplitSegments(string body)
+    private static List<Segment> SplitSegments(string body, string originalPath)
     {
         List<Segment> result = [];
         int i = 0;
@@ -84,10 +87,24 @@ internal static class FlatJsonContentParser
             {
                 name = body.Substring(i, colon - i);
                 string indexStr = body.Substring(colon + 1, end - colon - 1);
-                if (int.TryParse(indexStr, NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsed))
+                if (indexStr.Length == 0)
                 {
-                    idx = parsed;
+                    ThrowInvalidRepeatIndex(originalPath, indexStr);
                 }
+                if (indexStr[0] == '-')
+                {
+                    ThrowInvalidRepeatIndex(originalPath, indexStr);
+                }
+                if (!int.TryParse(indexStr, NumberStyles.None, CultureInfo.InvariantCulture, out int parsed))
+                {
+                    ThrowInvalidRepeatIndex(originalPath, indexStr);
+                }
+                if (parsed > MaxRepeatIndex)
+                {
+                    throw new JsonException(
+                        $"FLAT path '{originalPath}' uses repeat index {parsed.ToString(CultureInfo.InvariantCulture)}, which exceeds the maximum supported index {MaxRepeatIndex.ToString(CultureInfo.InvariantCulture)}.");
+                }
+                idx = parsed;
             }
             result.Add(new Segment(name, idx));
             if (slash < 0) break;
@@ -96,13 +113,18 @@ internal static class FlatJsonContentParser
         return result;
     }
 
+    private static void ThrowInvalidRepeatIndex(string originalPath, string index)
+        => throw new JsonException(
+            $"FLAT path '{originalPath}' contains invalid repeat index '{index}'. Repeat indexes must be non-negative integers.");
+
     private static bool Navigate(
         Composition composition,
         string templateId,
         List<Segment> segments,
         string attribute,
         JsonElement value,
-        ITemplateSchema schema)
+        ITemplateSchema schema,
+        string originalPath)
     {
         // The last segment is either:
         //   - a leaf scalar (e.g. "value" with attribute "|magnitude"),
@@ -119,7 +141,7 @@ internal static class FlatJsonContentParser
         // Sidecar: <path>/_archetype_node_id (no attribute).
         if (string.Equals(leaf.Name, "_archetype_node_id", StringComparison.Ordinal) && attribute.Length == 0)
         {
-            object? parent = NavigateTo(composition, templateId, segments, 0, leafIdx, schema);
+            object? parent = NavigateTo(composition, templateId, segments, 0, leafIdx, schema, originalPath);
             if (parent is Locatable loc)
             {
                 loc.ArchetypeNodeId = value.GetString() ?? string.Empty;
@@ -132,7 +154,7 @@ internal static class FlatJsonContentParser
         if (string.Equals(leaf.Name, "name", StringComparison.Ordinal)
             && string.Equals(attribute, "|value", StringComparison.Ordinal))
         {
-            object? parent = NavigateTo(composition, templateId, segments, 0, leafIdx, schema);
+            object? parent = NavigateTo(composition, templateId, segments, 0, leafIdx, schema, originalPath);
             if (parent is Locatable loc)
             {
                 loc.Name = new DvText(value.GetString() ?? string.Empty);
@@ -147,7 +169,7 @@ internal static class FlatJsonContentParser
                 || string.Equals(leaf.Name, "encoding", StringComparison.Ordinal))
             && attribute.Length > 0)
         {
-            object? parent = NavigateTo(composition, templateId, segments, 0, leafIdx, schema);
+            object? parent = NavigateTo(composition, templateId, segments, 0, leafIdx, schema, originalPath);
             if (parent is Entry entry)
             {
                 CodePhrase target = string.Equals(leaf.Name, "language", StringComparison.Ordinal)
@@ -165,7 +187,7 @@ internal static class FlatJsonContentParser
         {
             // The leaf segment names the value-bearing property; navigate
             // to its parent and apply.
-            object? container = NavigateTo(composition, templateId, segments, 0, leafIdx, schema);
+            object? container = NavigateTo(composition, templateId, segments, 0, leafIdx, schema, originalPath);
             string leafFlatPath = ComposeFlatPath(templateId, segments, leafIdx);
             return ApplyScalar(container, leaf.Name, attribute, value, leafFlatPath, schema);
         }
@@ -177,7 +199,7 @@ internal static class FlatJsonContentParser
         if (string.Equals(leaf.Name, "origin", StringComparison.Ordinal)
             || string.Equals(leaf.Name, "time", StringComparison.Ordinal))
         {
-            object? container = NavigateTo(composition, templateId, segments, 0, leafIdx, schema);
+            object? container = NavigateTo(composition, templateId, segments, 0, leafIdx, schema, originalPath);
             string leafFlatPath = ComposeFlatPath(templateId, segments, leafIdx);
             return ApplyScalar(container, leaf.Name, attribute, value, leafFlatPath, schema);
         }
@@ -210,7 +232,8 @@ internal static class FlatJsonContentParser
         List<Segment> segments,
         int from,
         int to,
-        ITemplateSchema schema)
+        ITemplateSchema schema,
+        string originalPath)
     {
         object current = composition;
         StringBuilder flat = new(templateId);
@@ -220,24 +243,24 @@ internal static class FlatJsonContentParser
             flat.Append('/').Append(seg.Name);
             string flatLookup = flat.ToString();
             schema.TryResolveType(flatLookup.AsSpan(), out TemplateRmTypeResolution resolution);
-            object? next = StepInto(current, seg, resolution);
+            object? next = StepInto(current, seg, resolution, originalPath);
             if (next is null) return null;
             current = next;
         }
         return current;
     }
 
-    private static object? StepInto(object parent, Segment seg, TemplateRmTypeResolution resolution)
+    private static object? StepInto(object parent, Segment seg, TemplateRmTypeResolution resolution, string originalPath)
     {
         switch (parent)
         {
             case Composition comp when string.Equals(seg.Name, "content", StringComparison.Ordinal):
                 comp.Content ??= [];
-                return EnsureContentItem(comp.Content, seg.Index, resolution.RmTypeName);
+                return EnsureContentItem(comp.Content, seg.Index, resolution.RmTypeName, originalPath);
 
             case Section section when string.Equals(seg.Name, "items", StringComparison.Ordinal):
                 section.Items ??= [];
-                return EnsureContentItem(section.Items, seg.Index, resolution.RmTypeName);
+                return EnsureContentItem(section.Items, seg.Index, resolution.RmTypeName, originalPath);
 
             case Observation obs when string.Equals(seg.Name, "data", StringComparison.Ordinal):
                 obs.Data ??= new History();
@@ -254,7 +277,7 @@ internal static class FlatJsonContentParser
 
             case History hist when string.Equals(seg.Name, "events", StringComparison.Ordinal):
                 hist.Events ??= [];
-                return EnsureEvent(hist.Events, seg.Index, resolution.RmTypeName);
+                return EnsureEvent(hist.Events, seg.Index, resolution.RmTypeName, originalPath);
 
             case Event ev when string.Equals(seg.Name, "data", StringComparison.Ordinal):
                 ev.Data = EnsureItemStructureValue(ev.Data, resolution.RmTypeName);
@@ -262,24 +285,25 @@ internal static class FlatJsonContentParser
 
             case ItemTree tree when string.Equals(seg.Name, "items", StringComparison.Ordinal):
                 tree.Items ??= [];
-                return EnsureItem(tree.Items, seg.Index, resolution.RmTypeName);
+                return EnsureItem(tree.Items, seg.Index, resolution.RmTypeName, originalPath);
 
             case ItemList list when string.Equals(seg.Name, "items", StringComparison.Ordinal):
                 list.Items ??= [];
-                return EnsureElement(list.Items, seg.Index);
+                return EnsureElement(list.Items, seg.Index, originalPath);
 
             case ItemSingle single when string.Equals(seg.Name, "item", StringComparison.Ordinal):
                 return single.Item;
 
             case Cluster cluster when string.Equals(seg.Name, "items", StringComparison.Ordinal):
-                return EnsureItem(cluster.Items, seg.Index, resolution.RmTypeName);
+                return EnsureItem(cluster.Items, seg.Index, resolution.RmTypeName, originalPath);
         }
         return null;
     }
 
-    private static ContentItem? EnsureContentItem(IList<ContentItem> list, int? idx, string? rmType)
+    private static ContentItem? EnsureContentItem(IList<ContentItem> list, int? idx, string? rmType, string originalPath)
     {
         int target = idx ?? 0;
+        EnsureRepeatAllocationIsBounded(list.Count, target, originalPath);
         while (list.Count <= target)
         {
             list.Add(InstantiateContentItem(rmType));
@@ -301,10 +325,11 @@ internal static class FlatJsonContentParser
         };
     }
 
-    private static Item EnsureItem(IList<Item>? list, int? idx, string? rmType)
+    private static Item EnsureItem(IList<Item>? list, int? idx, string? rmType, string originalPath)
     {
         ArgumentNullException.ThrowIfNull(list);
         int target = idx ?? 0;
+        EnsureRepeatAllocationIsBounded(list.Count, target, originalPath);
         while (list.Count <= target)
         {
             list.Add(InstantiateItem(rmType));
@@ -321,9 +346,10 @@ internal static class FlatJsonContentParser
         };
     }
 
-    private static Element EnsureElement(IList<Element> list, int? idx)
+    private static Element EnsureElement(IList<Element> list, int? idx, string originalPath)
     {
         int target = idx ?? 0;
+        EnsureRepeatAllocationIsBounded(list.Count, target, originalPath);
         while (list.Count <= target)
         {
             list.Add(new Element());
@@ -331,14 +357,24 @@ internal static class FlatJsonContentParser
         return list[target];
     }
 
-    private static Event EnsureEvent(IList<Event> list, int? idx, string? rmType)
+    private static Event EnsureEvent(IList<Event> list, int? idx, string? rmType, string originalPath)
     {
         int target = idx ?? 0;
+        EnsureRepeatAllocationIsBounded(list.Count, target, originalPath);
         while (list.Count <= target)
         {
             list.Add(InstantiateEvent(rmType));
         }
         return list[target];
+    }
+
+    private static void EnsureRepeatAllocationIsBounded(int currentCount, int targetIndex, string originalPath)
+    {
+        if (targetIndex - currentCount > MaxSparseGap)
+        {
+            throw new JsonException(
+                $"FLAT path '{originalPath}' uses sparse repeat index {targetIndex.ToString(CultureInfo.InvariantCulture)} with current collection count {currentCount.ToString(CultureInfo.InvariantCulture)}; the maximum sparse gap is {MaxSparseGap.ToString(CultureInfo.InvariantCulture)}.");
+        }
     }
 
     private static Event InstantiateEvent(string? rmType)

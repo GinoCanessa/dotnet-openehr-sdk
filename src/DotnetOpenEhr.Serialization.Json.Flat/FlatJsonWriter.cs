@@ -78,6 +78,8 @@ public static class FlatJsonWriter
 
     private static void WriteCore(Stream output, Composition composition, ITemplateSchema schema)
     {
+        FlatJsonContentWriter.EnsureCanWrite(composition, schema);
+
         JsonWriterOptions opts = new()
         {
             Indented = false,
@@ -85,7 +87,7 @@ public static class FlatJsonWriter
         };
         using Utf8JsonWriter writer = new(output, opts);
         writer.WriteStartObject();
-        WriteCompositionBody(writer, composition, schema.TemplateId);
+        WriteCompositionBody(writer, composition, schema.TemplateId, includeRootLocatableMetadata: true);
         FlatJsonContentWriter.WriteContent(writer, composition, schema);
         writer.WriteEndObject();
         writer.Flush();
@@ -101,14 +103,23 @@ public static class FlatJsonWriter
         using Utf8JsonWriter writer = new(output, opts);
         writer.WriteStartObject();
 
-        WriteCompositionBody(writer, composition, templateId);
+        WriteCompositionBody(writer, composition, templateId, includeRootLocatableMetadata: false);
 
         writer.WriteEndObject();
         writer.Flush();
     }
 
-    private static void WriteCompositionBody(Utf8JsonWriter writer, Composition composition, string templateId)
+    private static void WriteCompositionBody(
+        Utf8JsonWriter writer,
+        Composition composition,
+        string templateId,
+        bool includeRootLocatableMetadata)
     {
+        if (includeRootLocatableMetadata)
+        {
+            WriteRootLocatableMetadata(writer, composition, templateId);
+        }
+
         WriteDvCodedText(writer, $"{templateId}/category", composition.Category);
 
         if (composition.Context is not null)
@@ -123,6 +134,19 @@ public static class FlatJsonWriter
         if (composition.Uid is not null && !string.IsNullOrEmpty(composition.Uid.Value))
         {
             writer.WriteString($"{templateId}/_uid", composition.Uid.Value);
+        }
+    }
+
+    private static void WriteRootLocatableMetadata(Utf8JsonWriter writer, Composition composition, string templateId)
+    {
+        if (composition.Name is not null && !string.IsNullOrEmpty(composition.Name.Value))
+        {
+            writer.WriteString($"{templateId}/name|value", composition.Name.Value);
+        }
+
+        if (!string.IsNullOrEmpty(composition.ArchetypeNodeId))
+        {
+            writer.WriteString($"{templateId}/_archetype_node_id", composition.ArchetypeNodeId);
         }
     }
 

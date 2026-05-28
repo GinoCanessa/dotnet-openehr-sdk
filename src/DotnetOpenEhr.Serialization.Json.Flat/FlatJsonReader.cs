@@ -31,7 +31,15 @@ public static class FlatJsonReader
         List<KeyValuePair<FlatPath, JsonElement>> entries = [];
         foreach (JsonProperty property in doc.RootElement.EnumerateObject())
         {
-            FlatPath path = FlatPath.Parse(property.Name.AsSpan());
+            FlatPath path;
+            try
+            {
+                path = FlatPath.Parse(property.Name.AsSpan());
+            }
+            catch (FormatException ex)
+            {
+                throw new JsonException($"Invalid FLAT path '{property.Name}': {ex.Message}", ex);
+            }
             JsonValueKind kind = property.Value.ValueKind;
             if (kind is not (JsonValueKind.String or JsonValueKind.Number
                              or JsonValueKind.True or JsonValueKind.False or JsonValueKind.Null))

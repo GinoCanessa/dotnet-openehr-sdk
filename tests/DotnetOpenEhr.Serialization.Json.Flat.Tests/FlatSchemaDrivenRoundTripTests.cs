@@ -128,6 +128,7 @@ public sealed class FlatSchemaDrivenRoundTripTests
 
     private static void AssertStructurallyEquivalent(Composition expected, Composition actual)
     {
+        AssertLocatable(expected, actual, "composition");
         IList<ContentItem> expectedContent = expected.Content ?? [];
         IList<ContentItem> actualContent = actual.Content ?? [];
         Assert.Equal(expectedContent.Count, actualContent.Count);
@@ -162,8 +163,8 @@ public sealed class FlatSchemaDrivenRoundTripTests
                 AssertItemStructure(ee.Data, ae.Data, $"{path}/data");
                 break;
 
-            case AdminEntry _:
-                // AdminEntry data not required by current fixtures.
+            case AdminEntry ee when actual is AdminEntry ae:
+                AssertItemStructure(ee.Data, ae.Data, $"{path}/data");
                 break;
 
             default:
