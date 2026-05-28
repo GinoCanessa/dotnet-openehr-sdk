@@ -41,6 +41,26 @@ public sealed class AqlEvaluator
     private static readonly IReadOnlyDictionary<string, object?> EmptyParameters
         = new Dictionary<string, object?>(StringComparer.Ordinal);
 
+    private readonly AqlEvaluatorOptions _options;
+
+    public AqlEvaluator() : this(new AqlEvaluatorOptions())
+    {
+    }
+
+    public AqlEvaluator(AqlEvaluatorOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        if (options.RegexTimeout <= TimeSpan.Zero || options.RegexTimeout == Regex.InfiniteMatchTimeout)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(options),
+                options.RegexTimeout,
+                "RegexTimeout must be greater than zero and finite.");
+        }
+
+        _options = options;
+    }
+
     /// <summary>Evaluate <paramref name="query"/> against <paramref name="source"/> with no parameters.</summary>
     public IReadOnlyList<object?[]> Evaluate(
         AqlQuery query,
@@ -59,6 +79,7 @@ public sealed class AqlEvaluator
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(parameters);
 
+        RegexEvaluationContext regexContext = new(_options.RegexTimeout);
         List<object?[]> rows = [];
         List<object?[]>? sortKeys = query.OrderBy is not null ? [] : null;
         HashSet<RowKey>? seen = query.Select.Distinct ? [] : null;
@@ -66,7 +87,7 @@ public sealed class AqlEvaluator
         foreach (Composition comp in source)
         {
             ct.ThrowIfCancellationRequested();
-            ProjectComposition(query, comp, parameters, seen, rows, sortKeys, ct);
+            ProjectComposition(query, comp, parameters, seen, rows, sortKeys, regexContext, ct);
         }
 
         if (query.OrderBy is not null && sortKeys is not null)
@@ -117,6 +138,7 @@ public sealed class AqlEvaluator
         IReadOnlyDictionary<string, object?> parameters,
         [EnumeratorCancellation] CancellationToken ct = default)
     {
+        RegexEvaluationContext regexContext = new(_options.RegexTimeout);
         int offset = query.Offset ?? 0;
         int limit = query.Limit ?? int.MaxValue;
         if (limit <= 0) yield break;
@@ -132,7 +154,7 @@ public sealed class AqlEvaluator
             await foreach (Composition comp in source.WithCancellation(ct).ConfigureAwait(false))
             {
                 ct.ThrowIfCancellationRequested();
-                ProjectComposition(query, comp, parameters, seen, buffered, sortKeys, ct);
+                ProjectComposition(query, comp, parameters, seen, buffered, sortKeys, regexContext, ct);
             }
             SortRowsByKeys(buffered, sortKeys, query.OrderBy);
             IReadOnlyList<object?[]> sliced = ApplyOffsetLimit(buffered, query.Offset, query.Limit);
@@ -151,7 +173,7 @@ public sealed class AqlEvaluator
         {
             ct.ThrowIfCancellationRequested();
             perComp.Clear();
-            ProjectComposition(query, comp, parameters, seen, perComp, sortKeys: null, ct);
+            ProjectComposition(query, comp, parameters, seen, perComp, null, regexContext, ct);
             foreach (object?[] row in perComp)
             {
                 ct.ThrowIfCancellationRequested();
@@ -180,14 +202,15 @@ public sealed class AqlEvaluator
         HashSet<RowKey>? seen,
         List<object?[]> rows,
         List<object?[]>? sortKeys,
+        RegexEvaluationContext regexContext,
         CancellationToken ct)
     {
-        foreach (Binding binding in ExpandFrom(query.From, comp, parameters))
+        foreach (Binding binding in ExpandFrom(query.From, comp, parameters, regexContext))
         {
             ct.ThrowIfCancellationRequested();
             if (query.Where is not null)
             {
-                object? result = EvalExpr(query.Where.Predicate, binding, parameters);
+                object? result = EvalExpr(query.Where.Predicate, binding, parameters, regexContext);
                 if (result is not bool b || !b)
                 {
                     continue;
@@ -196,7 +219,7 @@ public sealed class AqlEvaluator
             object?[] row = new object?[query.Select.Columns.Count];
             for (int i = 0; i < query.Select.Columns.Count; i++)
             {
-                row[i] = EvalExpr(query.Select.Columns[i].Expr, binding, parameters);
+                row[i] = EvalExpr(query.Select.Columns[i].Expr, binding, parameters, regexContext);
             }
             if (seen is not null)
             {
@@ -211,7 +234,7 @@ public sealed class AqlEvaluator
                 object?[] keys = new object?[query.OrderBy.Items.Count];
                 for (int i = 0; i < query.OrderBy.Items.Count; i++)
                 {
-                    keys[i] = EvalExpr(query.OrderBy.Items[i].Expr, binding, parameters);
+                    keys[i] = EvalExpr(query.OrderBy.Items[i].Expr, binding, parameters, regexContext);
                 }
                 sortKeys.Add(keys);
             }
@@ -307,6 +330,18 @@ public sealed class AqlEvaluator
         public bool TryGet(string name, out object? value) => _values.TryGetValue(name, out value);
     }
 
+    private sealed class RegexEvaluationContext
+    {
+        public RegexEvaluationContext(TimeSpan regexTimeout)
+        {
+            RegexTimeout = regexTimeout;
+        }
+
+        public TimeSpan RegexTimeout { get; }
+
+        public Dictionary<string, string> LikeRegexByPattern { get; } = new(StringComparer.Ordinal);
+    }
+
     // -----------------------------------------------------------------
     // FROM / CONTAINS expansion
     // -----------------------------------------------------------------
@@ -314,7 +349,8 @@ public sealed class AqlEvaluator
     private IEnumerable<Binding> ExpandFrom(
         FromClause from,
         Composition comp,
-        IReadOnlyDictionary<string, object?> parameters)
+        IReadOnlyDictionary<string, object?> parameters,
+        RegexEvaluationContext regexContext)
     {
         if (from.Sources.Count == 0)
         {
@@ -324,11 +360,11 @@ public sealed class AqlEvaluator
 
         // Multiple top-level sources joined by ',' produce a cross
         // product. AQL queries we care about have a single source.
-        IEnumerable<Binding> current = ExpandClass(from.Sources[0], comp, new Binding(), comp, parameters);
+        IEnumerable<Binding> current = ExpandClass(from.Sources[0], comp, new Binding(), comp, parameters, regexContext);
         for (int i = 1; i < from.Sources.Count; i++)
         {
             ClassExpression next = from.Sources[i];
-            current = current.SelectMany(b => ExpandClass(next, comp, b, comp, parameters));
+            current = current.SelectMany(b => ExpandClass(next, comp, b, comp, parameters, regexContext));
         }
         foreach (Binding b in current)
         {
@@ -341,12 +377,13 @@ public sealed class AqlEvaluator
         Composition rootComp,
         Binding parent,
         object? scope,
-        IReadOnlyDictionary<string, object?> parameters)
+        IReadOnlyDictionary<string, object?> parameters,
+        RegexEvaluationContext regexContext)
     {
         IEnumerable<object> candidates = FindCandidates(cls.RmTypeName, scope, rootComp);
         foreach (object candidate in candidates)
         {
-            if (cls.Predicate is not null && !PredicateMatches(cls.Predicate, candidate, cls.Alias, parent, parameters))
+            if (cls.Predicate is not null && !PredicateMatches(cls.Predicate, candidate, cls.Alias, parent, parameters, regexContext))
             {
                 continue;
             }
@@ -359,7 +396,7 @@ public sealed class AqlEvaluator
             // Multiple sibling CONTAINS within a class expression are
             // implicitly AND'd: every child must yield at least one
             // binding for the candidate to survive.
-            foreach (Binding combined in CombineContainsSiblings(cls.Contains, 0, bound, candidate, rootComp, parameters))
+            foreach (Binding combined in CombineContainsSiblings(cls.Contains, 0, bound, candidate, rootComp, parameters, regexContext))
             {
                 yield return combined;
             }
@@ -372,16 +409,17 @@ public sealed class AqlEvaluator
         Binding b,
         object scope,
         Composition rootComp,
-        IReadOnlyDictionary<string, object?> parameters)
+        IReadOnlyDictionary<string, object?> parameters,
+        RegexEvaluationContext regexContext)
     {
         if (index >= siblings.Count)
         {
             yield return b;
             yield break;
         }
-        foreach (Binding next in ExpandContains(siblings[index], b, scope, rootComp, parameters))
+        foreach (Binding next in ExpandContains(siblings[index], b, scope, rootComp, parameters, regexContext))
         {
-            foreach (Binding tail in CombineContainsSiblings(siblings, index + 1, next, scope, rootComp, parameters))
+            foreach (Binding tail in CombineContainsSiblings(siblings, index + 1, next, scope, rootComp, parameters, regexContext))
             {
                 yield return tail;
             }
@@ -393,38 +431,39 @@ public sealed class AqlEvaluator
         Binding b,
         object scope,
         Composition rootComp,
-        IReadOnlyDictionary<string, object?> parameters)
+        IReadOnlyDictionary<string, object?> parameters,
+        RegexEvaluationContext regexContext)
     {
         switch (ce)
         {
             case ContainsClassExpression cce:
-                foreach (Binding x in ExpandClass(cce.Class, rootComp, b, scope, parameters))
+                foreach (Binding x in ExpandClass(cce.Class, rootComp, b, scope, parameters, regexContext))
                 {
                     yield return x;
                 }
                 break;
             case ContainsAndExpression and:
-                foreach (Binding left in ExpandContains(and.Left, b, scope, rootComp, parameters))
+                foreach (Binding left in ExpandContains(and.Left, b, scope, rootComp, parameters, regexContext))
                 {
-                    foreach (Binding right in ExpandContains(and.Right, left, scope, rootComp, parameters))
+                    foreach (Binding right in ExpandContains(and.Right, left, scope, rootComp, parameters, regexContext))
                     {
                         yield return right;
                     }
                 }
                 break;
             case ContainsOrExpression or:
-                foreach (Binding left in ExpandContains(or.Left, b, scope, rootComp, parameters))
+                foreach (Binding left in ExpandContains(or.Left, b, scope, rootComp, parameters, regexContext))
                 {
                     yield return left;
                 }
-                foreach (Binding right in ExpandContains(or.Right, b, scope, rootComp, parameters))
+                foreach (Binding right in ExpandContains(or.Right, b, scope, rootComp, parameters, regexContext))
                 {
                     yield return right;
                 }
                 break;
             case ContainsNotExpression not:
                 bool any = false;
-                foreach (Binding _ in ExpandContains(not.Inner, b, scope, rootComp, parameters))
+                foreach (Binding _ in ExpandContains(not.Inner, b, scope, rootComp, parameters, regexContext))
                 {
                     any = true;
                     break;
@@ -441,7 +480,8 @@ public sealed class AqlEvaluator
         object candidate,
         string? alias,
         Binding parent,
-        IReadOnlyDictionary<string, object?> parameters)
+        IReadOnlyDictionary<string, object?> parameters,
+        RegexEvaluationContext regexContext)
     {
         // Fast path: the most common predicate is a bare archetype HRID
         // literal — e.g. [openEHR-EHR-OBSERVATION.blood_pressure.v2].
@@ -455,7 +495,7 @@ public sealed class AqlEvaluator
         // Arbitrary boolean predicate body: evaluate with the
         // candidate temporarily bound to the class alias.
         Binding withAlias = parent.With(alias, candidate);
-        object? result = EvalExpr(predicate.Body, withAlias, parameters);
+        object? result = EvalExpr(predicate.Body, withAlias, parameters, regexContext);
         return result is bool b && b;
     }
 
@@ -646,7 +686,8 @@ public sealed class AqlEvaluator
     private static object? EvalExpr(
         Expression expr,
         Binding binding,
-        IReadOnlyDictionary<string, object?> parameters)
+        IReadOnlyDictionary<string, object?> parameters,
+        RegexEvaluationContext regexContext)
     {
         switch (expr)
         {
@@ -658,22 +699,22 @@ public sealed class AqlEvaluator
                 return null;
 
             case PathExpression path:
-                return EvalPath(path, binding, parameters);
+                return EvalPath(path, binding, parameters, regexContext);
 
             case BinaryExpression bin:
-                return EvalBinary(bin, binding, parameters);
+                return EvalBinary(bin, binding, parameters, regexContext);
 
             case UnaryExpression un:
-                return EvalUnary(un, binding, parameters);
+                return EvalUnary(un, binding, parameters, regexContext);
 
             case ExistsExpression ex:
-                return EvalExists(ex.Operand, binding, parameters);
+                return EvalExists(ex.Operand, binding, parameters, regexContext);
 
             case MatchesExpression m:
-                return EvalMatches(m, binding, parameters);
+                return EvalMatches(m, binding, parameters, regexContext);
 
             case FunctionCallExpression fc:
-                return EvalFunction(fc, binding, parameters);
+                return EvalFunction(fc, binding, parameters, regexContext);
 
             default:
                 throw new AqlEvaluationException($"Unsupported expression type: {expr.GetType().Name}");
@@ -697,9 +738,10 @@ public sealed class AqlEvaluator
     private static object? EvalPath(
         PathExpression path,
         Binding binding,
-        IReadOnlyDictionary<string, object?> parameters)
+        IReadOnlyDictionary<string, object?> parameters,
+        RegexEvaluationContext regexContext)
     {
-        object? current = EvalExpr(path.Root, binding, parameters);
+        object? current = EvalExpr(path.Root, binding, parameters, regexContext);
         if (path.Steps.Count == 0) return current;
 
         int startIdx = 0;
@@ -1116,30 +1158,31 @@ public sealed class AqlEvaluator
     private static object? EvalBinary(
         BinaryExpression bin,
         Binding binding,
-        IReadOnlyDictionary<string, object?> parameters)
+        IReadOnlyDictionary<string, object?> parameters,
+        RegexEvaluationContext regexContext)
     {
         // Short-circuit boolean operators with three-valued logic.
         if (bin.Op == BinaryOp.And)
         {
-            object? l = EvalExpr(bin.Left, binding, parameters);
+            object? l = EvalExpr(bin.Left, binding, parameters, regexContext);
             if (l is bool lb && !lb) return false;
-            object? r = EvalExpr(bin.Right, binding, parameters);
+            object? r = EvalExpr(bin.Right, binding, parameters, regexContext);
             if (r is bool rb && !rb) return false;
             if (l is null || r is null) return null;
             return (bool)l && (bool)r;
         }
         if (bin.Op == BinaryOp.Or)
         {
-            object? l = EvalExpr(bin.Left, binding, parameters);
+            object? l = EvalExpr(bin.Left, binding, parameters, regexContext);
             if (l is bool lb && lb) return true;
-            object? r = EvalExpr(bin.Right, binding, parameters);
+            object? r = EvalExpr(bin.Right, binding, parameters, regexContext);
             if (r is bool rb && rb) return true;
             if (l is null || r is null) return null;
             return (bool)l || (bool)r;
         }
 
-        object? left = EvalExpr(bin.Left, binding, parameters);
-        object? right = EvalExpr(bin.Right, binding, parameters);
+        object? left = EvalExpr(bin.Left, binding, parameters, regexContext);
+        object? right = EvalExpr(bin.Right, binding, parameters, regexContext);
 
         switch (bin.Op)
         {
@@ -1194,12 +1237,30 @@ public sealed class AqlEvaluator
 
             case BinaryOp.Like:
                 if (left is null || right is null) return null;
-                return LikeMatch(left.ToString() ?? string.Empty, right.ToString() ?? string.Empty);
+                try
+                {
+                    return LikeMatch(left.ToString() ?? string.Empty, right.ToString() ?? string.Empty, regexContext);
+                }
+                catch (RegexMatchTimeoutException ex)
+                {
+                    throw CreateRegexTimeoutException("LIKE", regexContext.RegexTimeout, ex);
+                }
 
             case BinaryOp.Matches:
                 // Regex / terminology MATCHES with a single RHS.
                 if (left is null || right is null) return null;
-                return Regex.IsMatch(left.ToString() ?? string.Empty, right.ToString() ?? string.Empty);
+                try
+                {
+                    return Regex.IsMatch(
+                        left.ToString() ?? string.Empty,
+                        right.ToString() ?? string.Empty,
+                        RegexOptions.CultureInvariant,
+                        regexContext.RegexTimeout);
+                }
+                catch (RegexMatchTimeoutException ex)
+                {
+                    throw CreateRegexTimeoutException("MATCHES", regexContext.RegexTimeout, ex);
+                }
 
             default:
                 throw new AqlEvaluationException($"Unsupported binary operator: {bin.Op}");
@@ -1209,9 +1270,10 @@ public sealed class AqlEvaluator
     private static object? EvalUnary(
         UnaryExpression un,
         Binding binding,
-        IReadOnlyDictionary<string, object?> parameters)
+        IReadOnlyDictionary<string, object?> parameters,
+        RegexEvaluationContext regexContext)
     {
-        object? v = EvalExpr(un.Operand, binding, parameters);
+        object? v = EvalExpr(un.Operand, binding, parameters, regexContext);
         if (v is null)
         {
             return un.Op == UnaryOp.Not ? null : null;
@@ -1227,9 +1289,10 @@ public sealed class AqlEvaluator
     private static object? EvalExists(
         Expression operand,
         Binding binding,
-        IReadOnlyDictionary<string, object?> parameters)
+        IReadOnlyDictionary<string, object?> parameters,
+        RegexEvaluationContext regexContext)
     {
-        object? v = EvalExpr(operand, binding, parameters);
+        object? v = EvalExpr(operand, binding, parameters, regexContext);
         if (v is null) return false;
         if (v is string s) return s.Length > 0;
         if (v is IEnumerable seq)
@@ -1243,13 +1306,14 @@ public sealed class AqlEvaluator
     private static object? EvalMatches(
         MatchesExpression m,
         Binding binding,
-        IReadOnlyDictionary<string, object?> parameters)
+        IReadOnlyDictionary<string, object?> parameters,
+        RegexEvaluationContext regexContext)
     {
-        object? subject = EvalExpr(m.Subject, binding, parameters);
+        object? subject = EvalExpr(m.Subject, binding, parameters, regexContext);
         if (subject is null) return null;
         foreach (Expression cand in m.Values)
         {
-            object? c = EvalExpr(cand, binding, parameters);
+            object? c = EvalExpr(cand, binding, parameters, regexContext);
             if (c is null) continue;
             if (AreEqual(subject, c)) return true;
         }
@@ -1259,7 +1323,8 @@ public sealed class AqlEvaluator
     private static object? EvalFunction(
         FunctionCallExpression fc,
         Binding binding,
-        IReadOnlyDictionary<string, object?> parameters)
+        IReadOnlyDictionary<string, object?> parameters,
+        RegexEvaluationContext regexContext)
     {
         string name = fc.Name.ToLowerInvariant();
         switch (name)
@@ -1267,7 +1332,7 @@ public sealed class AqlEvaluator
             case "count":
             {
                 if (fc.Arguments.Count == 0) return 0L;
-                object? v = EvalExpr(fc.Arguments[0], binding, parameters);
+                object? v = EvalExpr(fc.Arguments[0], binding, parameters, regexContext);
                 if (v is null) return 0L;
                 if (v is string) return 1L;
                 if (v is IEnumerable seq)
@@ -1281,7 +1346,7 @@ public sealed class AqlEvaluator
             case "length":
             {
                 if (fc.Arguments.Count == 0) return 0L;
-                object? v = EvalExpr(fc.Arguments[0], binding, parameters);
+                object? v = EvalExpr(fc.Arguments[0], binding, parameters, regexContext);
                 if (v is null) return null;
                 string s = v.ToString() ?? string.Empty;
                 return (long)s.Length;
@@ -1289,13 +1354,13 @@ public sealed class AqlEvaluator
             case "upper":
             {
                 if (fc.Arguments.Count == 0) return null;
-                object? v = EvalExpr(fc.Arguments[0], binding, parameters);
+                object? v = EvalExpr(fc.Arguments[0], binding, parameters, regexContext);
                 return v?.ToString()?.ToUpperInvariant();
             }
             case "lower":
             {
                 if (fc.Arguments.Count == 0) return null;
-                object? v = EvalExpr(fc.Arguments[0], binding, parameters);
+                object? v = EvalExpr(fc.Arguments[0], binding, parameters, regexContext);
                 return v?.ToString()?.ToLowerInvariant();
             }
             case "now":
@@ -1458,7 +1523,22 @@ public sealed class AqlEvaluator
     // LIKE pattern → Regex
     // -----------------------------------------------------------------
 
-    private static bool LikeMatch(string input, string pattern)
+    private static bool LikeMatch(string input, string pattern, RegexEvaluationContext regexContext)
+    {
+        if (!regexContext.LikeRegexByPattern.TryGetValue(pattern, out string? regexPattern))
+        {
+            regexPattern = TranslateLikePattern(pattern);
+            regexContext.LikeRegexByPattern.Add(pattern, regexPattern);
+        }
+
+        return Regex.IsMatch(
+            input,
+            regexPattern,
+            RegexOptions.CultureInvariant,
+            regexContext.RegexTimeout);
+    }
+
+    private static string TranslateLikePattern(string pattern)
     {
         System.Text.StringBuilder rx = new();
         rx.Append('^');
@@ -1469,8 +1549,16 @@ public sealed class AqlEvaluator
             else rx.Append(Regex.Escape(ch.ToString()));
         }
         rx.Append('$');
-        return Regex.IsMatch(input, rx.ToString());
+        return rx.ToString();
     }
+
+    private static AqlEvaluationException CreateRegexTimeoutException(
+        string operatorName,
+        TimeSpan timeout,
+        RegexMatchTimeoutException inner)
+        => new(
+            $"AQL {operatorName} regex evaluation exceeded the configured timeout of {timeout}.",
+            inner);
 
     // -----------------------------------------------------------------
     // DISTINCT row keys (structural element-wise equality, null-safe).

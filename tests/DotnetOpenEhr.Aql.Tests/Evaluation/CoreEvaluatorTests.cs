@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using DotnetOpenEhr.Aql.Ast;
 using DotnetOpenEhr.Aql.Evaluation;
 using DotnetOpenEhr.Rm.Common;
@@ -335,13 +336,75 @@ public class CoreEvaluatorTests
     public void Where_like_matches_with_percent_and_underscore_wildcards()
     {
         AqlQuery q = AqlParser.Parse(
-            "SELECT c/name/value FROM EHR e CONTAINS COMPOSITION c WHERE c/name/value LIKE 'Vital%'");
+            "SELECT c/name/value FROM EHR e CONTAINS COMPOSITION c WHERE c/name/value LIKE 'Vital _ign%'");
         List<Composition> comps = ThreeNamedCompositions();
 
         IReadOnlyList<object?[]> rows = Evaluator.Evaluate(q, comps, ct: TestContext.Current.CancellationToken);
 
         Assert.Equal(2, rows.Count);
         Assert.All(rows, r => Assert.Equal("Vital Signs", r[0]));
+    }
+
+    [Fact]
+    public void Matches_PathologicalRegex_ThrowsAqlEvaluationException()
+    {
+        AqlEvaluator evaluator = new(
+            new AqlEvaluatorOptions { RegexTimeout = TimeSpan.FromMilliseconds(1) });
+        string input = new string('a', 10_000) + "!";
+        Composition composition = CompositionBuilder.NewComposition(input, "uid-pathological");
+        AqlQuery q = AqlParser.Parse(
+            "SELECT c FROM EHR e CONTAINS COMPOSITION c WHERE c/name/value MATCHES '^(a+)+$'");
+
+        AqlEvaluationException ex = Assert.Throws<AqlEvaluationException>(
+            () => evaluator.Evaluate(q, [composition], ct: TestContext.Current.CancellationToken));
+
+        Assert.Contains("MATCHES", ex.Message, StringComparison.Ordinal);
+        Assert.IsType<RegexMatchTimeoutException>(ex.InnerException);
+    }
+
+    [Fact]
+    public void AqlEvaluatorOptions_RegexTimeout_IsConfigurable()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => new AqlEvaluator(new AqlEvaluatorOptions { RegexTimeout = TimeSpan.Zero }));
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => new AqlEvaluator(new AqlEvaluatorOptions { RegexTimeout = Regex.InfiniteMatchTimeout }));
+
+        AqlEvaluator evaluator = new(
+            new AqlEvaluatorOptions { RegexTimeout = TimeSpan.FromSeconds(1) });
+        AqlQuery q = AqlParser.Parse(
+            "SELECT c/name/value FROM EHR e CONTAINS COMPOSITION c WHERE c/name/value LIKE 'Vital _ign%'");
+
+        IReadOnlyList<object?[]> rows = evaluator.Evaluate(
+            q,
+            ThreeNamedCompositions(),
+            ct: TestContext.Current.CancellationToken);
+
+        Assert.Equal(2, rows.Count);
+    }
+
+    [Fact]
+    public void Where_like_UsesTimeoutBoundRegexAcrossManyRows()
+    {
+        AqlEvaluator evaluator = new(
+            new AqlEvaluatorOptions { RegexTimeout = TimeSpan.FromMilliseconds(50) });
+        List<Composition> compositions = [];
+        for (int i = 0; i < 256; i++)
+        {
+            string name = i % 2 == 0
+                ? $"Batch {i.ToString(System.Globalization.CultureInfo.InvariantCulture)}"
+                : $"Other {i.ToString(System.Globalization.CultureInfo.InvariantCulture)}";
+            compositions.Add(CompositionBuilder.NewComposition(name, $"uid-{i.ToString(System.Globalization.CultureInfo.InvariantCulture)}"));
+        }
+        AqlQuery q = AqlParser.Parse(
+            "SELECT c/uid/value FROM EHR e CONTAINS COMPOSITION c WHERE c/name/value LIKE 'Batch %'");
+
+        IReadOnlyList<object?[]> rows = evaluator.Evaluate(
+            q,
+            compositions,
+            ct: TestContext.Current.CancellationToken);
+
+        Assert.Equal(128, rows.Count);
     }
 
     // ----------------------------------------------------------------
