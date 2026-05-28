@@ -16,6 +16,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\DotnetOpenEhr.Aql\DotnetOpenEhr.Aql.csproj" />
+    <ProjectReference Include="..\..\src\DotnetOpenEhr.Rm\DotnetOpenEhr.Rm.csproj" />
+    <ProjectReference Include="..\..\src\DotnetOpenEhr.Foundation\DotnetOpenEhr.Foundation.csproj" />
   </ItemGroup>
 
 </Project>
