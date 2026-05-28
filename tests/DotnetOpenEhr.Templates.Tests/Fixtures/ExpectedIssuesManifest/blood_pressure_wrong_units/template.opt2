@@ -9,7 +9,7 @@ description
     details = <
         ["en"] = <
             language = <[ISO_639-1::en]>
-            purpose = <"Phase 8e expected-issues manifest fixture.">
+            purpose = <"Expected-issues manifest fixture: a blood-pressure composition using the wrong units.">
         >
     >
 

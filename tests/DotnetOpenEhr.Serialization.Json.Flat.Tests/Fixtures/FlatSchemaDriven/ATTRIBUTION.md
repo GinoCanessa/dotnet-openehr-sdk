@@ -1,4 +1,4 @@
-# Hand-authored, test-only fixtures (Phase 8d)
+# Hand-authored, test-only fixtures
 
 The OPT2 templates and canonical openEHR JSON Compositions in this
 directory are **hand-authored, test-only** scaffolds. They are not
@@ -16,11 +16,11 @@ matching `ParseComposition(..., schema)` overload):
 | `nested_clusters`             | Composition → Observation → History/PointEvent → ItemTree → Cluster → 2 × Element (DvCount + DvBoolean) |
 
 The four pairs collectively cover the openfhir `schema-required`
-fixtures' RM-shape diversity well enough to satisfy the Phase 8d goal
-of "draining" the deferred schema-required bucket. The 13 retired
-openfhir fixtures themselves remain in
+fixtures' RM-shape diversity well enough to satisfy the schema-driven
+FLAT round-trip goal of "draining" the deferred schema-required
+bucket. The 13 retired openfhir fixtures themselves remain in
 `tests/DotnetOpenEhr.Serialization.Json.Flat.Tests/Fixtures/Flat/openfhir-archive/`
-for future phases (if/when an OPT 1.4 → 2 converter ships and they can
+for future use (if/when an OPT 1.4 → 2 converter ships and they can
 be paired with real OPT2s).
 
 No `NOTICE` update is required because nothing here is copied from a

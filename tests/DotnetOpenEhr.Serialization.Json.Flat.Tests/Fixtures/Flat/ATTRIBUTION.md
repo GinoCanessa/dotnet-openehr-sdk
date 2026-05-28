@@ -34,7 +34,7 @@ under the DotnetOpenEhr SDK MIT license:
 
 | Local file                                | Origin                                                                                       |
 |-------------------------------------------|----------------------------------------------------------------------------------------------|
-| `minimal_metadata_flat.json`              | Authored for Phase 4 to exercise the schemaless round-trip path (no clinical content).        |
+| `minimal_metadata_flat.json`              | Authored to exercise the schemaless round-trip path (no clinical content).        |
 
 License notice from the openFHIR repository root: `Apache License,
 Version 2.0` (`http://www.apache.org/licenses/LICENSE-2.0`).
