@@ -79,10 +79,16 @@ jobs:
         run: |
           binary="tests/DotnetOpenEhr.AotSmoke/bin/Release/net10.0/${{ matrix.rid }}/publish/DotnetOpenEhr.AotSmoke"
           chmod +x "$binary"
-          output="$($binary)"
-          echo "smoke output: $output"
-          if [ "$output" != "smoke ok" ]; then
-            echo "::error::smoke binary did not print expected banner"
+          output="$("$binary")"
+          echo "smoke output:"
+          echo "$output"
+          last_line="$(printf '%s\n' "$output" | tail -n 1)"
+          if [ "$last_line" != "smoke ok" ]; then
+            echo "::error::smoke binary did not end with 'smoke ok' (last line: '$last_line')"
+            exit 1
+          fi
+          if ! printf '%s\n' "$output" | grep -q '^coverage: '; then
+            echo "::error::smoke binary did not emit a 'coverage:' line"
             exit 1
           fi
 
@@ -92,8 +98,14 @@ jobs:
         run: |
           $binary = "tests/DotnetOpenEhr.AotSmoke/bin/Release/net10.0/${{ matrix.rid }}/publish/DotnetOpenEhr.AotSmoke.exe"
           $output = & $binary
-          Write-Host "smoke output: $output"
-          if ($output -ne "smoke ok") {
-            Write-Error "smoke binary did not print expected banner"
+          Write-Host "smoke output:"
+          $output | ForEach-Object { Write-Host $_ }
+          $lastLine = ($output | Select-Object -Last 1)
+          if ($lastLine -ne "smoke ok") {
+            Write-Error "smoke binary did not end with 'smoke ok' (last line: '$lastLine')"
+            exit 1
+          }
+          if (-not ($output | Where-Object { $_ -match '^coverage: ' })) {
+            Write-Error "smoke binary did not emit a 'coverage:' line"
             exit 1
           }

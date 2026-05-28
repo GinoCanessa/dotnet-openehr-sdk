@@ -476,6 +476,58 @@ DotnetOpenEhr.Aql.Evaluation.AqlEvaluator aqlEvaluator = new();
 System.Collections.Generic.IReadOnlyList<object?[]> aqlRows = aqlEvaluator.Evaluate(aqlQuery, aqlSource);
 System.Console.WriteLine($"aql: rows={aqlRows.Count}");
 
+// Phase 10: coverage gate. Every shipping NuGet package the SDK
+// publishes must be transitively loaded by the smoke run; otherwise
+// PublishAot would silently skip its IL2*/IL3* analysis. We use
+// AppDomain.GetAssemblies() rather than enumerating ProjectReference
+// metadata because the former is AOT-safe (no reflection over loaded
+// types, just assembly names) and naturally only reports what the
+// preceding smoke blocks actually touched.
+string[] shippingAssemblies =
+[
+    "DotnetOpenEhr.Foundation",
+    "DotnetOpenEhr.Terminology",
+    "DotnetOpenEhr.Bmm",
+    "DotnetOpenEhr.Bmm.Rm",
+    "DotnetOpenEhr.Odin",
+    "DotnetOpenEhr.Rm",
+    "DotnetOpenEhr.Serialization.Json",
+    "DotnetOpenEhr.Serialization.Json.Flat",
+    "DotnetOpenEhr.Archetypes",
+    "DotnetOpenEhr.Templates.Abstractions",
+    "DotnetOpenEhr.Templates",
+    "DotnetOpenEhr.Aql",
+];
+
+System.Reflection.Assembly[] loaded = System.AppDomain.CurrentDomain.GetAssemblies();
+System.Collections.Generic.HashSet<string> loadedNames = [];
+foreach (System.Reflection.Assembly assembly in loaded)
+{
+    string? assemblyName = assembly.GetName().Name;
+    if (!string.IsNullOrEmpty(assemblyName))
+    {
+        loadedNames.Add(assemblyName);
+    }
+}
+
+System.Collections.Generic.List<string> missingAssemblies = [];
+foreach (string expected in shippingAssemblies)
+{
+    if (!loadedNames.Contains(expected))
+    {
+        missingAssemblies.Add(expected);
+    }
+}
+
+if (missingAssemblies.Count > 0)
+{
+    System.Console.Error.WriteLine(
+        $"coverage gate FAILED: missing assemblies {string.Join(", ", missingAssemblies)}");
+    return 2;
+}
+
+System.Console.WriteLine($"coverage: {shippingAssemblies.Length} shipping assemblies loaded");
+
 System.Console.WriteLine("smoke ok");
 return 0;
 
