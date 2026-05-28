@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>true</IsPackable>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <SuppressDependenciesWhenPacking>false</SuppressDependenciesWhenPacking>
+    <PackageType>Dependency</PackageType>
+    <PackageId>DotnetOpenEhr</PackageId>
+    <Description>
+      Umbrella metapackage for the .NET openEHR SDK. Installs every
+      DotnetOpenEhr.* shipping package at the same version. See
+      docs/package-map.md for the granular option (most consumers should
+      install only the packages they actually use).
+    </Description>
+    <!--
+      NU5128: package has no compile-time output for the declared TFM —
+      expected for a metapackage. NU5100 / NU5118 would only fire if we
+      shipped a lib/ folder, which we don't.
+    -->
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DotnetOpenEhr.Foundation\DotnetOpenEhr.Foundation.csproj" />
+    <ProjectReference Include="..\DotnetOpenEhr.Terminology\DotnetOpenEhr.Terminology.csproj" />
+    <ProjectReference Include="..\DotnetOpenEhr.Odin\DotnetOpenEhr.Odin.csproj" />
+    <ProjectReference Include="..\DotnetOpenEhr.Bmm\DotnetOpenEhr.Bmm.csproj" />
+    <ProjectReference Include="..\DotnetOpenEhr.Bmm.Rm\DotnetOpenEhr.Bmm.Rm.csproj" />
+    <ProjectReference Include="..\DotnetOpenEhr.Rm\DotnetOpenEhr.Rm.csproj" />
+    <ProjectReference Include="..\DotnetOpenEhr.Serialization.Json\DotnetOpenEhr.Serialization.Json.csproj" />
+    <ProjectReference Include="..\DotnetOpenEhr.Serialization.Json.Flat\DotnetOpenEhr.Serialization.Json.Flat.csproj" />
+    <ProjectReference Include="..\DotnetOpenEhr.Archetypes\DotnetOpenEhr.Archetypes.csproj" />
+    <ProjectReference Include="..\DotnetOpenEhr.Templates.Abstractions\DotnetOpenEhr.Templates.Abstractions.csproj" />
+    <ProjectReference Include="..\DotnetOpenEhr.Templates\DotnetOpenEhr.Templates.csproj" />
+    <ProjectReference Include="..\DotnetOpenEhr.Aql\DotnetOpenEhr.Aql.csproj" />
+  </ItemGroup>
+
+</Project>

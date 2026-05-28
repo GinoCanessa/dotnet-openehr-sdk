@@ -10,6 +10,7 @@
     <File Path="nuget.config" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="src/DotnetOpenEhr/DotnetOpenEhr.csproj" />
     <Project Path="src/DotnetOpenEhr.Bmm/DotnetOpenEhr.Bmm.csproj" />
     <Project Path="src/DotnetOpenEhr.Bmm.Rm/DotnetOpenEhr.Bmm.Rm.csproj" />
     <Project Path="src/DotnetOpenEhr.Archetypes/DotnetOpenEhr.Archetypes.csproj" />

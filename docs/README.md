@@ -5,13 +5,15 @@ SDK comes online phase by phase.
 
 Planned docs (landing alongside the phases that produce them):
 
-- `getting-started.md` — install, parse a Composition, validate against
-  an OPT, run an AQL query (Phase 11).
-- `package-map.md` — which package to install when (Phase 11; the
-  short table is also in the top-level `README.md`).
-- `aot.md` — AOT/trim posture and supported scenarios (Phase 11).
-- `canonical-json-ordering.md` — the documented sibling-key ordering
-  used for byte-equivalent canonical round-trip (Phase 3).
+- [`getting-started.md`](getting-started.md) — install, parse a
+  Composition, validate against an OPT, run an AQL query (Phase 11).
+- [`package-map.md`](package-map.md) — which package to install when
+  (Phase 11; the short table is also in the top-level `README.md`).
+- [`aot.md`](aot.md) — AOT/trim posture and supported scenarios
+  (Phase 11).
+- [`canonical-json-ordering.md`](canonical-json-ordering.md) — the
+  documented sibling-key ordering used for byte-equivalent canonical
+  round-trip (Phase 3).
 
 ## openEHR specs (source of truth)
 
