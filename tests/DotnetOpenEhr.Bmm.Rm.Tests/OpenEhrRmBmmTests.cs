@@ -35,11 +35,60 @@ public class OpenEhrRmBmmTests
     /// (typically because DotnetOpenEhr.Rm does not yet model them).
     /// Documenting them keeps the reverse-direction test honest.
     /// </summary>
-    private static readonly HashSet<string> s_documentedBmmToRmMisses =
-        new(StringComparer.Ordinal)
-        {
-            // Populated below from the actual gap once first observed.
-        };
+    private static readonly string[] s_documentedBmmToRmMisses =
+    [
+        "ACCESS_GROUP_REF",
+        "ADDRESSED_MESSAGE",
+        "CONTRIBUTION",
+        "DV_GENERAL_TIME_SPECIFICATION",
+        "DV_INTERVAL",
+        "DV_PARAGRAPH",
+        "DV_PERIODIC_TIME_SPECIFICATION",
+        "EXTRACT",
+        "EXTRACT_ACTION_REQUEST",
+        "EXTRACT_CHAPTER",
+        "EXTRACT_ENTITY_CHAPTER",
+        "EXTRACT_ENTITY_MANIFEST",
+        "EXTRACT_FOLDER",
+        "EXTRACT_MANIFEST",
+        "EXTRACT_PARTICIPATION",
+        "EXTRACT_REQUEST",
+        "EXTRACT_SPEC",
+        "EXTRACT_UPDATE_SPEC",
+        "EXTRACT_VERSION_SPEC",
+        "FOLDER",
+        "GENERIC_CONTENT_ITEM",
+        "GENERIC_ENTRY",
+        "IMPORTED_VERSION",
+        "INTERNET_ID",
+        "ISO_OID",
+        "LOCATABLE_REF",
+        "MESSAGE",
+        "OPENEHR_CONTENT_ITEM",
+        "PARTY_RELATIONSHIP",
+        "PROPORTION_KIND",
+        "RESOURCE_ANNOTATIONS",
+        "RESOURCE_DESCRIPTION",
+        "RESOURCE_DESCRIPTION_ITEM",
+        "REVISION_HISTORY",
+        "REVISION_HISTORY_ITEM",
+        "SYNC_EXTRACT",
+        "SYNC_EXTRACT_REQUEST",
+        "SYNC_EXTRACT_SPEC",
+        "TRANSLATION_DETAILS",
+        "UUID",
+        "VALIDITY_KIND",
+        "VERSIONED_OBJECT",
+        "VERSION_STATUS",
+        "VERSION_TREE_ID",
+        "X_CONTRIBUTION",
+        "X_VERSIONED_COMPOSITION",
+        "X_VERSIONED_EHR_ACCESS",
+        "X_VERSIONED_EHR_STATUS",
+        "X_VERSIONED_FOLDER",
+        "X_VERSIONED_OBJECT",
+        "X_VERSIONED_PARTY",
+    ];
 
     [Fact]
     public void LoadDefault_returns_a_non_empty_model_with_at_least_60_classes()
@@ -99,23 +148,12 @@ public class OpenEhrRmBmmTests
             {
                 continue;
             }
-            if (s_documentedBmmToRmMisses.Contains(kvp.Key))
-            {
-                continue;
-            }
             if (!RmTypeName.TryGet(kvp.Key, out _))
             {
                 missing.Add(kvp.Key);
             }
         }
-        // DotnetOpenEhr.Rm only models a subset of the openEHR RM
-        // (the concrete classes listed in RmTypeName). The BMM ships
-        // many more concrete types (foundation types, identification
-        // helpers, EHR Extract scaffolding, etc.) that are not yet in
-        // the typed registry. We assert the gap is reasonable and emit
-        // it for diagnosis rather than failing on every absence.
-        Assert.True(
-            missing.Count > 0,
-            "Expected some concrete BMM classes to be outside the typed RM registry (DotnetOpenEhr.Rm models a subset).");
+        missing.Sort(StringComparer.Ordinal);
+        Assert.Equal(s_documentedBmmToRmMisses, missing);
     }
 }

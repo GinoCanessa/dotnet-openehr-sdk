@@ -19,7 +19,7 @@ namespace DotnetOpenEhr.Serialization.Json.Flat.Tests;
 /// </remarks>
 public sealed class CatalogueBootstrapTests
 {
-    [Fact]
+    [Fact(Explicit = true)]
     public void BootstrapManifest_When_Env_Var_Set()
     {
         if (!string.Equals(

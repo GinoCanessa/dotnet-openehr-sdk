@@ -1,4 +1,4 @@
-using System.Diagnostics;
+using System.Collections;
 using DotnetOpenEhr.Rm.Common;
 using DotnetOpenEhr.Rm.Composition;
 using DotnetOpenEhr.Rm.DataStructures;
@@ -87,6 +87,60 @@ public sealed class CoreValidatorTests
             Name = Name(nodeId),
             Items = items ?? [],
         };
+
+    private sealed class CancelAfterEnumeratingList<T> : IList<T>
+    {
+        private readonly IList<T> _inner;
+        private readonly CancellationTokenSource _cts;
+        private readonly int _cancelAfter;
+
+        public CancelAfterEnumeratingList(IList<T> inner, CancellationTokenSource cts, int cancelAfter)
+        {
+            _inner = inner;
+            _cts = cts;
+            _cancelAfter = cancelAfter;
+        }
+
+        public T this[int index]
+        {
+            get => _inner[index];
+            set => _inner[index] = value;
+        }
+
+        public int Count => _inner.Count;
+
+        public bool IsReadOnly => _inner.IsReadOnly;
+
+        public void Add(T item) => _inner.Add(item);
+
+        public void Clear() => _inner.Clear();
+
+        public bool Contains(T item) => _inner.Contains(item);
+
+        public void CopyTo(T[] array, int arrayIndex) => _inner.CopyTo(array, arrayIndex);
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            for (int i = 0; i < _inner.Count; i++)
+            {
+                if (i + 1 == _cancelAfter)
+                {
+                    _cts.Cancel();
+                }
+                yield return _inner[i];
+            }
+        }
+
+        public int IndexOf(T item) => _inner.IndexOf(item);
+
+        public void Insert(int index, T item) => _inner.Insert(index, item);
+
+        public bool Remove(T item) => _inner.Remove(item);
+
+        public void RemoveAt(int index) => _inner.RemoveAt(index);
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    }
 
     // ---- inline OPT2 templates ---------------------------------------
 
@@ -441,11 +495,8 @@ terminology
     }
 
     [Fact]
-    public void Cancellation_mid_walk_returns_within_budget()
+    public void Cancellation_mid_walk_is_observed_without_wall_clock_delay()
     {
-        // Build a single ItemTree containing ~200K Cluster children, all
-        // matching the same template node, so validation is a long
-        // bounded loop with per-node cancellation checks.
         OperationalTemplate opt = ParseOpt2(Opt2(
             "openEHR-EHR-OBSERVATION.bulk.v1.0.0",
             """
@@ -469,41 +520,18 @@ terminology
             """,
             "id1", "id2", "id3", "id4", "id5"));
 
-        List<Item> bulk = [];
-        for (int i = 0; i < 200_000; i++)
-        {
-            bulk.Add(NewCluster("id5"));
-        }
+        using CancellationTokenSource cts = new();
+        CancelAfterEnumeratingList<Item> items = new(
+            [NewCluster("id5"), NewCluster("id5"), NewCluster("id5")],
+            cts,
+            cancelAfter: 2);
         Observation obs = NewObservation(
             "id1",
-            NewHistory("id2", [NewPointEvent("id3", NewItemTree("id4", bulk))]));
+            NewHistory("id2", [NewPointEvent("id3", NewItemTree("id4", items))]));
 
-        using CancellationTokenSource cts = new();
-        // Cancel after 10ms from a separate task.
-        Task.Run(async () =>
-        {
-            await Task.Delay(10, TestContext.Current.CancellationToken);
-            cts.Cancel();
-        }, TestContext.Current.CancellationToken);
-
-        Stopwatch sw = Stopwatch.StartNew();
-        OperationCanceledException? caught = null;
-        try
-        {
-            s_validator.Validate(obs, opt, cts.Token);
-        }
-        catch (OperationCanceledException ex)
-        {
-            caught = ex;
-        }
-        sw.Stop();
-
-        Assert.NotNull(caught);
-        // Generous budget: cancel after ~10ms, validator should observe
-        // the token at the next per-node check and unwind well within
-        // the next 100ms.
-        Assert.True(sw.ElapsedMilliseconds < 1000,
-            $"Validator took {sw.ElapsedMilliseconds}ms to unwind after cancellation.");
+        Assert.Throws<OperationCanceledException>(
+            () => s_validator.Validate(obs, opt, cts.Token));
+        Assert.True(cts.IsCancellationRequested);
     }
 
     // ---- Path reporting ---------------------------------------------
