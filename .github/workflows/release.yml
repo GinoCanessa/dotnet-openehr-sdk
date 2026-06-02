@@ -40,13 +40,13 @@ jobs:
 
       - name: Push to NuGet
         env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+          NUGET_API_KEY: ${{ secrets.GINOC_NUGET }}
         run: |
-          if [ -z "$NUGET_API_KEY" ]; then
-            echo "::error::NUGET_API_KEY secret is not set"
+          if [ -z "$GINOC_NUGET" ]; then
+            echo "::error::GINOC_NUGET secret is not set"
             exit 1
           fi
           dotnet nuget push "./artifacts/*.nupkg" \
-            --api-key "$NUGET_API_KEY" \
+            --api-key "$GINOC_NUGET" \
             --source https://api.nuget.org/v3/index.json \
             --skip-duplicate
