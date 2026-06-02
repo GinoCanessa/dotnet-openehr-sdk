@@ -1,0 +1,27 @@
+<Project>
+
+  <!--
+    Inheritance counterpart to src/Directory.Build.props. Restores the
+    compile defaults that test projects lost when TFM/LangVersion/etc.
+    moved from the root Directory.Build.props into src/common.props
+    (commit 4bdee76, "CI and NuGet prep"). Test projects deliberately
+    do NOT set _IsShippingProject, so the root file's AOT/trim guard
+    and NuGet package metadata stay off for tests.
+
+    Import order: root first, test defaults after. MSBuild is
+    last-write-wins on properties; this order ensures that if a
+    future change adds an overlapping property to the root
+    Directory.Build.props, the test-specific value here still
+    takes precedence.
+  -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup Label="Compile">
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>14</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+</Project>
