@@ -50,14 +50,8 @@ jobs:
             -p:BuildTimestampUtc=${{ steps.build-timestamp.outputs.value }}
 
       - name: Push to NuGet
-        env:
-          NUGET_API_KEY: ${{ secrets.GINOC_NUGET }}
         run: |
-          if [ -z "$GINOC_NUGET" ]; then
-            echo "::error::GINOC_NUGET secret is not set"
-            exit 1
-          fi
           dotnet nuget push "./nupkg/*.nupkg" \
-            --api-key "$GINOC_NUGET" \
+            --api-key "${{ secrets.GINOC_NUGET }}" \
             --source https://api.nuget.org/v3/index.json \
             --skip-duplicate
