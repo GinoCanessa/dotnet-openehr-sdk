@@ -32,11 +32,22 @@ jobs:
       - name: Restore
         run: dotnet restore dotnet-openehr-sdk.slnx
 
+      - name: Compute build timestamp
+        id: build-timestamp
+        run: |
+          ts=$(date -u +'%Y.%m%d.%H%M')
+          echo "value=$ts" >> "$GITHUB_OUTPUT"
+          echo "Using BuildTimestampUtc=$ts"
+
       - name: Build
-        run: dotnet build dotnet-openehr-sdk.slnx -c Release --no-restore
+        run: |
+          dotnet build dotnet-openehr-sdk.slnx -c Release --no-restore \
+            -p:BuildTimestampUtc=${{ steps.build-timestamp.outputs.value }}
 
       - name: Pack
-        run: dotnet pack dotnet-openehr-sdk.slnx -c Release --no-build -o ./nupkg
+        run: |
+          dotnet pack dotnet-openehr-sdk.slnx -c Release --no-build -o ./nupkg \
+            -p:BuildTimestampUtc=${{ steps.build-timestamp.outputs.value }}
 
       - name: Push to NuGet
         env:
