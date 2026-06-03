@@ -31,20 +31,4 @@
     <FileVersion>0.$(_BuildTimestampUtc)</FileVersion>
   </PropertyGroup>
 
-  <!--
-    Per-project README packaging. Any shipping project that drops a
-    README.md alongside its csproj automatically gets it packed into the
-    .nupkg as the package readme. Projects that need a different readme
-    file (e.g. DotnetOpenEhr.Bmm.Rm shipping THIRD_PARTY_NOTICES.md as
-    the package readme) override <PackageReadmeFile> in their csproj —
-    that override wins because it is evaluated after this import.
-  -->
-  <PropertyGroup Condition="Exists('$(MSBuildProjectDirectory)\README.md')">
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-  </PropertyGroup>
-
-  <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\README.md')">
-    <None Include="README.md" Pack="true" PackagePath="\" />
-  </ItemGroup>
-
 </Project>
