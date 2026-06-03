@@ -10,7 +10,6 @@
 		<Authors>GinoCanessa</Authors>
 		<Company>Gino Canessa</Company>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-	    <PackageReadmeFile>README.md</PackageReadmeFile>
         <Copyright>Copyright 2026+</Copyright>
         <PackageProjectUrl>https://github.com/ginoc/dotnet-openehr-sdk</PackageProjectUrl>
         <RepositoryUrl>https://github.com/ginoc/dotnet-openehr-sdk</RepositoryUrl>
@@ -24,9 +23,6 @@
 	<ItemGroup>
 		<None Include="..\..\LICENSE" Pack="true" PackagePath="\">
 			<Link>LICENSE</Link>
-		</None>
-		<None Include="..\..\README.md" Pack="true" PackagePath="\">
-			<Link>README.md</Link>
 		</None>
 	</ItemGroup>
 
