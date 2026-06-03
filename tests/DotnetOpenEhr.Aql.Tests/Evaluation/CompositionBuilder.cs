@@ -112,4 +112,72 @@ internal static class CompositionBuilder
             },
         };
     }
+
+    /// <summary>
+    /// Build a Blood Pressure Observation with two PointEvents,
+    /// each carrying the same systolic / diastolic at-code structure
+    /// as <see cref="NewBloodPressure"/>. Used by the resolver tests
+    /// to exercise multi-match and document-order assertions where
+    /// the events themselves carry no node-id predicate.
+    /// </summary>
+    public static Observation NewBloodPressureWithTwoEvents(
+        string archetypeNodeId,
+        double firstSystolic,
+        double firstDiastolic,
+        double secondSystolic,
+        double secondDiastolic,
+        string units = "mm[Hg]")
+    {
+        PointEvent BuildEvent(string archetypeId, int hour, double sys, double dia)
+            => new()
+            {
+                ArchetypeNodeId = archetypeId,
+                Name = new DvText("Any event"),
+                Time = new DvDateTime(new DotnetOpenEhr.Foundation.Iso.IsoDateTime(
+                    new DotnetOpenEhr.Foundation.Iso.IsoDate(2024, 1, 15),
+                    new DotnetOpenEhr.Foundation.Iso.IsoTime(hour, 0, 0))),
+                Data = new ItemTree
+                {
+                    ArchetypeNodeId = "at0003",
+                    Name = new DvText("Tree"),
+                    Items =
+                    [
+                        new Element
+                        {
+                            ArchetypeNodeId = "at0004",
+                            Name = new DvText("Systolic"),
+                            Value = new DvQuantity(sys, units),
+                        },
+                        new Element
+                        {
+                            ArchetypeNodeId = "at0005",
+                            Name = new DvText("Diastolic"),
+                            Value = new DvQuantity(dia, units),
+                        },
+                    ],
+                },
+            };
+
+        return new Observation
+        {
+            ArchetypeNodeId = archetypeNodeId,
+            Name = new DvText("Blood pressure"),
+            Language = new CodePhrase(new TerminologyId { Value = "ISO_639-1" }, "en"),
+            Encoding = new CodePhrase(new TerminologyId { Value = "IANA_character-sets" }, "UTF-8"),
+            Subject = new PartySelf(),
+            Data = new History
+            {
+                ArchetypeNodeId = "at0001",
+                Name = new DvText("History"),
+                Origin = new DvDateTime(new DotnetOpenEhr.Foundation.Iso.IsoDateTime(
+                    new DotnetOpenEhr.Foundation.Iso.IsoDate(2024, 1, 15),
+                    new DotnetOpenEhr.Foundation.Iso.IsoTime(10, 0, 0))),
+                Events =
+                [
+                    BuildEvent("at0006", 10, firstSystolic, firstDiastolic),
+                    BuildEvent("at0006", 11, secondSystolic, secondDiastolic),
+                ],
+            },
+        };
+    }
 }
