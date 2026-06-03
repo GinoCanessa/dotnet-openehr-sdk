@@ -1,9 +1,12 @@
-name: Release
-
+name: Publish dotnet tool
+# Basics from https://docs.microsoft.com/en-us/azure/dev-spaces/how-to/github-actions
 on:
-  push:
-    tags:
-      - 'v*'
+  workflow_dispatch:
+  workflow_run:
+    workflows: ['Tests']
+    types: [completed]
+    branches:
+    - main
 
 env:
   DOTNET_NOLOGO: true
@@ -17,12 +20,12 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
-          fetch-depth: 0   # MinVer needs full history to compute the tag-driven version
+          fetch-depth: 1
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           global-json-file: global.json
 
@@ -32,11 +35,8 @@ jobs:
       - name: Build
         run: dotnet build dotnet-openehr-sdk.slnx -c Release --no-restore
 
-      - name: Test
-        run: dotnet test dotnet-openehr-sdk.slnx -c Release --no-build
-
       - name: Pack
-        run: dotnet pack dotnet-openehr-sdk.slnx -c Release --no-build -o ./artifacts
+        run: dotnet pack dotnet-openehr-sdk.slnx -c Release --no-build -o ./nupkg
 
       - name: Push to NuGet
         env:
@@ -46,7 +46,7 @@ jobs:
             echo "::error::GINOC_NUGET secret is not set"
             exit 1
           fi
-          dotnet nuget push "./artifacts/*.nupkg" \
+          dotnet nuget push "./nupkg/*.nupkg" \
             --api-key "$GINOC_NUGET" \
             --source https://api.nuget.org/v3/index.json \
             --skip-duplicate
