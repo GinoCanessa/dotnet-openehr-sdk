@@ -1,0 +1,57 @@
+name: Publish dotnet tool
+# Basics from https://docs.microsoft.com/en-us/azure/dev-spaces/how-to/github-actions
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ['Tests']
+    types: [completed]
+    branches:
+    - main
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+
+jobs:
+  pack-publish:
+    name: pack + push to NuGet
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore dotnet-openehr-sdk.slnx
+
+      - name: Compute build timestamp
+        id: build-timestamp
+        run: |
+          ts=$(date -u +'%Y.%m%d.%H%M')
+          echo "value=$ts" >> "$GITHUB_OUTPUT"
+          echo "Using BuildTimestampUtc=$ts"
+
+      - name: Build
+        run: |
+          dotnet build dotnet-openehr-sdk.slnx -c Release --no-restore \
+            -p:BuildTimestampUtc=${{ steps.build-timestamp.outputs.value }}
+
+      - name: Pack
+        run: |
+          dotnet pack dotnet-openehr-sdk.slnx -c Release --no-build -o ./nupkg \
+            -p:BuildTimestampUtc=${{ steps.build-timestamp.outputs.value }}
+
+      - name: Push to NuGet
+        run: |
+          dotnet nuget push "./nupkg/*.nupkg" \
+            --api-key "${{ secrets.GINOC_NUGET }}" \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate

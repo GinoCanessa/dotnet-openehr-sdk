@@ -10,6 +10,24 @@ unstable** and may change between alphas.
 
 ## [Unreleased]
 
+### Changed
+
+- **Versioning is now date-based and deterministic per build.** Every
+  shipping `src/` package emits a NuGet version of
+  `yyyy.MMdd.HHmm-beta.0` and an `AssemblyVersion` /
+  `FileVersion` of `0.yyyy.MMdd.HHmm`, derived from a single
+  `UtcNow` read in `src/Directory.Build.props`. NuGet/SemVer 2.0.0
+  strips leading zeros from the version segments, so the on-disk
+  filename for a build at 2026-06-03 08:12 UTC is
+  `<Package>.2026.603.812-beta.0.nupkg`.
+
+### Removed
+
+- **MinVer.** Reverts the `MinVer` integration introduced in
+  `0.1.0-alpha.1`; package versions are no longer derived from git
+  tags. `Microsoft.SourceLink.GitHub` is unaffected and still
+  ships.
+
 ## [0.1.0-alpha.1] - 2026-02-14
 
 First public alpha. Installs as a granular set of twelve

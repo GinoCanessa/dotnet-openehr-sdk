@@ -13,6 +13,40 @@
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 
   <!--
+    UTC build timestamp. All shipping-package version properties
+    below derive from a single _BuildTimestampUtc value so
+    VersionPrefix, AssemblyVersion, and FileVersion cannot
+    disagree across an HHmm boundary within a single csproj
+    evaluation.
+
+    To pin a single timestamp across ALL csprojs in one
+    solution-level build or pack (so the umbrella DotnetOpenEhr
+    metapackage cannot reference a sibling DotnetOpenEhr.* at a
+    different minute), pass -p:BuildTimestampUtc=<yyyy.MMdd.HHmm>
+    on the dotnet CLI. The eng/pack.ps1 wrapper and
+    .github/workflows/nuget-tool.yml do this automatically; use
+    them for any pack intended for nuget.org publish. If
+    BuildTimestampUtc is unset, each csproj evaluates UtcNow
+    independently — fine for local builds whose output is never
+    published.
+
+    Format is preserved from the original src/common.props spec;
+    NuGet/SemVer 2.0.0 normalizes leading zeros in the package
+    version segments on disk and on nuget.org (e.g.
+    2026.0603.0812 -> 2026.603.812). AssemblyVersion is unaffected
+    by that normalization because it is a fixed 4-part integer
+    tuple.
+  -->
+  <PropertyGroup Label="Version">
+    <_BuildTimestampUtc Condition="'$(BuildTimestampUtc)' != ''">$(BuildTimestampUtc)</_BuildTimestampUtc>
+    <_BuildTimestampUtc Condition="'$(_BuildTimestampUtc)' == ''">$([System.DateTime]::UtcNow.ToString("yyyy.MMdd.HHmm"))</_BuildTimestampUtc>
+    <VersionPrefix>$(_BuildTimestampUtc)</VersionPrefix>
+    <Version>$(VersionPrefix)-beta.0</Version>
+    <AssemblyVersion>0.$(_BuildTimestampUtc)</AssemblyVersion>
+    <FileVersion>0.$(_BuildTimestampUtc)</FileVersion>
+  </PropertyGroup>
+
+  <!--
     Per-project README packaging. Any shipping project that drops a
     README.md alongside its csproj automatically gets it packed into the
     .nupkg as the package readme. Projects that need a different readme

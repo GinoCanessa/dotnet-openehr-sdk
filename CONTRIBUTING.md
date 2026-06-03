@@ -14,6 +14,32 @@ dotnet build dotnet-openehr-sdk.slnx -c Release
 dotnet test  dotnet-openehr-sdk.slnx -c Release --no-build
 ```
 
+## Packing
+
+Package versions are derived from the build machine's UTC clock
+(`yyyy.MMdd.HHmm-beta.0`). Two things to know:
+
+1. **Use `eng/pack.ps1` (or pass `-p:BuildTimestampUtc=<yyyy.MMdd.HHmm>`
+   yourself) for any pack intended for nuget.org publish.** Raw
+   `dotnet pack dotnet-openehr-sdk.slnx` lets each csproj evaluate
+   `UtcNow` independently, so a pack that straddles an `HHmm`
+   boundary can mint the umbrella `DotnetOpenEhr` metapackage
+   referencing one of its `DotnetOpenEhr.*` siblings at a different
+   minute than the sibling's own packed `<version>` — which would
+   block consumer resolution from a feed that carries only the two
+   packed versions. The wrapper captures UTC once at script start
+   and forwards it to MSBuild; the
+   `.github/workflows/nuget-tool.yml` publish workflow does the
+   equivalent capture inline before its build + pack steps.
+2. **Raw `dotnet pack` is fine for local exploration.** The
+   per-csproj skew only matters when the produced packages are
+   pushed to a public feed.
+
+If you publish from a machine whose system time is wrong, you will
+mint a NuGet package whose version string lies. CI runs on
+GitHub-hosted runners whose clocks are trustworthy; for local
+pack-and-push, verify your system clock first.
+
 ## AOT / trim gate
 
 Every shipping package is trim-safe and Native-AOT-safe. CI publishes
