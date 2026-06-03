@@ -6,6 +6,17 @@
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <SuppressDependenciesWhenPacking>false</SuppressDependenciesWhenPacking>
     <PackageType>Dependency</PackageType>
+    <!--
+      This metapackage has no compile output (IncludeBuildOutput=false),
+      so dotnet pack would otherwise emit a structurally-valid but empty
+      .snupkg (no .pdb entries). nuget.org's symbol server rejects such
+      a package with HTTP 400 "The package does not contain any symbol
+      (.pdb) files.", which fails the Publish dotnet tool workflow even
+      though every shipping .nupkg uploads successfully. Override the
+      inherited <IncludeSymbols>true</IncludeSymbols> from
+      Directory.Build.props so no .snupkg is generated for this project.
+    -->
+    <IncludeSymbols>false</IncludeSymbols>
     <PackageId>DotnetOpenEhr</PackageId>
     <Description>
       Umbrella metapackage for the .NET openEHR SDK. Installs every
