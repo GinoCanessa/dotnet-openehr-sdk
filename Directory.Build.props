@@ -34,13 +34,9 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
 
-  <!--
-    Source-link + MinVer for every shipping project. Pulled in via central
-    package management; resolved here so individual csprojs stay clean.
-  -->
+  <!-- Source-link for every shipping project. Resolved here so individual csprojs stay clean. -->
   <ItemGroup Condition="'$(_IsShippingProject)' == 'true'">
     <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
-    <PackageReference Include="MinVer" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>
