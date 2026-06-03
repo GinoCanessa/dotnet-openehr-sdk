@@ -18,4 +18,8 @@
     <ProjectReference Include="..\DotnetOpenEhr.Rm\DotnetOpenEhr.Rm.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="DotnetOpenEhr.Aql.Tests" />
+  </ItemGroup>
+
 </Project>
