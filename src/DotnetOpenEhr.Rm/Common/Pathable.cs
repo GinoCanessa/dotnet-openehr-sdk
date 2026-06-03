@@ -8,9 +8,11 @@ namespace DotnetOpenEhr.Rm.Common;
 
 // SPEC: Common Information Model.html#_pathable_class (Section 3.2.1).
 /// <summary>
-/// Abstract base class of every node in the openEHR Reference Model that
-/// can be located by path. In this SDK Pathable carries only the shape;
-/// the path-evaluation helpers will be added in a later phase.
+/// Abstract base class of every node in the openEHR Reference Model
+/// that can be located by path. In this SDK <c>Pathable</c> carries
+/// only the shape; the path-evaluation helpers live in
+/// <c>DotnetOpenEhr.Aql.ArchetypePathResolver</c> (one-shot) and
+/// <c>DotnetOpenEhr.Aql.ArchetypePath</c> (pre-compiled).
 /// </summary>
 public abstract class Pathable
 {

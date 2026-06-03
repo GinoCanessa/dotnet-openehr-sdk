@@ -478,6 +478,21 @@ DotnetOpenEhr.Aql.Evaluation.AqlEvaluator aqlEvaluator = new();
 System.Collections.Generic.IReadOnlyList<object?[]> aqlRows = aqlEvaluator.Evaluate(aqlQuery, aqlSource);
 System.Console.WriteLine($"aql: rows={aqlRows.Count}");
 
+// ArchetypePathResolver / ArchetypePath: both surfaces exercised
+// against the existing `obs` fixture so AOT analysis covers the
+// resolver's hand-written walk path. The path needs a leading
+// `data/` step because the BP fixture above attaches the History as
+// obs.Data (i.e. there is no wrapper data[at0001] node).
+double aqlResolverMagnitude = DotnetOpenEhr.Aql.ArchetypePathResolver.Resolve<double>(
+    obs,
+    "/data/events[at0006]/data[at0003]/items[at0004]/value/magnitude");
+System.Console.WriteLine($"aql: resolver.magnitude={aqlResolverMagnitude}");
+
+DotnetOpenEhr.Aql.ArchetypePath aqlPath = DotnetOpenEhr.Aql.ArchetypePath.Parse(
+    "/data/events[at0006]/data[at0003]/items[at0004]/value/magnitude");
+double aqlPathMagnitude = aqlPath.Resolve<double>(obs);
+System.Console.WriteLine($"aql: precompiled.magnitude={aqlPathMagnitude}");
+
 // Shipping-assembly coverage gate. Every shipping NuGet package the SDK
 // publishes must be transitively loaded by the smoke run; otherwise
 // PublishAot would silently skip its IL2*/IL3* analysis. We use
