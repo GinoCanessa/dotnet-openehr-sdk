@@ -47,8 +47,11 @@ public sealed class IsoDuration : IEquatable<IsoDuration>, IComparable<IsoDurati
     public string OriginalLexicalForm { get; }
 
     public static IsoDuration Parse(ReadOnlySpan<char> text)
+        => Parse(text, IsoParseMode.FixAsPossible);
+
+    public static IsoDuration Parse(ReadOnlySpan<char> text, IsoParseMode mode)
     {
-        if (!TryParse(text, out IsoDuration? value))
+        if (!TryParse(text, mode, out IsoDuration? value))
         {
             throw new FormatException($"'{text.ToString()}' is not a valid ISO 8601 duration.");
         }
@@ -56,7 +59,16 @@ public sealed class IsoDuration : IEquatable<IsoDuration>, IComparable<IsoDurati
     }
 
     public static bool TryParse(ReadOnlySpan<char> text, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out IsoDuration? value)
+        => TryParse(text, IsoParseMode.FixAsPossible, out value);
+
+    public static bool TryParse(ReadOnlySpan<char> text, IsoParseMode mode, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out IsoDuration? value)
     {
+        // Mode is reserved for future per-component leniency; today the
+        // grammar is identical across modes. H7 — accept canonical
+        // zero-only forms (PT0S/PT0H/PT0M/P0D/P0W/P0Y) regardless of
+        // mode; the old "all-zero-T-component rejects" guard was a
+        // genuine spec drift, not a leniency knob.
+        _ = mode;
         value = null;
         if (text.IsEmpty) return false;
 
@@ -79,6 +91,7 @@ public sealed class IsoDuration : IEquatable<IsoDuration>, IComparable<IsoDurati
         decimal seconds = 0m;
         bool inTime = false;
         bool anyComponent = false;
+        bool anyTimeComponent = false;
 
         while (index < text.Length)
         {
@@ -130,13 +143,19 @@ public sealed class IsoDuration : IEquatable<IsoDuration>, IComparable<IsoDurati
                     case 'S': if (seconds != 0m) return false; seconds = num; break;
                     default: return false;
                 }
+                anyTimeComponent = true;
             }
 
             anyComponent = true;
         }
 
         if (!anyComponent) return false;
-        if (inTime && hours == 0 && minutes == 0 && seconds == 0m) return false;
+        // "T" must be followed by at least one time component; "P1YT" is
+        // invalid even though anyComponent is true.
+        if (inTime && !anyTimeComponent) return false;
+        // H7: previously rejected PT0S/PT0H/PT0M etc. Spec-permitted;
+        // drop the guard. Bare "P" / "PT" are still rejected via the
+        // !anyComponent / inTime-without-time-component checks above.
 
         value = new IsoDuration(years, months, weeks, days, hours, minutes, seconds, negative, text.ToString());
         return true;

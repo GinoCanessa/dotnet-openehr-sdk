@@ -65,6 +65,15 @@ public sealed class IsoTime : IEquatable<IsoTime>, IComparable<IsoTime>, ICompar
         return value;
     }
 
+    public static IsoTime Parse(ReadOnlySpan<char> text, IsoParseMode mode)
+    {
+        // Mode is reserved for future per-component leniency; today the
+        // IsoTime grammar admits no per-mode variation beyond what
+        // IsoTimeZone itself enforces.
+        _ = mode;
+        return Parse(text);
+    }
+
     public static bool TryParse(ReadOnlySpan<char> text, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out IsoTime? value)
     {
         value = null;

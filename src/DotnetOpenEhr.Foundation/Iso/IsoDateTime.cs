@@ -29,6 +29,15 @@ public sealed class IsoDateTime : IEquatable<IsoDateTime>, IComparable<IsoDateTi
         return value;
     }
 
+    public static IsoDateTime Parse(ReadOnlySpan<char> text, IsoParseMode mode)
+    {
+        // Mode is reserved for future per-component leniency; today the
+        // IsoDateTime grammar admits no per-mode variation beyond what
+        // IsoTimeZone itself enforces (called via IsoTime).
+        _ = mode;
+        return Parse(text);
+    }
+
     public static bool TryParse(ReadOnlySpan<char> text, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out IsoDateTime? value)
     {
         value = null;

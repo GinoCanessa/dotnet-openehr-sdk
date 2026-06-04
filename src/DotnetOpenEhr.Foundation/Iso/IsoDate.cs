@@ -54,6 +54,14 @@ public sealed class IsoDate : IEquatable<IsoDate>, IComparable<IsoDate>, ICompar
         return value;
     }
 
+    public static IsoDate Parse(ReadOnlySpan<char> text, IsoParseMode mode)
+    {
+        // Mode is reserved for future per-component leniency; today the
+        // IsoDate grammar admits no per-mode variation.
+        _ = mode;
+        return Parse(text);
+    }
+
     public static bool TryParse(ReadOnlySpan<char> text, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out IsoDate? value)
     {
         value = null;
