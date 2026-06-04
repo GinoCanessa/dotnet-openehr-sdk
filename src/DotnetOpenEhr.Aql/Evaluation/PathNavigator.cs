@@ -232,12 +232,12 @@ internal static class PathNavigator
         },
         Activity a => name switch
         {
+            // Locatable base attrs (name, uid, archetype_node_id,
+            // archetype_details, links, feeder_audit) inherited from the
+            // GetCanonicalAttribute pre-check above.
             "description" => a.Description,
             "timing" => a.Timing,
             "action_archetype_id" => a.ActionArchetypeId,
-            "name" => a.Name,
-            "archetype_node_id" => a.ArchetypeNodeId,
-            "uid" => a.Uid,
             _ => null,
         },
         History h => name switch
@@ -274,47 +274,52 @@ internal static class PathNavigator
         },
         ItemTree it => name switch
         {
+            // Locatable base attrs (name, uid, archetype_node_id,
+            // archetype_details, links, feeder_audit) inherited from the
+            // GetCanonicalAttribute pre-check above.
             "items" => it.Items,
-            "name" => it.Name,
-            "archetype_node_id" => it.ArchetypeNodeId,
             _ => null,
         },
         ItemList il => name switch
         {
+            // Locatable base attrs (name, uid, archetype_node_id,
+            // archetype_details, links, feeder_audit) inherited from the
+            // GetCanonicalAttribute pre-check above.
             "items" => il.Items,
-            "name" => il.Name,
-            "archetype_node_id" => il.ArchetypeNodeId,
             _ => null,
         },
         ItemSingle iss => name switch
         {
+            // Locatable base attrs (name, uid, archetype_node_id,
+            // archetype_details, links, feeder_audit) inherited from the
+            // GetCanonicalAttribute pre-check above.
             "item" => iss.Item,
-            "name" => iss.Name,
-            "archetype_node_id" => iss.ArchetypeNodeId,
             _ => null,
         },
         ItemTable itb => name switch
         {
+            // Locatable base attrs (name, uid, archetype_node_id,
+            // archetype_details, links, feeder_audit) inherited from the
+            // GetCanonicalAttribute pre-check above.
             "rows" => itb.Rows,
-            "name" => itb.Name,
-            "archetype_node_id" => itb.ArchetypeNodeId,
             _ => null,
         },
         Cluster cl => name switch
         {
+            // Locatable base attrs (name, uid, archetype_node_id,
+            // archetype_details, links, feeder_audit) inherited from the
+            // GetCanonicalAttribute pre-check above.
             "items" => cl.Items,
-            "name" => cl.Name,
-            "archetype_node_id" => cl.ArchetypeNodeId,
-            "uid" => cl.Uid,
             _ => null,
         },
         Element el => name switch
         {
+            // Locatable base attrs (name, uid, archetype_node_id,
+            // archetype_details, links, feeder_audit) inherited from the
+            // GetCanonicalAttribute pre-check above.
             "value" => el.Value,
             "null_flavour" => el.NullFlavour,
             "null_reason" => el.NullReason,
-            "name" => el.Name,
-            "archetype_node_id" => el.ArchetypeNodeId,
             _ => null,
         },
         DvCodedText dct => name switch
