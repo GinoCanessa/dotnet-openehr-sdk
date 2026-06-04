@@ -5,6 +5,7 @@ using DotnetOpenEhr.Rm.Composition;
 using DotnetOpenEhr.Rm.DataStructures;
 using DotnetOpenEhr.Rm.DataTypes;
 using DotnetOpenEhr.Rm.DataTypes.Basic;
+using DotnetOpenEhr.Rm.DataTypes.DateTime;
 using DotnetOpenEhr.Rm.DataTypes.Quantity;
 using DotnetOpenEhr.Rm.DataTypes.Text;
 using DotnetOpenEhr.Serialization.Json;
@@ -289,6 +290,26 @@ public sealed class FlatSchemaDrivenRoundTripTests
 
             case DvText et when actual is DvText at:
                 Assert.Equal(et.Value, at.Value);
+                break;
+
+            // M26 — temporal + duration leaf comparisons. Compares the
+            // canonical Iso* serialisation rather than instance equality
+            // to remain robust against IsoDate / IsoTime / IsoDuration
+            // implementations that intentionally compare by structure.
+            case DvDate ed when actual is DvDate ad:
+                Assert.Equal(ed.Value.ToString(), ad.Value.ToString());
+                break;
+
+            case DvTime ett when actual is DvTime att:
+                Assert.Equal(ett.Value.ToString(), att.Value.ToString());
+                break;
+
+            case DvDateTime edt when actual is DvDateTime adt:
+                Assert.Equal(edt.Value.ToString(), adt.Value.ToString());
+                break;
+
+            case DvDuration edu when actual is DvDuration adu:
+                Assert.Equal(edu.Value.ToString(), adu.Value.ToString());
                 break;
 
             default:

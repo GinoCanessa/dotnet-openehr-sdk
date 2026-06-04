@@ -1,3 +1,4 @@
+using System.Linq;
 using DotnetOpenEhr.Terminology;
 using Xunit;
 
@@ -144,5 +145,45 @@ public class OpenEhrTerminologyTests
             $"Expected code '{code}' in group '{groupId}'.");
         Assert.NotNull(entry);
         Assert.Equal(expectedRubric, entry.Rubric);
+    }
+
+    /// <summary>
+    /// L8 — confirms <see cref="OpenEhrTerminology.GroupIds"/> is now
+    /// exposed as an <see cref="IReadOnlySet{T}"/> with O(1) membership.
+    /// </summary>
+    [Fact]
+    public void GroupIds_is_a_set_with_o1_membership()
+    {
+        Assert.IsAssignableFrom<IReadOnlySet<string>>(OpenEhrTerminology.GroupIds);
+        Assert.True(OpenEhrTerminology.GroupIds.Contains("null_flavours"));
+        Assert.False(OpenEhrTerminology.GroupIds.Contains("not_a_real_group_xyz"));
+    }
+
+    /// <summary>
+    /// L8 — sanity-pin the current state of the <c>Description</c>
+    /// plumbing. The JSON loader passes <c>e.Description</c> through to
+    /// every <see cref="TerminologyEntry"/>, but the embedded JSON
+    /// fixtures shipped with this package do not currently populate the
+    /// optional <c>description</c> field. If a future change adds
+    /// descriptions to the embedded JSON this test will fail and prompt
+    /// the team to upgrade the per-entry assertions in
+    /// <see cref="Spec_canonical_code_present_with_expected_rubric"/>.
+    /// </summary>
+    [Fact]
+    public void Description_field_is_currently_unpopulated_for_all_entries()
+    {
+        int populated = 0;
+        foreach (string groupId in OpenEhrTerminology.GroupIds)
+        {
+            IReadOnlyDictionary<string, TerminologyEntry> group = OpenEhrTerminology.GetGroup(groupId);
+            foreach (TerminologyEntry entry in group.Values)
+            {
+                if (!string.IsNullOrWhiteSpace(entry.Description))
+                {
+                    populated++;
+                }
+            }
+        }
+        Assert.Equal(0, populated);
     }
 }

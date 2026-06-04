@@ -312,4 +312,63 @@ public class AqlLexerTests
         Assert.Equal(AqlTokenKind.Identifier, tokens[4].Kind);
         Assert.Equal(AqlTokenKind.EndOfFile, tokens[5].Kind);
     }
+
+    // -------------------------------------------------------------
+    // M14 — string literals must not span lines.
+    // -------------------------------------------------------------
+
+    [Fact]
+    public void String_literal_with_embedded_newline_is_rejected_as_unterminated()
+    {
+        AqlLexException ex = Assert.Throws<AqlLexException>(
+            () => Lex("'hello\nworld'"));
+        // Error position must point at the offending newline on line 1
+        // (the column counter advanced past `'hello`, i.e. col 7).
+        Assert.Equal(1, ex.Line);
+        Assert.Equal(7, ex.Column);
+        Assert.Contains("Unterminated", ex.Message, System.StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void String_literal_with_embedded_crlf_is_rejected_as_unterminated()
+    {
+        AqlLexException ex = Assert.Throws<AqlLexException>(
+            () => Lex("'hello\r\nworld'"));
+        Assert.Equal(1, ex.Line);
+        Assert.Contains("Unterminated", ex.Message, System.StringComparison.Ordinal);
+    }
+
+    // -------------------------------------------------------------
+    // M18 — line/column accounting under CRLF, BOM, and tabs.
+    // -------------------------------------------------------------
+
+    [Fact]
+    public void Crlf_newlines_count_as_one_line()
+    {
+        // Three CRLF-terminated lines: SELECT / FROM / EHR.
+        List<AqlTokenSnapshot> tokens = Lex("SELECT\r\nc\r\nFROM EHR e");
+        // First non-trivia token starts on line 1, second on line 2, third on line 3.
+        Assert.Equal(1, tokens[0].Line);
+        Assert.Equal(2, tokens[1].Line);
+        Assert.Equal(3, tokens[2].Line);
+    }
+
+    [Fact]
+    public void Bom_at_start_throws_with_position_one()
+    {
+        AqlLexException ex = Assert.Throws<AqlLexException>(
+            () => Lex("\uFEFFSELECT c FROM EHR e"));
+        Assert.Equal(1, ex.Line);
+        Assert.Equal(1, ex.Column);
+    }
+
+    [Fact]
+    public void Bad_token_on_third_crlf_line_reports_line_3()
+    {
+        // Lines: "SELECT", "c FROM EHR e", "@@@". The '@' is an
+        // illegal start character — the error must point at line 3.
+        AqlLexException ex = Assert.Throws<AqlLexException>(
+            () => Lex("SELECT\r\nc FROM EHR e\r\n@@@"));
+        Assert.Equal(3, ex.Line);
+    }
 }

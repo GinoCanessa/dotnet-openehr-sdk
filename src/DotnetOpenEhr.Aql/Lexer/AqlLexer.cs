@@ -399,22 +399,17 @@ public ref struct AqlLexer
                 rawStart = _pos;
                 continue;
             }
-            if (c == '\n')
+            if (c == '\n' || c == '\r')
             {
-                AdvanceNewline(1);
-                continue;
-            }
-            if (c == '\r')
-            {
-                if (_pos + 1 < _source.Length && _source[_pos + 1] == '\n')
-                {
-                    AdvanceNewline(2);
-                }
-                else
-                {
-                    AdvanceNewline(1);
-                }
-                continue;
+                // M14 — string literals may not span lines. The most
+                // common cause of a `\n` inside a string is a missing
+                // closing quote on the previous line; report it as
+                // unterminated and point at the newline so editor
+                // gutters land on the offending row.
+                throw NewError(
+                    "Unterminated string literal (embedded newline).",
+                    _line,
+                    _column);
             }
             Advance(1);
         }

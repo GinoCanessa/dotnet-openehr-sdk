@@ -17,35 +17,39 @@ namespace DotnetOpenEhr.Terminology;
 public static class OpenEhrTerminology
 {
     /// <summary>
-    /// Canonical group identifiers shipped with this assembly. Keep this
+    /// Canonical group identifiers shipped with this assembly. Kept as a
+    /// <see cref="FrozenSet{T}"/> so the public <see cref="GroupIds"/>
+    /// surface can guarantee O(1) membership (and so a caller cannot
+    /// downcast the exposed collection to a mutable array). Keep this
     /// list in sync with the embedded resources under <c>Groups/</c>.
-    /// Ordered alphabetically to make snapshot tests stable.
     /// </summary>
-    private static readonly string[] s_groupIds =
-    [
-        "attestation_reason",
-        "audit_change_type",
-        "composition_category",
-        "event_math_function",
-        "instruction_states",
-        "instruction_transitions",
-        "null_flavours",
-        "participation_function",
-        "participation_mode",
-        "property",
-        "setting",
-        "subject_relationship",
-        "term_mapping_purpose",
-        "version_lifecycle_state",
-    ];
+    private static readonly FrozenSet<string> s_groupIds = FrozenSet.ToFrozenSet(
+        [
+            "attestation_reason",
+            "audit_change_type",
+            "composition_category",
+            "event_math_function",
+            "instruction_states",
+            "instruction_transitions",
+            "null_flavours",
+            "participation_function",
+            "participation_mode",
+            "property",
+            "setting",
+            "subject_relationship",
+            "term_mapping_purpose",
+            "version_lifecycle_state",
+        ],
+        StringComparer.Ordinal);
 
     private static FrozenDictionary<string, FrozenDictionary<string, TerminologyEntry>>? s_groups;
 
     /// <summary>
     /// The set of canonical openEHR Support Terminology group identifiers
-    /// shipped by this assembly.
+    /// shipped by this assembly. Backed by a <see cref="FrozenSet{T}"/>;
+    /// exposed as <see cref="IReadOnlySet{T}"/> for O(1) <c>Contains</c>.
     /// </summary>
-    public static IReadOnlyCollection<string> GroupIds => s_groupIds;
+    public static IReadOnlySet<string> GroupIds => s_groupIds;
 
     /// <summary>
     /// Look up the named group and return an immutable code-keyed

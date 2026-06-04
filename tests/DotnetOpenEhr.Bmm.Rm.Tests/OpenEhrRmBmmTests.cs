@@ -156,4 +156,95 @@ public class OpenEhrRmBmmTests
         missing.Sort(StringComparer.Ordinal);
         Assert.Equal(s_documentedBmmToRmMisses, missing);
     }
+
+    // -- M17 — deep-shape characterization --------------------------------
+
+    private static BmmProperty PropertyOf(string className, string propertyName)
+    {
+        BmmModel model = OpenEhrRmBmm.LoadDefault();
+        BmmClass? cls = model.GetClass(className);
+        Assert.NotNull(cls);
+        BmmClass walker = cls!;
+        while (true)
+        {
+            if (walker.Properties.TryGetValue(propertyName, out BmmProperty? hit))
+            {
+                return hit;
+            }
+            if (walker.Ancestors.Count == 0)
+            {
+                throw new InvalidOperationException(
+                    $"Property '{propertyName}' not found on '{className}' or any ancestor.");
+            }
+            BmmClass? parent = model.GetClass(walker.Ancestors[0]);
+            Assert.NotNull(parent);
+            walker = parent!;
+        }
+    }
+
+    [Fact]
+    public void Composition_context_property_resolves_to_expected_type()
+    {
+        BmmProperty p = PropertyOf("COMPOSITION", "context");
+        Assert.Equal("EVENT_CONTEXT", p.Type.TypeName);
+    }
+
+    [Fact]
+    public void Observation_data_property_is_history_container()
+    {
+        BmmProperty p = PropertyOf("OBSERVATION", "data");
+        // OBSERVATION.data is HISTORY<ITEM_STRUCTURE> — a generic
+        // shape whose outer name is HISTORY.
+        Assert.Equal("HISTORY", p.Type.TypeName);
+    }
+
+    [Fact]
+    public void Locatable_archetype_node_id_is_mandatory_string()
+    {
+        BmmProperty p = PropertyOf("LOCATABLE", "archetype_node_id");
+        Assert.Equal("String", p.Type.TypeName);
+        Assert.True(p.IsMandatory, "archetype_node_id must be mandatory on LOCATABLE.");
+    }
+
+    [Fact]
+    public void Cluster_items_is_p_list_with_minimum_one()
+    {
+        BmmProperty p = PropertyOf("CLUSTER", "items");
+        // CLUSTER.items is a P_List/List of ITEM with at least one entry.
+        BmmContainerType container = Assert.IsType<BmmContainerType>(p.Type);
+        Assert.NotEmpty(container.TypeArguments);
+        // Cardinality lower-bound is 1.
+        Assert.NotNull(p.Cardinality);
+        Assert.True(
+            p.Cardinality!.Interval.HasLower && p.Cardinality.Interval.Lower >= 1,
+            $"Expected cardinality lower-bound ≥1; got {p.Cardinality.Interval}");
+    }
+
+    // -- M28 — embedded file enumeration pinning --------------------------
+
+    [Fact]
+    public void EmbeddedFileNames_enumerates_in_declaration_order()
+    {
+        // The set's documented intent is "ten canonical files spanning
+        // base + RM"; enumeration ordering is implementation-defined on
+        // FrozenSet, so the pin is on set membership + count rather than
+        // index-by-index sequence.
+        string[] expected =
+        [
+            "openehr_base_120.bmm",
+            "openehr_base_base_types_120.bmm",
+            "openehr_base_foundation_types_120.bmm",
+            "openehr_base_resource_120.bmm",
+            "openehr_rm_110.bmm",
+            "openehr_rm_data_types_110.bmm",
+            "openehr_rm_demographic_110.bmm",
+            "openehr_rm_ehr_110.bmm",
+            "openehr_rm_ehr_extract_110.bmm",
+            "openehr_rm_structures_110.bmm",
+        ];
+        Assert.Equal(expected.Length, OpenEhrRmBmm.EmbeddedFileNames.Count);
+        Assert.Equal(
+            expected.OrderBy(s => s, StringComparer.Ordinal),
+            OpenEhrRmBmm.EmbeddedFileNames.OrderBy(s => s, StringComparer.Ordinal));
+    }
 }
