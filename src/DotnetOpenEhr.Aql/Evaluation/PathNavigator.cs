@@ -140,16 +140,10 @@ internal static class PathNavigator
         {
             "content" => c.Content,
             "context" => c.Context,
-            "name" => c.Name,
-            "uid" => c.Uid,
-            "archetype_node_id" => c.ArchetypeNodeId,
-            "archetype_details" => c.ArchetypeDetails,
             "language" => c.Language,
             "territory" => c.Territory,
             "category" => c.Category,
             "composer" => c.Composer,
-            "links" => c.Links,
-            "feeder_audit" => c.FeederAudit,
             _ => null,
         },
         EventContext ec => name switch
@@ -166,11 +160,6 @@ internal static class PathNavigator
         Section s => name switch
         {
             "items" => s.Items,
-            "name" => s.Name,
-            "uid" => s.Uid,
-            "archetype_node_id" => s.ArchetypeNodeId,
-            "archetype_details" => s.ArchetypeDetails,
-            "links" => s.Links,
             _ => null,
         },
         Observation o => name switch
@@ -424,16 +413,6 @@ internal static class PathNavigator
             "name" => pi.Name,
             "identifiers" => pi.Identifiers,
             "external_ref" => pi.ExternalRef,
-            _ => null,
-        },
-        Locatable loc => name switch
-        {
-            "name" => loc.Name,
-            "uid" => loc.Uid,
-            "archetype_node_id" => loc.ArchetypeNodeId,
-            "archetype_details" => loc.ArchetypeDetails,
-            "links" => loc.Links,
-            "feeder_audit" => loc.FeederAudit,
             _ => null,
         },
         _ => null,
