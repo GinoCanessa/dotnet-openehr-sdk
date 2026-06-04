@@ -134,6 +134,11 @@ internal static class PathNavigator
             };
             if (baseHit is not null) return baseHit;
         }
+        // Subtype arms list attributes the subtype defines on top of
+        // Locatable. The six Locatable base names (name, uid,
+        // archetype_node_id, archetype_details, links, feeder_audit)
+        // are resolved by the pre-check above and MUST NOT be repeated
+        // here.
         return value switch
         {
         Composition c => name switch
@@ -242,34 +247,37 @@ internal static class PathNavigator
         },
         History h => name switch
         {
+            // Locatable base attrs (name, uid, archetype_node_id,
+            // archetype_details, links, feeder_audit) inherited from the
+            // GetCanonicalAttribute pre-check above.
             "origin" => h.Origin,
             "events" => h.Events,
             "period" => h.Period,
             "duration" => h.Duration,
             "summary" => h.Summary,
-            "name" => h.Name,
-            "archetype_node_id" => h.ArchetypeNodeId,
             _ => null,
         },
         IntervalEvent iev => name switch
         {
+            // Locatable base attrs (name, uid, archetype_node_id,
+            // archetype_details, links, feeder_audit) inherited from the
+            // GetCanonicalAttribute pre-check above.
             "time" => iev.Time,
             "data" => iev.Data,
             "state" => iev.State,
             "width" => iev.Width,
             "sample_count" => iev.SampleCount,
             "math_function" => iev.MathFunction,
-            "name" => iev.Name,
-            "archetype_node_id" => iev.ArchetypeNodeId,
             _ => null,
         },
         RmEvent e => name switch
         {
+            // Locatable base attrs (name, uid, archetype_node_id,
+            // archetype_details, links, feeder_audit) inherited from the
+            // GetCanonicalAttribute pre-check above.
             "time" => e.Time,
             "data" => e.Data,
             "state" => e.State,
-            "name" => e.Name,
-            "archetype_node_id" => e.ArchetypeNodeId,
             _ => null,
         },
         ItemTree it => name switch
