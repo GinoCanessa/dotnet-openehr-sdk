@@ -1,0 +1,12 @@
+[
+  [
+    "openEHR-EHR-COMPOSITION.encounter.v1",
+    "openEHR-EHR-OBSERVATION.blood_pressure.v2",
+    "at0005"
+  ],
+  [
+    "openEHR-EHR-COMPOSITION.encounter.v1",
+    "openEHR-EHR-OBSERVATION.blood_pressure.v2",
+    "at0004"
+  ]
+]
