@@ -10,7 +10,115 @@ unstable** and may change between alphas.
 
 ## [Unreleased]
 
-### Changed
+### Added
+
+- **`IsoParseMode` enum** in `DotnetOpenEhr.Foundation.Iso` with
+  `Strict`, `Ostrich`, and `FixAsPossible` modes; all
+  `Iso{Date,Time,DateTime,Duration,TimeZone}` parsers gained
+  `(ReadOnlySpan<char>, IsoParseMode)` overloads. Existing paramless
+  overloads default to `FixAsPossible` for backward compatibility.
+- **`IsoDuration` now accepts the zero-only forms** `PT0S`, `PT0H`,
+  `PT0M` per the ISO 8601 spec; `P1YT` and bare `PT` still reject.
+- **`OperationalTemplateValidatorOptions.RegexMatchTimeout`** — opt-in
+  per-pattern timeout for the validator's regex evaluator. Defaults to
+  100 ms; a `RegexMatchTimeoutException` surfaces as a
+  `NotValidated` issue rather than crashing the validator.
+- **Per-pattern compiled-regex cache** in the validator, keyed by
+  pattern string, so repeat constraints in a wide OPT share a single
+  compiled state machine.
+- **AOT smoke test** (`tests/DotnetOpenEhr.AotSmoke`) now part of the
+  pre-merge gate; the publish must print `smoke ok` against a
+  `PublishAot=true` build.
+
+### Changed (BREAKING)
+
+- **RM type narrowing for spec fidelity.** Several RM properties have
+  been narrowed to spec-correct concrete bounds. Affected properties:
+  - `Composition.Composer` default is now `null` (was
+    `new PartyIdentified()`); explicit construction is required.
+  - `DvMultimedia.Size` is now `long` (was `int`) so payloads above
+    2 GiB round-trip without truncation.
+  - Several `Interval<DvOrdered>` properties on `PartyProxy`,
+    `Demographic`, `Quantity`, and `History` are now typed with
+    spec-correct concrete bounds.
+- **`IsoTimeZone` parser range tightened.** Hours outside `[-12, +14]`
+  and minutes outside `{0, 15, 30, 45}` now reject under `Strict` and
+  clamp/normalise under `FixAsPossible`; equality is now compared
+  through `ToTimeSpan` so `+00:00` and `Z` compare equal.
+- **`IsoTime.CompareTo` / `IsoDateTime.CompareTo` mixed-zone policy
+  unified.** Comparing two operands where one carries a timezone and
+  the other does not now throws `InvalidOperationException` instead of
+  silently coercing the zoneless operand to local time.
+
+### Fixed
+
+- **B1 — AQL `DISTINCT` row-key canonicalisation.** The `RowKey`
+  helper that backs `DISTINCT` now produces a hash and an equality
+  contract that agree across mixed `DvText`/`DvCodedText` columns;
+  previously the hash and equality could disagree and emit duplicate
+  rows.
+- **B2 — validator `OverflowException` on legitimate input.**
+  `OperationalTemplateValidator.ValidateLong` no longer casts a
+  `long` magnitude to `int` with `checked`; values above `int.MaxValue`
+  emit a `NumericOutOfRange` issue rather than throwing.
+- **B3 — `BmmParseException` line/column.** Every non-ODIN throw site
+  in `BmmParser` now threads the offending ODIN token's `Line`/`Column`
+  through `OdinValue.Line`/`Column` rather than emitting `0, 0`.
+- **B4 — FLAT archive coverage.** The 13 archived
+  `openfhir-archive/*_flat.json` fixtures are now driven by the
+  `schema-required` bucket of the lossless catalogue, asserting they
+  surface a `SchemaRequired` exception with a path-naming message.
+- **H1 — AOT trim posture.** Removed the
+  `Activator.CreateInstance(..., NonPublic)` site in
+  `Adl2Parser.PostProcessForOpt2`; the concrete `OperationalTemplate`
+  is now constructed directly via `new()`.
+- **H5/H6 — FLAT silent failures.** `FlatJsonContentParser.ReadDouble`/
+  `ReadInt`/`ReadInt64` throw `JsonException` with path context on
+  malformed numeric input; `InstantiateContentItem` throws on unknown
+  `rmType` instead of silently downgrading to `Section`.
+- **H7 — `IsoDuration` accepts `PT0S`.** See *Added* above.
+- **H8 — validator regex hardening.** The regex evaluator now uses a
+  per-pattern compiled-regex cache, a configurable timeout, and emits
+  `NotValidated` (not a crash) on parse / timeout.
+- **H9 — schema-required exception message format pinned**
+  (`FlatSchemaRequiredException.BuildMessage`).
+- **H13 — canonical JSON byte snapshot.** Eight canonical-wire
+  fixtures now have checked-in `*.expected.json` byte snapshots
+  regenerable via `OPENEHR_REGENERATE_CANONICAL_WIRE_SNAPSHOTS=1`.
+  Deliberate-mutation smoke confirms drift detection.
+- **M1/M2/M4/M5/M7/M11/M13/M19/M21/M22/M23/M25.** Various
+  smaller correctness and diagnostic fixes — see commit log.
+
+### Performance
+
+- **H3 — `OperationalTemplate.TryResolveType` is now zero-alloc.** The
+  FLAT-path index is exposed through a `FrozenDictionary.AlternateLookup<ReadOnlySpan<char>>`
+  so callers no longer incur a per-call `string` allocation.
+- **H4 — `AqlEvaluator.Binding` rewritten as a parent-pointer linked
+  list.** Each `With(alias, value)` allocates a single node instead of
+  cloning a backing dictionary; per-row evaluation under CONTAINS-heavy
+  queries is now O(depth) allocations, not O(depth × aliases).
+  Equivalence pinned by the `BindingRefactorEquivalenceTests` fixture.
+- **M3 — `OperationalTemplate.HasSubtypes` precomputed once per
+  `BmmModel`** via `ConditionalWeakTable<BmmModel, FrozenSet<string>>`.
+- **M9 — `AqlLexer.MatchKeyword` and `AqlEvaluator.EvalFunction` now
+  dispatch through `OrdinalIgnoreCase` `FrozenDictionary` tables**,
+  eliminating per-call `ToUpperInvariant`/`ToLowerInvariant`
+  allocations.
+- **M8 / L7 — assorted hot-path cleanups** in `PathNavigator` and
+  `Opt2Parser`.
+
+### Removed
+
+- **MinVer.** Reverts the `MinVer` integration introduced in
+  `0.1.0-alpha.1`; package versions are no longer derived from git
+  tags. `Microsoft.SourceLink.GitHub` is unaffected and still
+  ships.
+- **L1/L2/L3 dead code.** Identical-arm ternary in
+  `AqlEvaluator.EvalUnary`; per-character loop in `OdinLexer.Advance`;
+  unread `AqlLexer._lastKind` field.
+
+### Versioning
 
 - **Versioning is now date-based and deterministic per build.** Every
   shipping `src/` package emits a NuGet version of
@@ -20,13 +128,6 @@ unstable** and may change between alphas.
   strips leading zeros from the version segments, so the on-disk
   filename for a build at 2026-06-03 08:12 UTC is
   `<Package>.2026.603.812-beta.0.nupkg`.
-
-### Removed
-
-- **MinVer.** Reverts the `MinVer` integration introduced in
-  `0.1.0-alpha.1`; package versions are no longer derived from git
-  tags. `Microsoft.SourceLink.GitHub` is unaffected and still
-  ships.
 
 ## [0.1.0-alpha.1] - 2026-02-14
 
