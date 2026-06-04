@@ -259,7 +259,36 @@ internal static class ArchetypePathParser
             errorPosition = i + 1;
             return false;
         }
-        nodeId = path.Slice(start, i - start).ToString();
+        ReadOnlySpan<char> idSpan = path.Slice(start, i - start);
+
+        // M13 — reject malformed node IDs: leading or trailing '.' / '-'
+        // and consecutive '..' / '--' indicate a typo or a corrupted
+        // path. The valid node id grammar is a sequence of identifier
+        // chars with single-dot separators, never bordering or doubled.
+        if (idSpan[0] == '.' || idSpan[0] == '-')
+        {
+            error = $"Node id '{idSpan.ToString()}' must not start with '.' or '-'.";
+            errorPosition = start + 1;
+            return false;
+        }
+        if (idSpan[^1] == '.' || idSpan[^1] == '-')
+        {
+            error = $"Node id '{idSpan.ToString()}' must not end with '.' or '-'.";
+            errorPosition = i;
+            return false;
+        }
+        for (int k = 1; k < idSpan.Length; k++)
+        {
+            if ((idSpan[k] == '.' && idSpan[k - 1] == '.')
+                || (idSpan[k] == '-' && idSpan[k - 1] == '-'))
+            {
+                error = $"Node id '{idSpan.ToString()}' must not contain '..' or '--'.";
+                errorPosition = start + k + 1;
+                return false;
+            }
+        }
+
+        nodeId = idSpan.ToString();
         return true;
     }
 

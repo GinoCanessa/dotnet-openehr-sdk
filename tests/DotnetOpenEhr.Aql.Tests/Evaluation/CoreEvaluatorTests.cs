@@ -542,4 +542,26 @@ public class CoreEvaluatorTests
         if (less) return -1;
         return null;
     }
+
+    // ---- M11: Evaluate result must not share mutable storage --------
+
+    [Fact]
+    public void Evaluate_DoesNotShareMutableBufferWithCaller()
+    {
+        AqlQuery q = AqlParser.Parse(
+            "SELECT c/uid/value FROM EHR e CONTAINS COMPOSITION c");
+        List<Composition> comps = ThreeNamedCompositions();
+
+        IReadOnlyList<object?[]> first = Evaluator.Evaluate(q, comps, ct: TestContext.Current.CancellationToken);
+        IReadOnlyList<object?[]> second = Evaluator.Evaluate(q, comps, ct: TestContext.Current.CancellationToken);
+
+        Assert.NotSame(first, second);
+
+        // Mutating the first array of rows must not affect the second.
+        if (first is object?[] firstArr && firstArr.Length > 0 && firstArr[0] is object?[] firstRow)
+        {
+            firstRow[0] = "mutated";
+        }
+        Assert.Equal("uid-1", second[0][0]);
+    }
 }

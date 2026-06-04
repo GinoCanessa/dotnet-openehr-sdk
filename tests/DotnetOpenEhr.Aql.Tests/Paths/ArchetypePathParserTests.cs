@@ -170,4 +170,46 @@ public class ArchetypePathParserTests
         Assert.Equal(2, segments!.Length);
         Assert.Null(error);
     }
+
+    // ---- M13: node id well-formedness --------------------------------
+
+    [Fact]
+    public void Parse_rejects_trailing_dot_in_node_id()
+    {
+        ArchetypePathParseException ex = Assert.Throws<ArchetypePathParseException>(
+            () => ArchetypePathParser.Parse("data[at0006.]"));
+        Assert.Contains("must not end with", ex.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Parse_rejects_double_dot_in_node_id()
+    {
+        ArchetypePathParseException ex = Assert.Throws<ArchetypePathParseException>(
+            () => ArchetypePathParser.Parse("data[at..0006]"));
+        Assert.Contains("'..'", ex.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Parse_rejects_leading_dash_in_node_id()
+    {
+        ArchetypePathParseException ex = Assert.Throws<ArchetypePathParseException>(
+            () => ArchetypePathParser.Parse("data[-at0006]"));
+        Assert.Contains("must not start with", ex.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Parse_rejects_leading_dot_in_node_id()
+    {
+        ArchetypePathParseException ex = Assert.Throws<ArchetypePathParseException>(
+            () => ArchetypePathParser.Parse("data[.at0006]"));
+        Assert.Contains("must not start with", ex.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Parse_rejects_double_dash_in_node_id()
+    {
+        ArchetypePathParseException ex = Assert.Throws<ArchetypePathParseException>(
+            () => ArchetypePathParser.Parse("data[at0006--xyz]"));
+        Assert.Contains("'--'", ex.Message, StringComparison.Ordinal);
+    }
 }

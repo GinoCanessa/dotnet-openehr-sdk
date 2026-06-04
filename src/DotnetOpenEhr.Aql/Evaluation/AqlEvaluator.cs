@@ -294,7 +294,11 @@ public sealed class AqlEvaluator
     {
         int offset = offsetN ?? 0;
         int limit = limitN ?? int.MaxValue;
-        if (offset <= 0 && limit >= rows.Count) return rows;
+        // M11 — never share the caller-owned `rows` list; always
+        // return a fresh array so callers can mutate their own copy
+        // without affecting (or being affected by) a subsequent
+        // evaluation that reuses the same query.
+        if (offset <= 0 && limit >= rows.Count) return rows.ToArray();
         if (offset >= rows.Count || limit <= 0) return [];
         int take = Math.Min(limit, rows.Count - offset);
         List<object?[]> result = new(take);
