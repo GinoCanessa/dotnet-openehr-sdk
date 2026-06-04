@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 using DotnetOpenEhr.Archetypes.Aom2.Constraint;
 using DotnetOpenEhr.Archetypes.Aom2.Terminology;
@@ -28,6 +29,52 @@ namespace DotnetOpenEhr.Templates.Validation;
 /// </remarks>
 public sealed class OperationalTemplateValidator
 {
+    private readonly OperationalTemplateValidatorOptions _options;
+
+    // H8 — regex cache: only successfully compiled patterns are added,
+    // so a malformed pattern submitted N times does not poison the
+    // cache. Keyed on (pattern, timeout) so different validator
+    // instances with different timeout postures share entries safely.
+    // Process-global; bounded by the number of distinct valid
+    // (pattern, timeout) pairs across loaded templates (O(100s) in
+    // realistic workloads).
+    internal static readonly ConcurrentDictionary<(string Pattern, TimeSpan Timeout), Regex> s_regexCache = new();
+
+    // H8 — the configured timeout is read in static helpers via
+    // [ThreadStatic] to avoid a 6-method-signature plumbing refactor.
+    // Set on Validate entry, cleared on exit. Single-thread-safe per
+    // Validate call; concurrent validators on different threads each
+    // see their own configured timeout.
+    [ThreadStatic]
+    private static TimeSpan? s_currentMatchTimeout;
+
+    /// <summary>
+    /// Creates a validator with the default
+    /// <see cref="OperationalTemplateValidatorOptions"/>.
+    /// </summary>
+    public OperationalTemplateValidator()
+        : this(new OperationalTemplateValidatorOptions())
+    {
+    }
+
+    /// <summary>
+    /// Creates a validator with the supplied options.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="options"/>'s <c>RegexMatchTimeout</c> is negative.
+    /// </exception>
+    public OperationalTemplateValidator(OperationalTemplateValidatorOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        if (options.RegexMatchTimeout < TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(options),
+                options.RegexMatchTimeout,
+                "RegexMatchTimeout must be non-negative; use TimeSpan.Zero to opt out.");
+        }
+        _options = options;
+    }
     /// <summary>
     /// Validates <paramref name="composition"/> against
     /// <paramref name="template"/> and returns the (possibly empty)
@@ -68,7 +115,18 @@ public sealed class OperationalTemplateValidator
             return issues;
         }
 
-        Walk(root, rootTemplate, "/", template, issues, ct);
+        // H8 — expose the configured timeout to static regex helpers for
+        // the duration of this Validate call.
+        TimeSpan? previous = s_currentMatchTimeout;
+        s_currentMatchTimeout = _options.RegexMatchTimeout;
+        try
+        {
+            Walk(root, rootTemplate, "/", template, issues, ct);
+        }
+        finally
+        {
+            s_currentMatchTimeout = previous;
+        }
         return issues;
     }
 
@@ -697,22 +755,52 @@ public sealed class OperationalTemplateValidator
     {
         if (!string.IsNullOrEmpty(constraint.Pattern))
         {
-            Regex rx;
+            // H8 — cache successfully-compiled regexes only; malformed
+            // patterns emit NotValidated without poisoning the cache.
+            TimeSpan timeout = s_currentMatchTimeout
+                ?? TimeSpan.FromSeconds(1);
+
+            Regex? rx;
             try
             {
-                rx = new Regex(constraint.Pattern!, RegexOptions.CultureInvariant);
+                rx = s_regexCache.GetOrAdd(
+                    (constraint.Pattern!, timeout),
+                    static key => new Regex(
+                        key.Pattern,
+                        RegexOptions.Compiled | RegexOptions.CultureInvariant,
+                        key.Timeout == TimeSpan.Zero ? Regex.InfiniteMatchTimeout : key.Timeout));
             }
             catch (ArgumentException)
             {
+                // RegexParseException is an ArgumentException subtype on
+                // older runtimes; both arrive here. Don't poison the
+                // cache — GetOrAdd's static factory throws before insert.
+                issues.Add(new ValidationIssue(
+                    path,
+                    ValidationRuleIds.StringPatternViolation,
+                    ValidationSeverity.NotValidated,
+                    $"Pattern /{constraint.Pattern}/ failed to compile; the rule cannot be evaluated."));
                 return;
             }
-            if (!rx.IsMatch(actual))
+
+            try
+            {
+                if (!rx.IsMatch(actual))
+                {
+                    issues.Add(new ValidationIssue(
+                        path,
+                        ValidationRuleIds.StringPatternViolation,
+                        ValidationSeverity.Error,
+                        $"Value '{actual}' does not match pattern /{constraint.Pattern}/."));
+                }
+            }
+            catch (RegexMatchTimeoutException)
             {
                 issues.Add(new ValidationIssue(
                     path,
                     ValidationRuleIds.StringPatternViolation,
-                    ValidationSeverity.Error,
-                    $"Value '{actual}' does not match pattern /{constraint.Pattern}/."));
+                    ValidationSeverity.NotValidated,
+                    $"Pattern /{constraint.Pattern}/ exceeded the configured match timeout ({timeout}); the rule cannot be evaluated."));
             }
             return;
         }
@@ -1033,7 +1121,17 @@ public sealed class OperationalTemplateValidator
         {
             return false;
         }
-        if (template.Terminology is { } term && BindingsContain(term.TermBindings, key) || BindingsContain(template.Terminology?.ConstraintBindings, key))
+        // M4 — explicit parentheses around the term-bindings probe.
+        // The pre-fix expression bound && tighter than || (legal C# but
+        // hides the writer's intent): the original
+        // `term && BindingsContain(term.TermBindings, key)
+        //  || BindingsContain(template.Terminology?.ConstraintBindings, key)`
+        // evaluated the right-hand side against `template.Terminology?.
+        // ConstraintBindings` even when Terminology was null, causing a
+        // bare-null lookup. The parenthesised form below collapses both
+        // probes to the single non-null `term`.
+        if (template.Terminology is { } term
+            && (BindingsContain(term.TermBindings, key) || BindingsContain(term.ConstraintBindings, key)))
         {
             return true;
         }

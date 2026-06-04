@@ -26,4 +26,8 @@
     <ProjectReference Include="..\DotnetOpenEhr.Templates.Abstractions\DotnetOpenEhr.Templates.Abstractions.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="DotnetOpenEhr.Templates.Tests" />
+  </ItemGroup>
+
 </Project>
