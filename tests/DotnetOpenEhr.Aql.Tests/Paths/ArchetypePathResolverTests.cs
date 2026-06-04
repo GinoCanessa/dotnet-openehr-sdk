@@ -341,4 +341,118 @@ public class ArchetypePathResolverTests
     {
         Assert.Throws<ArchetypePathParseException>(() => ArchetypePath.Parse("data//items"));
     }
+
+    // ----------------------------------------------------------------
+    // Locatable-base attribute matrix: every Locatable subtype resolves
+    // /name, /uid, /archetype_node_id, /archetype_details, /links,
+    // /feeder_audit through ArchetypePathResolver, regardless of which
+    // subtype-specific switch arm fires in PathNavigator. Before the
+    // Locatable pre-check in PathNavigator.GetCanonicalAttribute, the
+    // Resolve_links / Resolve_feeder_audit / Resolve_uid /
+    // Resolve_archetype_details matrix rows for Entry subtypes
+    // (Observation, Evaluation, Instruction, Action, AdminEntry,
+    // Activity, RmEvent, IntervalEvent, History, item structures,
+    // Cluster, Element) failed because the subtype arm masked the
+    // fall-through Locatable arm and returned null.
+    // ----------------------------------------------------------------
+
+    private static readonly IReadOnlyDictionary<string, Func<Locatable>>
+        LocatableFactories = new Dictionary<string, Func<Locatable>>(StringComparer.Ordinal)
+        {
+            ["Composition"]   = () => NewCompositionContainingBp(),
+            ["Section"]       = () => CompositionBuilder.NewSectionWithChild(),
+            ["Observation"]   = () => NewBp(),
+            ["Evaluation"]    = () => CompositionBuilder.NewEvaluation(),
+            ["Instruction"]   = () => CompositionBuilder.NewInstruction(),
+            ["Action"]        = () => CompositionBuilder.NewAction(),
+            ["AdminEntry"]    = () => CompositionBuilder.NewAdminEntry(),
+            ["Activity"]      = () => CompositionBuilder.NewActivity(),
+            ["History"]       = () => CompositionBuilder.NewHistoryWithEvents(),
+            ["PointEvent"]    = () => CompositionBuilder.NewPointEvent(),
+            ["IntervalEvent"] = () => CompositionBuilder.NewIntervalEvent(),
+            ["Cluster"]       = () => CompositionBuilder.NewCluster(),
+            ["Element"]       = () => CompositionBuilder.NewElement(),
+            ["ItemTree"]      = () => CompositionBuilder.NewItemTree(),
+            ["ItemList"]      = () => CompositionBuilder.NewItemList(),
+            ["ItemSingle"]    = () => CompositionBuilder.NewItemSingle(),
+            ["ItemTable"]     = () => CompositionBuilder.NewItemTable(),
+        };
+
+    public static TheoryData<string> LocatableSubtypeLabels()
+    {
+        TheoryData<string> data = [];
+        foreach (string label in LocatableFactories.Keys) data.Add(label);
+        return data;
+    }
+
+    [Theory]
+    [MemberData(nameof(LocatableSubtypeLabels))]
+    public void Resolve_links_returns_collection_on_every_locatable_subtype(string label)
+    {
+        Locatable subject = LocatableFactories[label]().WithSampleLinks();
+        object? value = ArchetypePathResolver.Resolve(subject, "/links");
+        Assert.NotNull(value);
+        // Under collection-flattening, /links returns either the
+        // IList<Link> directly or its first element. Accept both shapes
+        // and assert the Link is reachable.
+        Link? link = value as Link
+            ?? (value as IEnumerable<Link>)?.FirstOrDefault()
+            ?? ((value as System.Collections.IEnumerable)?.Cast<object>().OfType<Link>().FirstOrDefault());
+        Assert.NotNull(link);
+    }
+
+    [Theory]
+    [MemberData(nameof(LocatableSubtypeLabels))]
+    public void Resolve_name_returns_dvtext_on_every_locatable_subtype(string label)
+    {
+        Locatable subject = LocatableFactories[label]();
+        object? value = ArchetypePathResolver.Resolve(subject, "/name");
+        Assert.IsType<DvText>(value);
+    }
+
+    [Theory]
+    [MemberData(nameof(LocatableSubtypeLabels))]
+    public void Resolve_archetype_node_id_returns_string_on_every_locatable_subtype(string label)
+    {
+        Locatable subject = LocatableFactories[label]();
+        object? value = ArchetypePathResolver.Resolve(subject, "/archetype_node_id");
+        Assert.IsType<string>(value);
+    }
+
+    [Theory]
+    [MemberData(nameof(LocatableSubtypeLabels))]
+    public void Resolve_feeder_audit_returns_value_when_set_on_every_locatable_subtype(string label)
+    {
+        Locatable subject = LocatableFactories[label]();
+        subject.FeederAudit = new FeederAudit
+        {
+            OriginatingSystemAudit = new FeederAuditDetails { SystemId = "test" },
+        };
+        object? value = ArchetypePathResolver.Resolve(subject, "/feeder_audit");
+        Assert.IsType<FeederAudit>(value);
+    }
+
+    [Theory]
+    [MemberData(nameof(LocatableSubtypeLabels))]
+    public void Resolve_uid_returns_value_when_set_on_every_locatable_subtype(string label)
+    {
+        Locatable subject = LocatableFactories[label]();
+        subject.Uid = new HierObjectId { Value = "uid-test" };
+        object? value = ArchetypePathResolver.Resolve(subject, "/uid");
+        Assert.IsAssignableFrom<UidBasedId>(value);
+    }
+
+    [Theory]
+    [MemberData(nameof(LocatableSubtypeLabels))]
+    public void Resolve_archetype_details_returns_value_when_set_on_every_locatable_subtype(string label)
+    {
+        Locatable subject = LocatableFactories[label]();
+        subject.ArchetypeDetails = new Archetyped
+        {
+            ArchetypeId = new ArchetypeId { Value = "openEHR-EHR-CLUSTER.test.v1" },
+            RmVersion = "1.1.0",
+        };
+        object? value = ArchetypePathResolver.Resolve(subject, "/archetype_details");
+        Assert.IsType<Archetyped>(value);
+    }
 }
