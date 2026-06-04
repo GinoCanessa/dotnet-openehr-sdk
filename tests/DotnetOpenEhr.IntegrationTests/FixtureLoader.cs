@@ -37,7 +37,11 @@ internal static class FixtureLoader
         Assembly asm = typeof(FixtureLoader).Assembly;
         return [.. asm.GetManifestResourceNames()
             .Where(n => n.StartsWith(FixturePrefix, StringComparison.Ordinal)
-                     && n.EndsWith(".json", StringComparison.Ordinal))
+                     && n.EndsWith(".json", StringComparison.Ordinal)
+                     // Snapshot sibling files (<name>.expected.json)
+                     // share the canonical-fixture folder but are not
+                     // canonical input fixtures themselves.
+                     && !n.EndsWith(".expected.json", StringComparison.Ordinal))
             .Select(n => n.Substring(FixturePrefix.Length))
             .OrderBy(n => n, StringComparer.Ordinal)];
     }
