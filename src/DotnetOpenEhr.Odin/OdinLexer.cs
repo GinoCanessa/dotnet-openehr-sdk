@@ -804,11 +804,11 @@ public ref struct OdinLexer
 
     private void Advance(int count)
     {
-        for (int i = 0; i < count; i++)
-        {
-            _pos++;
-            _column++;
-        }
+        // L2 — no caller crosses a newline (newlines are routed through
+        // AdvanceNewline). The previous per-character loop was equivalent
+        // to a pair of additions.
+        _pos += count;
+        _column += count;
     }
 
     private void AdvanceNewline(int count)

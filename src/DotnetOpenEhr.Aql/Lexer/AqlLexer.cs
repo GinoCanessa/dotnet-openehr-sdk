@@ -22,7 +22,6 @@ public ref struct AqlLexer
     private int _line;
     private int _column;
     private int _bracketDepth;
-    private AqlTokenKind _lastKind;
 
     public AqlLexer(ReadOnlySpan<char> source)
     {
@@ -31,7 +30,6 @@ public ref struct AqlLexer
         _line = 1;
         _column = 1;
         _bracketDepth = 0;
-        _lastKind = AqlTokenKind.EndOfFile;
     }
 
     public int Position => _pos;
@@ -679,7 +677,6 @@ public ref struct AqlLexer
 
     private AqlToken Emit(AqlTokenKind kind, int start, int length, int line, int column, string? value = null)
     {
-        _lastKind = kind;
         ReadOnlySpan<char> span = length == 0 ? [] : _source.Slice(start, length);
         return new AqlToken(kind, span, start, length, line, column, value);
     }
@@ -716,7 +713,6 @@ public ref struct AqlLexer
 
     private AqlLexException NewError(string message, int line, int column)
     {
-        _ = _lastKind;
         return new AqlLexException(message, line, column);
     }
 }

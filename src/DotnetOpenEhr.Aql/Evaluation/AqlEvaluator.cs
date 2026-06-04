@@ -935,10 +935,10 @@ public sealed class AqlEvaluator
         RegexEvaluationContext regexContext)
     {
         object? v = EvalExpr(un.Operand, binding, parameters, regexContext);
-        if (v is null)
-        {
-            return un.Op == UnaryOp.Not ? null : null;
-        }
+        // L1 — both arms returned null; collapse to a single return.
+        // Historical: a comment-only branch distinguishing Not vs Negate
+        // existed here but produced identical behaviour.
+        if (v is null) return null;
         return un.Op switch
         {
             UnaryOp.Not => v is bool b ? !b : null,
