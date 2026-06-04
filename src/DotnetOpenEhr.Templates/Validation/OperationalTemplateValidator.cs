@@ -737,7 +737,25 @@ public sealed class OperationalTemplateValidator
     {
         if (child is CInteger ci)
         {
-            ValidateInteger(checked((int)actual), ci, path, issues);
+            // ValidateInteger operates on int — the CInteger constraint
+            // type itself is `int`-ranged. If the long value falls
+            // outside int range, the constraint can't possibly admit
+            // it; emit NumericOutOfRange directly rather than the old
+            // `checked((int)actual)` which threw OverflowException.
+            if (actual < int.MinValue || actual > int.MaxValue)
+            {
+                string rangeText = ci.Range is { } r
+                    ? r.ToString()
+                    : $"[{int.MinValue},{int.MaxValue}]";
+                issues.Add(new ValidationIssue(
+                    path,
+                    ValidationRuleIds.NumericOutOfRange,
+                    ValidationSeverity.Error,
+                    $"Value {actual.ToString(System.Globalization.CultureInfo.InvariantCulture)} "
+                        + $"is outside permitted range {rangeText}."));
+                return;
+            }
+            ValidateInteger((int)actual, ci, path, issues);
         }
         else if (child is CReal cr)
         {

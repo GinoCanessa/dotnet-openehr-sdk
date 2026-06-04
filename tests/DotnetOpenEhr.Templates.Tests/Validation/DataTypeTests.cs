@@ -261,6 +261,27 @@ terminology
         AssertSingleIssue(issues, ValidationRuleIds.NumericOutOfRange);
     }
 
+    /// <summary>
+    /// B2 — DvCount.Magnitude is `long`; the validator must not throw
+    /// OverflowException when the magnitude exceeds int.MaxValue. It
+    /// must instead emit a NumericOutOfRange issue carrying the path.
+    /// </summary>
+    [Fact]
+    public void COUNT_001_magnitude_beyond_int_max_emits_NumericOutOfRange_not_throws()
+    {
+        string opt = ScaffoldOpt2("""
+                                            DV_COUNT[id6] matches {
+                                                magnitude matches {|1..10|}
+                                            }
+""");
+        DvCount count = new() { Magnitude = (long)int.MaxValue + 1L };
+        Element el = NewElement("id5", count);
+
+        IReadOnlyList<ValidationIssue> issues = Run(opt, el);
+
+        AssertSingleIssue(issues, ValidationRuleIds.NumericOutOfRange);
+    }
+
     // ---- NUMERIC_002 (integer enumeration, via DV_COUNT) ------------
 
     [Fact]

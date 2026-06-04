@@ -1200,20 +1200,28 @@ public sealed class AqlEvaluator
 
     private readonly struct RowKey : IEquatable<RowKey>
     {
-        private readonly object?[] _values;
+        private readonly object?[] _canonical;
 
-        public RowKey(object?[] values) { _values = values; }
+        public RowKey(object?[] values)
+        {
+            object?[] canonical = new object?[values.Length];
+            for (int i = 0; i < values.Length; i++)
+            {
+                canonical[i] = CanonicalKey(values[i]);
+            }
+            _canonical = canonical;
+        }
 
         public bool Equals(RowKey other)
         {
-            if (_values.Length != other._values.Length) return false;
-            for (int i = 0; i < _values.Length; i++)
+            if (_canonical.Length != other._canonical.Length) return false;
+            for (int i = 0; i < _canonical.Length; i++)
             {
-                object? a = _values[i];
-                object? b = other._values[i];
+                object? a = _canonical[i];
+                object? b = other._canonical[i];
                 if (a is null && b is null) continue;
                 if (a is null || b is null) return false;
-                if (!AreEqual(a, b)) return false;
+                if (!a.Equals(b)) return false;
             }
             return true;
         }
@@ -1223,11 +1231,76 @@ public sealed class AqlEvaluator
         public override int GetHashCode()
         {
             HashCode hc = new();
-            foreach (object? v in _values)
+            foreach (object? v in _canonical)
             {
-                hc.Add(v is null ? 0 : Coerce(v).GetHashCode());
+                hc.Add(v?.GetHashCode() ?? 0);
             }
             return hc.ToHashCode();
         }
     }
+
+    // -----------------------------------------------------------------
+    // CanonicalKey collapses every shape that AreEqual treats as equal
+    // into a single canonical representation, so DISTINCT's hash and
+    // equality paths cannot diverge. The rules mirror AreEqual's
+    // numeric / DV unwrapping above:
+    //   * DV_TEXT / DV_BOOLEAN / DV_URI / OBJECT_ID / Iso* / DV_COUNT
+    //     are coerced to their primitive payloads (via Coerce).
+    //   * Integer-valued numerics across int/long/short/byte/decimal
+    //     and double/float that equal their truncated form normalise
+    //     to `long`. Non-integer reals normalise to `double`. This
+    //     guarantees `1`, `1L`, `1.0`, and `DvCount { Magnitude = 1 }`
+    //     all hash and equal as the same key.
+    //   * DV_QUANTITY uses the (canonical magnitude, units) tuple so
+    //     it stays distinguishable from a unitless `1`.
+    //   * DV_ORDINAL uses its integer Value (then canonicalised).
+    // -----------------------------------------------------------------
+    internal static object? CanonicalKey(object? value)
+    {
+        if (value is null) return null;
+
+        if (value is DvQuantity q)
+        {
+            return (NormalizeNumeric(q.Magnitude), q.Units ?? string.Empty);
+        }
+        if (value is DvOrdinal o)
+        {
+            return NormalizeNumeric((long)o.Value);
+        }
+
+        object v = Coerce(value);
+        return v switch
+        {
+            string s => s,
+            bool b => b,
+            _ when IsNumeric(v) => NormalizeNumeric(v),
+            _ => v,
+        };
+    }
+
+    private static object NormalizeNumeric(object n) => n switch
+    {
+        long ll => ll,
+        int i => (long)i,
+        short s => (long)s,
+        byte b => (long)b,
+        decimal m when m == decimal.Truncate(m) && m >= long.MinValue && m <= long.MaxValue
+            => decimal.ToInt64(m),
+        decimal m => (double)m,
+        float f => NormalizeNumeric((double)f),
+        double d when CanRepresentAsLong(d) => (long)d,
+        double d => d,
+        _ => n,
+    };
+
+    private static object NormalizeNumeric(double d) => CanRepresentAsLong(d) ? (long)d : d;
+
+    private static object NormalizeNumeric(long n) => n;
+
+    private static bool CanRepresentAsLong(double d)
+        => !double.IsNaN(d)
+           && !double.IsInfinity(d)
+           && d >= long.MinValue
+           && d <= long.MaxValue
+           && d == Math.Truncate(d);
 }
