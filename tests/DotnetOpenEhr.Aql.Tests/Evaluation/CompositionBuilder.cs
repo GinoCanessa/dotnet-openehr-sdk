@@ -4,7 +4,10 @@ using DotnetOpenEhr.Rm.DataStructures;
 using DotnetOpenEhr.Rm.DataTypes.DateTime;
 using DotnetOpenEhr.Rm.DataTypes.Quantity;
 using DotnetOpenEhr.Rm.DataTypes.Text;
+using DotnetOpenEhr.Rm.DataTypes.Uri;
 using DotnetOpenEhr.Rm.Support;
+using RmEvaluation = DotnetOpenEhr.Rm.Composition.Evaluation;
+using RmAction = DotnetOpenEhr.Rm.Composition.Action;
 
 namespace DotnetOpenEhr.Aql.Tests.Evaluation;
 
@@ -180,4 +183,159 @@ internal static class CompositionBuilder
             },
         };
     }
+
+    // ------------------------------------------------------------------
+    // Locatable-subtype matrix helpers. Used by the parameterized tests
+    // in ArchetypePathResolverTests that pin Locatable base attribute
+    // resolution across every subtype with its own arm in
+    // PathNavigator.GetCanonicalAttribute.
+    // ------------------------------------------------------------------
+
+    /// <summary>
+    /// Attach a single non-empty <see cref="Link"/> to any
+    /// <see cref="Locatable"/> so tests can assert that
+    /// <c>/links</c> resolves through <see cref="PathNavigator"/>.
+    /// </summary>
+    public static T WithSampleLinks<T>(this T locatable) where T : Locatable
+    {
+        locatable.Links =
+        [
+            new Link
+            {
+                Meaning = new DvText("part_of"),
+                Type = new DvText("reference"),
+                Target = new DvEhrUri("ehr://example/part-of-target"),
+            },
+        ];
+        return locatable;
+    }
+
+    public static Section NewSectionWithChild()
+        => new Section
+        {
+            ArchetypeNodeId = "openEHR-EHR-SECTION.adhoc.v1",
+            Name = new DvText("Section"),
+            Items = [],
+        };
+
+    public static RmEvaluation NewEvaluation()
+        => new RmEvaluation
+        {
+            ArchetypeNodeId = "openEHR-EHR-EVALUATION.vital_status.v1",
+            Name = new DvText("Vital status"),
+            Language = new CodePhrase(new TerminologyId { Value = "ISO_639-1" }, "en"),
+            Encoding = new CodePhrase(new TerminologyId { Value = "IANA_character-sets" }, "UTF-8"),
+            Subject = new PartySelf(),
+        };
+
+    public static Instruction NewInstruction()
+        => new Instruction
+        {
+            ArchetypeNodeId = "openEHR-EHR-INSTRUCTION.medication_order.v1",
+            Name = new DvText("Medication order"),
+            Language = new CodePhrase(new TerminologyId { Value = "ISO_639-1" }, "en"),
+            Encoding = new CodePhrase(new TerminologyId { Value = "IANA_character-sets" }, "UTF-8"),
+            Subject = new PartySelf(),
+        };
+
+    public static RmAction NewAction()
+        => new RmAction
+        {
+            ArchetypeNodeId = "openEHR-EHR-ACTION.medication.v1",
+            Name = new DvText("Medication action"),
+            Language = new CodePhrase(new TerminologyId { Value = "ISO_639-1" }, "en"),
+            Encoding = new CodePhrase(new TerminologyId { Value = "IANA_character-sets" }, "UTF-8"),
+            Subject = new PartySelf(),
+        };
+
+    public static AdminEntry NewAdminEntry()
+        => new AdminEntry
+        {
+            ArchetypeNodeId = "openEHR-EHR-ADMIN_ENTRY.admission.v1",
+            Name = new DvText("Admission"),
+            Language = new CodePhrase(new TerminologyId { Value = "ISO_639-1" }, "en"),
+            Encoding = new CodePhrase(new TerminologyId { Value = "IANA_character-sets" }, "UTF-8"),
+            Subject = new PartySelf(),
+        };
+
+    public static Activity NewActivity()
+        => new Activity
+        {
+            ArchetypeNodeId = "at0001",
+            Name = new DvText("Activity"),
+        };
+
+    public static History NewHistoryWithEvents()
+        => new History
+        {
+            ArchetypeNodeId = "at0001",
+            Name = new DvText("History"),
+            Origin = new DvDateTime(new DotnetOpenEhr.Foundation.Iso.IsoDateTime(
+                new DotnetOpenEhr.Foundation.Iso.IsoDate(2024, 1, 15),
+                new DotnetOpenEhr.Foundation.Iso.IsoTime(10, 0, 0))),
+            Events = [NewPointEvent()],
+        };
+
+    public static PointEvent NewPointEvent()
+        => new PointEvent
+        {
+            ArchetypeNodeId = "at0006",
+            Name = new DvText("Any event"),
+            Time = new DvDateTime(new DotnetOpenEhr.Foundation.Iso.IsoDateTime(
+                new DotnetOpenEhr.Foundation.Iso.IsoDate(2024, 1, 15),
+                new DotnetOpenEhr.Foundation.Iso.IsoTime(10, 0, 0))),
+        };
+
+    public static IntervalEvent NewIntervalEvent()
+        => new IntervalEvent
+        {
+            ArchetypeNodeId = "at0007",
+            Name = new DvText("Interval event"),
+            Time = new DvDateTime(new DotnetOpenEhr.Foundation.Iso.IsoDateTime(
+                new DotnetOpenEhr.Foundation.Iso.IsoDate(2024, 1, 15),
+                new DotnetOpenEhr.Foundation.Iso.IsoTime(10, 0, 0))),
+        };
+
+    public static Cluster NewCluster()
+        => new Cluster
+        {
+            ArchetypeNodeId = "at0010",
+            Name = new DvText("Cluster"),
+        };
+
+    public static Element NewElement()
+        => new Element
+        {
+            ArchetypeNodeId = "at0011",
+            Name = new DvText("Element"),
+            Value = new DvText("element value"),
+        };
+
+    public static ItemTree NewItemTree()
+        => new ItemTree
+        {
+            ArchetypeNodeId = "at0001",
+            Name = new DvText("Tree"),
+        };
+
+    public static ItemList NewItemList()
+        => new ItemList
+        {
+            ArchetypeNodeId = "at0001",
+            Name = new DvText("List"),
+        };
+
+    public static ItemSingle NewItemSingle()
+        => new ItemSingle
+        {
+            ArchetypeNodeId = "at0001",
+            Name = new DvText("Single"),
+        };
+
+    public static ItemTable NewItemTable()
+        => new ItemTable
+        {
+            ArchetypeNodeId = "at0001",
+            Name = new DvText("Table"),
+        };
 }

@@ -63,6 +63,42 @@ public class CoreEvaluatorTests
     }
 
     // ----------------------------------------------------------------
+    // Locatable base attribute reachable through the evaluator.
+    // Pins that PathNavigator's Locatable pre-check makes /links
+    // visible via row projection on an Entry-typed candidate, not
+    // only via single-root ArchetypePathResolver.
+    // ----------------------------------------------------------------
+    [Fact]
+    public void Select_links_from_entry_yields_non_null_row()
+    {
+        Observation bp = CompositionBuilder.NewBloodPressure(
+                "openEHR-EHR-OBSERVATION.blood_pressure.v2",
+                120, "mm[Hg]", 80, "mm[Hg]")
+            .WithSampleLinks();
+        Composition comp = CompositionBuilder.NewComposition(
+            "BP", "uid-bp",
+            context: CompositionBuilder.NewContext(),
+            content: [bp]);
+
+        AqlQuery q = AqlParser.Parse(
+            "SELECT o/links FROM EHR e CONTAINS COMPOSITION c "
+            + "CONTAINS OBSERVATION o");
+
+        IReadOnlyList<object?[]> rows = Evaluator.Evaluate(
+            q, [comp], ct: TestContext.Current.CancellationToken);
+
+        Assert.NotEmpty(rows);
+        Assert.All(rows, r => Assert.NotNull(r[0]));
+        // Accept either an IList<object?> accumulator or the raw
+        // IReadOnlyList<Link>; both shapes prove the Locatable base
+        // attribute is reachable through the evaluator.
+        Assert.True(
+            rows[0][0] is System.Collections.IEnumerable seq
+                && seq.Cast<object?>().OfType<Link>().Any(),
+            "Expected at least one Link in the projected row.");
+    }
+
+    // ----------------------------------------------------------------
     // 3. WHERE c/name/value = 'Vital Signs' → only matching rows.
     // ----------------------------------------------------------------
     [Fact]

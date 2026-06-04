@@ -115,22 +115,40 @@ internal static class PathNavigator
         return GetCanonicalAttribute(value, name);
     }
 
-    private static object? GetCanonicalAttribute(object value, string name) => value switch
+    private static object? GetCanonicalAttribute(object value, string name)
     {
+        if (value is Locatable locBase)
+        {
+            // Locatable base attributes are resolved here so every subtype
+            // inherits them uniformly. Subtype arms below MUST NOT redefine
+            // these six names with different semantics.
+            object? baseHit = name switch
+            {
+                "name" => locBase.Name,
+                "uid" => locBase.Uid,
+                "archetype_node_id" => locBase.ArchetypeNodeId,
+                "archetype_details" => locBase.ArchetypeDetails,
+                "links" => locBase.Links,
+                "feeder_audit" => locBase.FeederAudit,
+                _ => null,
+            };
+            if (baseHit is not null) return baseHit;
+        }
+        // Subtype arms list attributes the subtype defines on top of
+        // Locatable. The six Locatable base names (name, uid,
+        // archetype_node_id, archetype_details, links, feeder_audit)
+        // are resolved by the pre-check above and MUST NOT be repeated
+        // here.
+        return value switch
+        {
         Composition c => name switch
         {
             "content" => c.Content,
             "context" => c.Context,
-            "name" => c.Name,
-            "uid" => c.Uid,
-            "archetype_node_id" => c.ArchetypeNodeId,
-            "archetype_details" => c.ArchetypeDetails,
             "language" => c.Language,
             "territory" => c.Territory,
             "category" => c.Category,
             "composer" => c.Composer,
-            "links" => c.Links,
-            "feeder_audit" => c.FeederAudit,
             _ => null,
         },
         EventContext ec => name switch
@@ -147,15 +165,13 @@ internal static class PathNavigator
         Section s => name switch
         {
             "items" => s.Items,
-            "name" => s.Name,
-            "uid" => s.Uid,
-            "archetype_node_id" => s.ArchetypeNodeId,
-            "archetype_details" => s.ArchetypeDetails,
-            "links" => s.Links,
             _ => null,
         },
         Observation o => name switch
         {
+            // Locatable base attrs (name, uid, archetype_node_id,
+            // archetype_details, links, feeder_audit) inherited from the
+            // GetCanonicalAttribute pre-check above.
             "data" => o.Data,
             "state" => o.State,
             "protocol" => o.Protocol,
@@ -165,26 +181,25 @@ internal static class PathNavigator
             "other_participations" => o.OtherParticipations,
             "workflow_id" => o.WorkflowId,
             "guideline_id" => o.GuidelineId,
-            "name" => o.Name,
-            "uid" => o.Uid,
-            "archetype_node_id" => o.ArchetypeNodeId,
-            "archetype_details" => o.ArchetypeDetails,
             _ => null,
         },
         RmEvaluation ev => name switch
         {
+            // Locatable base attrs (name, uid, archetype_node_id,
+            // archetype_details, links, feeder_audit) inherited from the
+            // GetCanonicalAttribute pre-check above.
             "data" => ev.Data,
             "protocol" => ev.Protocol,
             "subject" => ev.Subject,
             "encoding" => ev.Encoding,
             "language" => ev.Language,
-            "name" => ev.Name,
-            "uid" => ev.Uid,
-            "archetype_node_id" => ev.ArchetypeNodeId,
             _ => null,
         },
         Instruction ins => name switch
         {
+            // Locatable base attrs (name, uid, archetype_node_id,
+            // archetype_details, links, feeder_audit) inherited from the
+            // GetCanonicalAttribute pre-check above.
             "activities" => ins.Activities,
             "narrative" => ins.Narrative,
             "expiry_time" => ins.ExpiryTime,
@@ -192,13 +207,13 @@ internal static class PathNavigator
             "subject" => ins.Subject,
             "encoding" => ins.Encoding,
             "language" => ins.Language,
-            "name" => ins.Name,
-            "uid" => ins.Uid,
-            "archetype_node_id" => ins.ArchetypeNodeId,
             _ => null,
         },
         RmAction act => name switch
         {
+            // Locatable base attrs (name, uid, archetype_node_id,
+            // archetype_details, links, feeder_audit) inherited from the
+            // GetCanonicalAttribute pre-check above.
             "time" => act.Time,
             "description" => act.Description,
             "ism_transition" => act.IsmTransition,
@@ -207,107 +222,112 @@ internal static class PathNavigator
             "subject" => act.Subject,
             "encoding" => act.Encoding,
             "language" => act.Language,
-            "name" => act.Name,
-            "uid" => act.Uid,
-            "archetype_node_id" => act.ArchetypeNodeId,
             _ => null,
         },
         AdminEntry ae => name switch
         {
+            // Locatable base attrs (name, uid, archetype_node_id,
+            // archetype_details, links, feeder_audit) inherited from the
+            // GetCanonicalAttribute pre-check above.
             "data" => ae.Data,
             "subject" => ae.Subject,
             "encoding" => ae.Encoding,
             "language" => ae.Language,
-            "name" => ae.Name,
-            "uid" => ae.Uid,
-            "archetype_node_id" => ae.ArchetypeNodeId,
             _ => null,
         },
         Activity a => name switch
         {
+            // Locatable base attrs (name, uid, archetype_node_id,
+            // archetype_details, links, feeder_audit) inherited from the
+            // GetCanonicalAttribute pre-check above.
             "description" => a.Description,
             "timing" => a.Timing,
             "action_archetype_id" => a.ActionArchetypeId,
-            "name" => a.Name,
-            "archetype_node_id" => a.ArchetypeNodeId,
-            "uid" => a.Uid,
             _ => null,
         },
         History h => name switch
         {
+            // Locatable base attrs (name, uid, archetype_node_id,
+            // archetype_details, links, feeder_audit) inherited from the
+            // GetCanonicalAttribute pre-check above.
             "origin" => h.Origin,
             "events" => h.Events,
             "period" => h.Period,
             "duration" => h.Duration,
             "summary" => h.Summary,
-            "name" => h.Name,
-            "archetype_node_id" => h.ArchetypeNodeId,
             _ => null,
         },
         IntervalEvent iev => name switch
         {
+            // Locatable base attrs (name, uid, archetype_node_id,
+            // archetype_details, links, feeder_audit) inherited from the
+            // GetCanonicalAttribute pre-check above.
             "time" => iev.Time,
             "data" => iev.Data,
             "state" => iev.State,
             "width" => iev.Width,
             "sample_count" => iev.SampleCount,
             "math_function" => iev.MathFunction,
-            "name" => iev.Name,
-            "archetype_node_id" => iev.ArchetypeNodeId,
             _ => null,
         },
         RmEvent e => name switch
         {
+            // Locatable base attrs (name, uid, archetype_node_id,
+            // archetype_details, links, feeder_audit) inherited from the
+            // GetCanonicalAttribute pre-check above.
             "time" => e.Time,
             "data" => e.Data,
             "state" => e.State,
-            "name" => e.Name,
-            "archetype_node_id" => e.ArchetypeNodeId,
             _ => null,
         },
         ItemTree it => name switch
         {
+            // Locatable base attrs (name, uid, archetype_node_id,
+            // archetype_details, links, feeder_audit) inherited from the
+            // GetCanonicalAttribute pre-check above.
             "items" => it.Items,
-            "name" => it.Name,
-            "archetype_node_id" => it.ArchetypeNodeId,
             _ => null,
         },
         ItemList il => name switch
         {
+            // Locatable base attrs (name, uid, archetype_node_id,
+            // archetype_details, links, feeder_audit) inherited from the
+            // GetCanonicalAttribute pre-check above.
             "items" => il.Items,
-            "name" => il.Name,
-            "archetype_node_id" => il.ArchetypeNodeId,
             _ => null,
         },
         ItemSingle iss => name switch
         {
+            // Locatable base attrs (name, uid, archetype_node_id,
+            // archetype_details, links, feeder_audit) inherited from the
+            // GetCanonicalAttribute pre-check above.
             "item" => iss.Item,
-            "name" => iss.Name,
-            "archetype_node_id" => iss.ArchetypeNodeId,
             _ => null,
         },
         ItemTable itb => name switch
         {
+            // Locatable base attrs (name, uid, archetype_node_id,
+            // archetype_details, links, feeder_audit) inherited from the
+            // GetCanonicalAttribute pre-check above.
             "rows" => itb.Rows,
-            "name" => itb.Name,
-            "archetype_node_id" => itb.ArchetypeNodeId,
             _ => null,
         },
         Cluster cl => name switch
         {
+            // Locatable base attrs (name, uid, archetype_node_id,
+            // archetype_details, links, feeder_audit) inherited from the
+            // GetCanonicalAttribute pre-check above.
             "items" => cl.Items,
-            "name" => cl.Name,
-            "archetype_node_id" => cl.ArchetypeNodeId,
-            "uid" => cl.Uid,
             _ => null,
         },
         Element el => name switch
         {
+            // Locatable base attrs (name, uid, archetype_node_id,
+            // archetype_details, links, feeder_audit) inherited from the
+            // GetCanonicalAttribute pre-check above.
             "value" => el.Value,
             "null_flavour" => el.NullFlavour,
             "null_reason" => el.NullReason,
-            "name" => el.Name,
-            "archetype_node_id" => el.ArchetypeNodeId,
             _ => null,
         },
         DvCodedText dct => name switch
@@ -407,16 +427,7 @@ internal static class PathNavigator
             "external_ref" => pi.ExternalRef,
             _ => null,
         },
-        Locatable loc => name switch
-        {
-            "name" => loc.Name,
-            "uid" => loc.Uid,
-            "archetype_node_id" => loc.ArchetypeNodeId,
-            "archetype_details" => loc.ArchetypeDetails,
-            "links" => loc.Links,
-            "feeder_audit" => loc.FeederAudit,
-            _ => null,
-        },
         _ => null,
-    };
+        };
+    }
 }
