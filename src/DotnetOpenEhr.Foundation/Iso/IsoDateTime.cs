@@ -79,6 +79,16 @@ public sealed class IsoDateTime : IEquatable<IsoDateTime>, IComparable<IsoDateTi
             decimal rightUtcSeconds = ToUtcTimelineSeconds(other.Date, other.Time);
             return leftUtcSeconds.CompareTo(rightUtcSeconds);
         }
+        // M7 — mixed-zone comparison is not defined. If one side has a
+        // zone and the other does not, the comparison cannot collapse
+        // to a single UTC line.
+        bool thisHasZone = Time?.TimeZone is not null;
+        bool otherHasZone = other.Time?.TimeZone is not null;
+        if (thisHasZone != otherHasZone)
+        {
+            throw new InvalidOperationException(
+                "mixed-zone comparison is not defined: assign a zone to both operands or strip it from both.");
+        }
 
         int cmp = Date.CompareTo(other.Date);
         if (cmp != 0) return cmp;

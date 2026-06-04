@@ -176,6 +176,15 @@ public sealed class IsoTime : IEquatable<IsoTime>, IComparable<IsoTime>, ICompar
         {
             return ToReferenceDayUtcSeconds().CompareTo(other.ToReferenceDayUtcSeconds());
         }
+        // M7 — mixed-zone comparison is not defined; throw rather than
+        // silently dropping the timezone from one side. Callers that
+        // intend a zoneless comparison must strip the zone from both
+        // operands first.
+        if (TimeZone is null != (other.TimeZone is null))
+        {
+            throw new InvalidOperationException(
+                "mixed-zone comparison is not defined: assign a zone to both operands or strip it from both.");
+        }
 
         int cmp = Hour.CompareTo(other.Hour);
         if (cmp != 0) return cmp;
