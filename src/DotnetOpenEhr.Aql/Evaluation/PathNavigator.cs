@@ -115,8 +115,27 @@ internal static class PathNavigator
         return GetCanonicalAttribute(value, name);
     }
 
-    private static object? GetCanonicalAttribute(object value, string name) => value switch
+    private static object? GetCanonicalAttribute(object value, string name)
     {
+        if (value is Locatable locBase)
+        {
+            // Locatable base attributes are resolved here so every subtype
+            // inherits them uniformly. Subtype arms below MUST NOT redefine
+            // these six names with different semantics.
+            object? baseHit = name switch
+            {
+                "name" => locBase.Name,
+                "uid" => locBase.Uid,
+                "archetype_node_id" => locBase.ArchetypeNodeId,
+                "archetype_details" => locBase.ArchetypeDetails,
+                "links" => locBase.Links,
+                "feeder_audit" => locBase.FeederAudit,
+                _ => null,
+            };
+            if (baseHit is not null) return baseHit;
+        }
+        return value switch
+        {
         Composition c => name switch
         {
             "content" => c.Content,
@@ -418,5 +437,6 @@ internal static class PathNavigator
             _ => null,
         },
         _ => null,
-    };
+        };
+    }
 }
