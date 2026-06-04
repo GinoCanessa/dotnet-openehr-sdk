@@ -85,3 +85,28 @@ outcome is to upgrade the byte-equivalence test from best-effort to
 **gating** by either (a) hand-coding the RM-attribute ordering table
 and a discriminator inclusion policy, or (b) adopting an authoritative
 specification if one becomes available.
+
+## Snapshot regeneration (`CanonicalWireSnapshotTests`)
+
+`tests/DotnetOpenEhr.IntegrationTests/CanonicalWireSnapshotTests.cs`
+pins the exact byte output of the SDK serializer per fixture under
+`Fixtures/Canonical/`. The expected bytes live next to each fixture
+as a sibling `<name>.expected.json`. The test is the wire-format
+drift detector: any intentional change to the serializer output
+requires regenerating the snapshots.
+
+To regenerate after an intentional change:
+
+```powershell
+$env:OPENEHR_REGENERATE_CANONICAL_SNAPSHOTS = '1'
+dotnet test tests/DotnetOpenEhr.IntegrationTests `
+  --filter "FullyQualifiedName~CanonicalWireSnapshotTests"
+Remove-Item Env:OPENEHR_REGENERATE_CANONICAL_SNAPSHOTS
+```
+
+The regen pass overwrites each `<name>.expected.json` and **fails
+the test with a "regenerated" message** so a follow-up clean run is
+mandatory to confirm the new bytes are committed and stable. Review
+the diff before staging — accidental snapshot drift is the bug this
+test exists to catch.
+
