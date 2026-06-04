@@ -11,6 +11,7 @@ namespace DotnetOpenEhr.Foundation;
 /// / "Excluding" factories. All instances are immutable; equality is by
 /// shape.
 /// </remarks>
+[System.Text.Json.Serialization.JsonConverter(typeof(IntervalJsonConverterFactory))]
 public sealed class Interval<T> : IEquatable<Interval<T>>
     where T : IComparable<T>
 {

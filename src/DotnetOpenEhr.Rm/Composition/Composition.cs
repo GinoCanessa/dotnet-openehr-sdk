@@ -20,7 +20,7 @@ public sealed class Composition : Locatable
     public DvCodedText Category { get; set; } = new();
 
     [JsonPropertyName("composer")]
-    public PartyProxy Composer { get; set; } = new PartyIdentified();
+    public PartyProxy? Composer { get; set; }
 
     [JsonPropertyName("context")]
     public EventContext? Context { get; set; }

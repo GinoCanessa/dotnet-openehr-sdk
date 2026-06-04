@@ -113,6 +113,12 @@ namespace DotnetOpenEhr.Serialization.Json;
 [JsonSerializable(typeof(PartyRelated))]
 [JsonSerializable(typeof(PartySelf))]
 [JsonSerializable(typeof(Participation))]
+// Closed-generic Interval instantiations used by typed RM properties
+// (Participation.Time, Role/Contact/Capability.TimeValidity, etc.).
+// The IntervalJsonConverterFactory on Interval<T> handles the actual
+// (de)serialization; the entries below let the source generator emit
+// the JsonTypeInfo<Interval<...>> metadata for round-trip.
+[JsonSerializable(typeof(DotnetOpenEhr.Foundation.Interval<DvDateTime>))]
 [JsonSerializable(typeof(Link))]
 [JsonSerializable(typeof(Archetyped))]
 [JsonSerializable(typeof(FeederAudit))]
