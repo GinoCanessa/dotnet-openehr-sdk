@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Frozen;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
@@ -308,30 +309,52 @@ public sealed class AqlEvaluator
 
     // -----------------------------------------------------------------
     // Binding context
+    //
+    // H4 — parent-pointer linked list. Each `With(alias, value)` allocates
+    // a single new node instead of a copy of an entire dictionary, and
+    // `TryGet` walks the chain (most-recent-wins, preserving the
+    // dictionary-overwrite semantics of the previous implementation).
     // -----------------------------------------------------------------
 
     private sealed class Binding
     {
-        private readonly Dictionary<string, object?> _values = new(StringComparer.OrdinalIgnoreCase);
+        public static readonly Binding Empty = new(null, null, null);
 
-        public Binding() { }
+        private readonly Binding? _parent;
+        private readonly string? _alias;
+        private readonly object? _value;
 
-        private Binding(Dictionary<string, object?> values)
+        private Binding(Binding? parent, string? alias, object? value)
         {
-            _values = new Dictionary<string, object?>(values, StringComparer.OrdinalIgnoreCase);
+            _parent = parent;
+            _alias = alias;
+            _value = value;
         }
 
         public Binding With(string? alias, object? value)
         {
-            Binding copy = new(_values);
-            if (!string.IsNullOrEmpty(alias))
+            if (string.IsNullOrEmpty(alias))
             {
-                copy._values[alias] = value;
+                // No alias to contribute — share the receiver.
+                return this;
             }
-            return copy;
+            return new Binding(this, alias, value);
         }
 
-        public bool TryGet(string name, out object? value) => _values.TryGetValue(name, out value);
+        public bool TryGet(string name, out object? value)
+        {
+            for (Binding? cur = this; cur is not null; cur = cur._parent)
+            {
+                if (cur._alias is not null
+                    && string.Equals(cur._alias, name, StringComparison.OrdinalIgnoreCase))
+                {
+                    value = cur._value;
+                    return true;
+                }
+            }
+            value = null;
+            return false;
+        }
     }
 
     private sealed class RegexEvaluationContext
@@ -358,13 +381,13 @@ public sealed class AqlEvaluator
     {
         if (from.Sources.Count == 0)
         {
-            yield return new Binding();
+            yield return Binding.Empty;
             yield break;
         }
 
         // Multiple top-level sources joined by ',' produce a cross
         // product. AQL queries we care about have a single source.
-        IEnumerable<Binding> current = ExpandClass(from.Sources[0], comp, new Binding(), comp, parameters, regexContext);
+        IEnumerable<Binding> current = ExpandClass(from.Sources[0], comp, Binding.Empty, comp, parameters, regexContext);
         for (int i = 1; i < from.Sources.Count; i++)
         {
             ClassExpression next = from.Sources[i];
@@ -958,16 +981,41 @@ public sealed class AqlEvaluator
         return false;
     }
 
+    // M9 — case-insensitive function name dispatch table. Replaces the
+    // per-call `fc.Name.ToLowerInvariant()` allocation with a
+    // FrozenDictionary lookup using `OrdinalIgnoreCase`.
+    private enum AqlFunctionKind
+    {
+        Count,
+        Length,
+        Upper,
+        Lower,
+        Now,
+    }
+
+    private static readonly FrozenDictionary<string, AqlFunctionKind> s_functions =
+        new Dictionary<string, AqlFunctionKind>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["count"] = AqlFunctionKind.Count,
+            ["length"] = AqlFunctionKind.Length,
+            ["upper"] = AqlFunctionKind.Upper,
+            ["lower"] = AqlFunctionKind.Lower,
+            ["now"] = AqlFunctionKind.Now,
+        }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+
     private static object? EvalFunction(
         FunctionCallExpression fc,
         Binding binding,
         IReadOnlyDictionary<string, object?> parameters,
         RegexEvaluationContext regexContext)
     {
-        string name = fc.Name.ToLowerInvariant();
-        switch (name)
+        if (!s_functions.TryGetValue(fc.Name, out AqlFunctionKind kind))
         {
-            case "count":
+            throw new AqlEvaluationException($"Unsupported AQL function: {fc.Name}");
+        }
+        switch (kind)
+        {
+            case AqlFunctionKind.Count:
             {
                 if (fc.Arguments.Count == 0) return 0L;
                 object? v = EvalExpr(fc.Arguments[0], binding, parameters, regexContext);
@@ -981,7 +1029,7 @@ public sealed class AqlEvaluator
                 }
                 return 1L;
             }
-            case "length":
+            case AqlFunctionKind.Length:
             {
                 if (fc.Arguments.Count == 0) return 0L;
                 object? v = EvalExpr(fc.Arguments[0], binding, parameters, regexContext);
@@ -989,19 +1037,19 @@ public sealed class AqlEvaluator
                 string s = v.ToString() ?? string.Empty;
                 return (long)s.Length;
             }
-            case "upper":
+            case AqlFunctionKind.Upper:
             {
                 if (fc.Arguments.Count == 0) return null;
                 object? v = EvalExpr(fc.Arguments[0], binding, parameters, regexContext);
                 return v?.ToString()?.ToUpperInvariant();
             }
-            case "lower":
+            case AqlFunctionKind.Lower:
             {
                 if (fc.Arguments.Count == 0) return null;
                 object? v = EvalExpr(fc.Arguments[0], binding, parameters, regexContext);
                 return v?.ToString()?.ToLowerInvariant();
             }
-            case "now":
+            case AqlFunctionKind.Now:
                 return DateTime.UtcNow;
             default:
                 throw new AqlEvaluationException($"Unsupported AQL function: {fc.Name}");

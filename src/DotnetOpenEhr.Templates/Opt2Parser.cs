@@ -167,15 +167,26 @@ public static class Opt2Parser
         string block = source.Substring(openAngle, closeAngle - openAngle + 1);
         int spanStart = firstKw;
         int spanEnd = closeAngle + 1;
-        char[] buffer = source.ToCharArray();
-        for (int i = spanStart; i < spanEnd; i++)
-        {
-            if (buffer[i] != '\r' && buffer[i] != '\n')
+        // L7 — replace the `ToCharArray()` allocate-then-mutate-then-rebuild
+        // with a single `string.Create` pass that writes directly into the
+        // returned string's storage. Behaviour is preserved: every byte in
+        // [spanStart, spanEnd) except `\r`/`\n` is rewritten to space so
+        // downstream line/column reporting stays aligned with the source.
+        string rewritten = string.Create(
+            source.Length,
+            (Src: source, Start: spanStart, End: spanEnd),
+            static (span, state) =>
             {
-                buffer[i] = ' ';
-            }
-        }
-        return (new string(buffer), block);
+                state.Src.AsSpan().CopyTo(span);
+                for (int i = state.Start; i < state.End; i++)
+                {
+                    if (span[i] != '\r' && span[i] != '\n')
+                    {
+                        span[i] = ' ';
+                    }
+                }
+            });
+        return (rewritten, block);
     }
 
     private static int FindBalancedClose(string source, int openAngle)

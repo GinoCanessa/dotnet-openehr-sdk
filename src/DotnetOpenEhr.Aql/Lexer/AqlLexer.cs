@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using System.Text;
 
 namespace DotnetOpenEhr.Aql.Lexer;
@@ -596,44 +597,48 @@ public ref struct AqlLexer
         return true;
     }
 
-    private static AqlTokenKind MatchKeyword(string text)
-    {
-        // Case-insensitive comparison; AQL keywords are ASCII so we use
-        // OrdinalIgnoreCase.
-        return text.ToUpperInvariant() switch
+    // M9 — case-insensitive keyword table. `FrozenDictionary` with an
+    // `OrdinalIgnoreCase` comparer matches without re-casing the input,
+    // so each MatchKeyword call avoids the previous `text.ToUpperInvariant()`
+    // allocation.
+    private static readonly FrozenDictionary<string, AqlTokenKind> s_keywords =
+        new Dictionary<string, AqlTokenKind>(StringComparer.OrdinalIgnoreCase)
         {
-            "SELECT" => AqlTokenKind.Select,
-            "FROM" => AqlTokenKind.From,
-            "WHERE" => AqlTokenKind.Where,
-            "ORDER" => AqlTokenKind.Order,
-            "BY" => AqlTokenKind.By,
-            "LIMIT" => AqlTokenKind.Limit,
-            "OFFSET" => AqlTokenKind.Offset,
-            "CONTAINS" => AqlTokenKind.Contains,
-            "EHR" => AqlTokenKind.Ehr,
-            "COMPOSITION" => AqlTokenKind.Composition,
-            "AND" => AqlTokenKind.And,
-            "OR" => AqlTokenKind.Or,
-            "NOT" => AqlTokenKind.Not,
-            "EXISTS" => AqlTokenKind.Exists,
-            "MATCHES" => AqlTokenKind.Matches,
-            "LIKE" => AqlTokenKind.Like,
-            "IS" => AqlTokenKind.Is,
-            "NULL" => AqlTokenKind.Null,
-            "TRUE" => AqlTokenKind.True,
-            "FALSE" => AqlTokenKind.False,
-            "ASC" => AqlTokenKind.Asc,
-            "ASCENDING" => AqlTokenKind.Asc,
-            "DESC" => AqlTokenKind.Desc,
-            "DESCENDING" => AqlTokenKind.Desc,
-            "AS" => AqlTokenKind.As,
-            "DISTINCT" => AqlTokenKind.Distinct,
-            "TOP" => AqlTokenKind.Top,
-            "BACKWARD" => AqlTokenKind.Backward,
-            "FORWARD" => AqlTokenKind.Forward,
-            _ => AqlTokenKind.EndOfFile,
-        };
-    }
+            ["SELECT"] = AqlTokenKind.Select,
+            ["FROM"] = AqlTokenKind.From,
+            ["WHERE"] = AqlTokenKind.Where,
+            ["ORDER"] = AqlTokenKind.Order,
+            ["BY"] = AqlTokenKind.By,
+            ["LIMIT"] = AqlTokenKind.Limit,
+            ["OFFSET"] = AqlTokenKind.Offset,
+            ["CONTAINS"] = AqlTokenKind.Contains,
+            ["EHR"] = AqlTokenKind.Ehr,
+            ["COMPOSITION"] = AqlTokenKind.Composition,
+            ["AND"] = AqlTokenKind.And,
+            ["OR"] = AqlTokenKind.Or,
+            ["NOT"] = AqlTokenKind.Not,
+            ["EXISTS"] = AqlTokenKind.Exists,
+            ["MATCHES"] = AqlTokenKind.Matches,
+            ["LIKE"] = AqlTokenKind.Like,
+            ["IS"] = AqlTokenKind.Is,
+            ["NULL"] = AqlTokenKind.Null,
+            ["TRUE"] = AqlTokenKind.True,
+            ["FALSE"] = AqlTokenKind.False,
+            ["ASC"] = AqlTokenKind.Asc,
+            ["ASCENDING"] = AqlTokenKind.Asc,
+            ["DESC"] = AqlTokenKind.Desc,
+            ["DESCENDING"] = AqlTokenKind.Desc,
+            ["AS"] = AqlTokenKind.As,
+            ["DISTINCT"] = AqlTokenKind.Distinct,
+            ["TOP"] = AqlTokenKind.Top,
+            ["BACKWARD"] = AqlTokenKind.Backward,
+            ["FORWARD"] = AqlTokenKind.Forward,
+        }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+
+    internal static AqlTokenKind MatchKeyword(string text)
+        => s_keywords.TryGetValue(text, out AqlTokenKind kind)
+            ? kind
+            : AqlTokenKind.EndOfFile;
 
     // -- Trivia / low-level helpers -------------------------------------------
 

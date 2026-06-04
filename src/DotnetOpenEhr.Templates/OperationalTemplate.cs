@@ -29,6 +29,11 @@ public sealed class OperationalTemplate
     private FrozenSet<TemplateNode> _nodes = [];
     private FrozenDictionary<string, TemplateRmTypeResolution> _index =
         FrozenDictionary<string, TemplateRmTypeResolution>.Empty;
+    // H3 — span-keyed alternate lookup avoids the `flatPath.ToString()`
+    // allocation on every `TryResolveType` call. Refreshed whenever
+    // `_index` is rebuilt (currently only in `Initialize`).
+    private FrozenDictionary<string, TemplateRmTypeResolution>.AlternateLookup<ReadOnlySpan<char>> _indexAlternate =
+        FrozenDictionary<string, TemplateRmTypeResolution>.Empty.GetAlternateLookup<ReadOnlySpan<char>>();
 
     /// <summary>
     /// Public parameterless constructor — delegates to the
@@ -64,8 +69,9 @@ public sealed class OperationalTemplate
     /// <inheritdoc />
     public bool TryResolveType(ReadOnlySpan<char> flatPath, out TemplateRmTypeResolution resolution)
     {
-        string key = flatPath.ToString();
-        if (_index.TryGetValue(key, out TemplateRmTypeResolution res))
+        // H3 — span-keyed lookup against the FrozenDictionary alternate
+        // view; no `flatPath.ToString()` allocation per call.
+        if (_indexAlternate.TryGetValue(flatPath, out TemplateRmTypeResolution res))
         {
             resolution = res;
             return true;
@@ -107,6 +113,7 @@ public sealed class OperationalTemplate
 
         _nodes = nodes.ToFrozenSet();
         _index = index.ToFrozenDictionary(StringComparer.Ordinal);
+        _indexAlternate = _index.GetAlternateLookup<ReadOnlySpan<char>>();
     }
 
     private static void Walk(
@@ -209,7 +216,7 @@ public sealed class OperationalTemplate
         return HasSubtypes(rmBmm, declaredType);
     }
 
-    private static string ExtractElementTypeName(BmmType type)
+    internal static string ExtractElementTypeName(BmmType type)
     {
         if (type is BmmContainerType container && container.TypeArguments.Count > 0)
         {
@@ -217,11 +224,41 @@ public sealed class OperationalTemplate
         }
         if (type is BmmGenericType generic && generic.TypeArguments.Count > 0)
         {
-            // Use the root generic name (e.g. INTERVAL for INTERVAL<DV_QUANTITY>);
-            // the inner argument is the bound, not the polymorphism target.
-            return generic.TypeName;
+            // M3 — for generic container shapes (e.g. INTERVAL<DV_QUANTITY>)
+            // the polymorphism target is the element type, not the outer
+            // container. Recursing into the first type argument keeps the
+            // BmmContainerType arm and this arm in agreement.
+            return ExtractElementTypeName(generic.TypeArguments[0]);
         }
         return type.TypeName;
+    }
+
+    // M3 — `HasSubtypes` walks the whole BMM class table per call; on a
+    // wide OPT2 that fires hundreds-to-thousands of times. Precompute the
+    // set of classes that have at least one descendant once per BmmModel
+    // and reuse it. ConditionalWeakTable keys on the BmmModel reference
+    // so cache entries are collected when the model is.
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<BmmModel, FrozenSet<string>> s_hasSubtypesCache
+        = [];
+
+    internal static FrozenSet<string> GetHasSubtypesSet(BmmModel rmBmm)
+    {
+        if (s_hasSubtypesCache.TryGetValue(rmBmm, out FrozenSet<string>? cached))
+        {
+            return cached;
+        }
+        HashSet<string> withSubs = new(StringComparer.OrdinalIgnoreCase);
+        foreach (KeyValuePair<string, BmmClass> kvp in rmBmm.ClassDefinitions)
+        {
+            foreach (string ancestor in kvp.Value.Ancestors)
+            {
+                withSubs.Add(ancestor);
+            }
+        }
+        FrozenSet<string> frozen = withSubs.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
+        // GetValue would race-safely call the factory; use it to avoid
+        // double-insert exceptions when two threads compute in parallel.
+        return s_hasSubtypesCache.GetValue(rmBmm, _ => frozen);
     }
 
     private static bool HasSubtypes(BmmModel rmBmm, string typeName)
@@ -230,16 +267,6 @@ public sealed class OperationalTemplate
         {
             return false;
         }
-        foreach (KeyValuePair<string, BmmClass> kvp in rmBmm.ClassDefinitions)
-        {
-            foreach (string ancestor in kvp.Value.Ancestors)
-            {
-                if (string.Equals(ancestor, typeName, StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return GetHasSubtypesSet(rmBmm).Contains(typeName);
     }
 }
