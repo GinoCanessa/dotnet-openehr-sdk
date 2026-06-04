@@ -20,6 +20,46 @@ public class BmmParserErrorTests
         Assert.Contains("bmm_version", ex.Path ?? string.Empty);
     }
 
+    /// <summary>
+    /// B3 — every BmmParseException must report a real source line/column,
+    /// not the legacy (0, 0) placeholder.
+    /// </summary>
+    [Fact]
+    public void Missing_bmm_version_reports_line_and_column()
+    {
+        const string src = """
+            model_name = <"x">
+            """;
+        BmmParseException ex = Assert.Throws<BmmParseException>(() => BmmParser.Parse(src));
+        Assert.True(ex.Line >= 1, $"expected ex.Line >= 1, got {ex.Line}");
+        Assert.True(ex.Column >= 1, $"expected ex.Column >= 1, got {ex.Column}");
+    }
+
+    /// <summary>
+    /// B3 — the position should point at the offending property
+    /// (the malformed value), not (0, 0).
+    /// </summary>
+    [Fact]
+    public void Property_without_type_reports_position_of_offending_property()
+    {
+        const string src = """
+            bmm_version = <"2.1">
+            model_name = <"x">
+            class_definitions = <
+                ["FOO"] = <
+                    properties = <
+                        ["bar"] = <
+                            name = <"bar">
+                        >
+                    >
+                >
+            >
+            """;
+        BmmParseException ex = Assert.Throws<BmmParseException>(() => BmmParser.Parse(src));
+        Assert.True(ex.Line >= 1, $"expected ex.Line >= 1, got {ex.Line}");
+        Assert.True(ex.Column >= 1, $"expected ex.Column >= 1, got {ex.Column}");
+    }
+
     [Fact]
     public void Missing_model_name_throws()
     {

@@ -134,7 +134,7 @@ public static class OdinParser
         OdinTokenSnapshot first = state.Peek();
         if (first.Kind == OdinTokenKind.EndOfFile)
         {
-            return new OdinObject();
+            return new OdinObject { Line = 1, Column = 1 };
         }
         if (first.Kind == OdinTokenKind.AtSign)
         {
@@ -162,13 +162,24 @@ public static class OdinParser
             state.Consume();
             OdinValue inner = ParseBlockContents(ref state);
             state.Expect(OdinTokenKind.RightAngle, "'>'");
+            if (inner.Line == 0)
+            {
+                inner.Line = first.Line;
+                inner.Column = first.Column;
+            }
             return inner;
         }
         if (first.Kind == OdinTokenKind.LeftBracket)
         {
             // Identified object document: [key] = <...> [key] = <...> ...
             // Same parsing logic as a hash body but at top level.
-            return ParseHashBody(ref state, requireBracket: true);
+            OdinValue hash = ParseHashBody(ref state, requireBracket: true);
+            if (hash.Line == 0)
+            {
+                hash.Line = first.Line;
+                hash.Column = first.Column;
+            }
+            return hash;
         }
         // Implicit object document: attribute_name '=' ... repeated.
         return ParseAttributeBody(ref state);
@@ -347,7 +358,12 @@ public static class OdinParser
         }
 
         _ = openBracket; // retained for future error-message use
-        return new OdinHash(entries) { KeyKind = keyKind };
+        return new OdinHash(entries)
+        {
+            KeyKind = keyKind,
+            Line = openBracket.Line,
+            Column = openBracket.Column,
+        };
     }
 
     private static OdinValue ParseInterval(ref ParserState state)
@@ -570,7 +586,7 @@ public static class OdinParser
             }
             break;
         }
-        return new OdinObject(attrs);
+        return new OdinObject(attrs) { Line = first.Line, Column = first.Column };
     }
 
     private static void ParseAttribute(ref ParserState state, OdinTokenSnapshot name, Dictionary<string, OdinValue> attrs)
@@ -612,6 +628,14 @@ public static class OdinParser
         if (typeMarker is not null)
         {
             inner.TypeMarker = typeMarker;
+        }
+        // Tag the block-introduced value with the position of its
+        // opening '<' so consumers (e.g. BmmParser) can report
+        // source-locating diagnostics on shape mismatches.
+        if (inner.Line == 0)
+        {
+            inner.Line = t.Line;
+            inner.Column = t.Column;
         }
         return inner;
     }

@@ -84,13 +84,25 @@ public sealed class FlatSchemaDrivenRoundTripTests
     }
 
     [Fact]
-    public void Catalogue_HasNo_SchemaRequired_Entries()
+    public void Catalogue_SchemaRequired_Entries_MatchArchive()
     {
-        IEnumerable<string> schemaRequired = Catalogue.Fixtures
-            .Where(f => string.Equals(f.Bucket, "schema-required", StringComparison.Ordinal))
-            .Select(f => f.File);
+        // The catalogue must enumerate every checked-in
+        // openfhir-archive/*_flat.json fixture under the
+        // "schema-required" bucket. Drift here means a new fixture
+        // was added without lighting up its parse coverage.
+        string archive = Path.Combine(CatalogueLoader.SourceDir, "openfhir-archive");
+        IReadOnlyList<string> onDisk = Directory.EnumerateFiles(archive, "*_flat.json")
+            .Select(p => "openfhir-archive/" + Path.GetFileName(p))
+            .OrderBy(s => s, StringComparer.Ordinal)
+            .ToList();
 
-        Assert.Empty(schemaRequired);
+        IReadOnlyList<string> catalogued = Catalogue.Fixtures
+            .Where(f => string.Equals(f.Bucket, "schema-required", StringComparison.Ordinal))
+            .Select(f => f.File)
+            .OrderBy(s => s, StringComparer.Ordinal)
+            .ToList();
+
+        Assert.Equal(onDisk, catalogued);
     }
 
     [Fact]
