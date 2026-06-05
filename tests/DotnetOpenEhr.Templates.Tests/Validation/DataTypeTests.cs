@@ -10,6 +10,7 @@ using DotnetOpenEhr.Rm.DataTypes.Quantity;
 using DotnetOpenEhr.Rm.DataTypes.Text;
 using DotnetOpenEhr.Templates.Validation;
 using Xunit;
+using static DotnetOpenEhr.Templates.Tests.Validation.ValidationAssertions;
 
 namespace DotnetOpenEhr.Templates.Tests.Validation;
 
@@ -145,19 +146,10 @@ terminology
         return s_validator.Validate(obs, opt, TestContext.Current.CancellationToken);
     }
 
-    private static void AssertSingleIssue(
-        IReadOnlyList<ValidationIssue> issues,
-        string ruleId,
-        ValidationSeverity severity = ValidationSeverity.Error)
-    {
-        ValidationIssue only = Assert.Single(issues, i => i.RuleId == ruleId);
-        Assert.Equal(severity, only.Severity);
-    }
-
-    private static void AssertNoIssue(IReadOnlyList<ValidationIssue> issues, string ruleId)
-    {
-        Assert.DoesNotContain(issues, i => i.RuleId == ruleId);
-    }
+    // Issue assertions live in `ValidationAssertions` (shared with
+    // StringPatternHardeningTests). H12 (0604-04) added the
+    // `expectedPath` argument so a misrouted issue surfaces as a test
+    // failure.
 
     // ---- STRING_001 (pattern) ---------------------------------------
 
@@ -190,7 +182,10 @@ terminology
 
         IReadOnlyList<ValidationIssue> issues = Run(opt, el);
 
-        AssertSingleIssue(issues, ValidationRuleIds.StringPatternViolation);
+        AssertSingleIssue(
+            issues,
+            ValidationRuleIds.StringPatternViolation,
+            "/data[id2]/events[id3]/data[id4]/items[id5]/value/value");
     }
 
     // ---- STRING_002 (enumeration) ------------------------------------
@@ -224,7 +219,10 @@ terminology
 
         IReadOnlyList<ValidationIssue> issues = Run(opt, el);
 
-        AssertSingleIssue(issues, ValidationRuleIds.StringNotInEnumeration);
+        AssertSingleIssue(
+            issues,
+            ValidationRuleIds.StringNotInEnumeration,
+            "/data[id2]/events[id3]/data[id4]/items[id5]/value/value");
     }
 
     // ---- NUMERIC_001 (integer range, via DV_COUNT) ------------------
@@ -258,7 +256,10 @@ terminology
 
         IReadOnlyList<ValidationIssue> issues = Run(opt, el);
 
-        AssertSingleIssue(issues, ValidationRuleIds.NumericOutOfRange);
+        AssertSingleIssue(
+            issues,
+            ValidationRuleIds.NumericOutOfRange,
+            "/data[id2]/events[id3]/data[id4]/items[id5]/value/magnitude");
     }
 
     /// <summary>
@@ -279,7 +280,10 @@ terminology
 
         IReadOnlyList<ValidationIssue> issues = Run(opt, el);
 
-        AssertSingleIssue(issues, ValidationRuleIds.NumericOutOfRange);
+        AssertSingleIssue(
+            issues,
+            ValidationRuleIds.NumericOutOfRange,
+            "/data[id2]/events[id3]/data[id4]/items[id5]/value/magnitude");
     }
 
     // ---- NUMERIC_002 (integer enumeration, via DV_COUNT) ------------
@@ -313,7 +317,10 @@ terminology
 
         IReadOnlyList<ValidationIssue> issues = Run(opt, el);
 
-        AssertSingleIssue(issues, ValidationRuleIds.NumericNotInEnumeration);
+        AssertSingleIssue(
+            issues,
+            ValidationRuleIds.NumericNotInEnumeration,
+            "/data[id2]/events[id3]/data[id4]/items[id5]/value/magnitude");
     }
 
     // ---- DATETIME_001 (partial pattern on DV_DATE_TIME) -------------
@@ -347,7 +354,10 @@ terminology
 
         IReadOnlyList<ValidationIssue> issues = Run(opt, el);
 
-        AssertSingleIssue(issues, ValidationRuleIds.DateTimePatternViolation);
+        AssertSingleIssue(
+            issues,
+            ValidationRuleIds.DateTimePatternViolation,
+            "/data[id2]/events[id3]/data[id4]/items[id5]/value/value");
     }
 
     // ---- QUANTITY_001 (wrong units) ----------------------------------
@@ -383,7 +393,10 @@ terminology
 
         IReadOnlyList<ValidationIssue> issues = Run(opt, el);
 
-        AssertSingleIssue(issues, ValidationRuleIds.QuantityWrongUnits);
+        AssertSingleIssue(
+            issues,
+            ValidationRuleIds.QuantityWrongUnits,
+            "/data[id2]/events[id3]/data[id4]/items[id5]/value/units");
     }
 
     // ---- QUANTITY_002 (magnitude out of range) ----------------------
@@ -419,7 +432,10 @@ terminology
 
         IReadOnlyList<ValidationIssue> issues = Run(opt, el);
 
-        AssertSingleIssue(issues, ValidationRuleIds.QuantityMagnitudeOutOfRange);
+        AssertSingleIssue(
+            issues,
+            ValidationRuleIds.QuantityMagnitudeOutOfRange,
+            "/data[id2]/events[id3]/data[id4]/items[id5]/value/magnitude");
     }
 
     // ---- QUANTITY_003 (precision out of range) ----------------------
@@ -457,7 +473,10 @@ terminology
 
         IReadOnlyList<ValidationIssue> issues = Run(opt, el);
 
-        AssertSingleIssue(issues, ValidationRuleIds.QuantityPrecisionOutOfRange);
+        AssertSingleIssue(
+            issues,
+            ValidationRuleIds.QuantityPrecisionOutOfRange,
+            "/data[id2]/events[id3]/data[id4]/items[id5]/value/precision");
     }
 
     // ---- ORDINAL_001 (value not in set, via DV_ORDINAL) -------------
@@ -491,7 +510,10 @@ terminology
 
         IReadOnlyList<ValidationIssue> issues = Run(opt, el);
 
-        AssertSingleIssue(issues, ValidationRuleIds.OrdinalNotInSet);
+        AssertSingleIssue(
+            issues,
+            ValidationRuleIds.OrdinalNotInSet,
+            "/data[id2]/events[id3]/data[id4]/items[id5]/value/value");
     }
 
     // ---- TERM_001 (code not in local value set) ---------------------
@@ -587,7 +609,10 @@ terminology
 
         IReadOnlyList<ValidationIssue> issues = Run(opt, el);
 
-        AssertSingleIssue(issues, ValidationRuleIds.CodeNotInValueSet);
+        AssertSingleIssue(
+            issues,
+            ValidationRuleIds.CodeNotInValueSet,
+            "/data[id2]/events[id3]/data[id4]/items[id5]/value/defining_code");
     }
 
     // ---- TERM_002 (external binding always NotValidated) -------------

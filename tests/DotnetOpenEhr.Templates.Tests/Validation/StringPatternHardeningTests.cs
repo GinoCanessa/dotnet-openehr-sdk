@@ -5,6 +5,7 @@ using DotnetOpenEhr.Rm.DataTypes;
 using DotnetOpenEhr.Rm.DataTypes.Text;
 using DotnetOpenEhr.Templates.Validation;
 using Xunit;
+using static DotnetOpenEhr.Templates.Tests.Validation.ValidationAssertions;
 
 namespace DotnetOpenEhr.Templates.Tests.Validation;
 
@@ -125,8 +126,11 @@ terminology
 
         IReadOnlyList<ValidationIssue> issues = RunWith(validator, opt, NewElement("id5", new DvText { Value = "xyz" }));
 
-        ValidationIssue only = Assert.Single(issues, i => i.RuleId == ValidationRuleIds.StringPatternViolation);
-        Assert.Equal(ValidationSeverity.NotValidated, only.Severity);
+        AssertSingleIssue(
+            issues,
+            ValidationRuleIds.StringPatternViolation,
+            "/data[id2]/events[id3]/data[id4]/items[id5]/value/value",
+            ValidationSeverity.NotValidated);
     }
 
     [Fact]
@@ -146,8 +150,11 @@ terminology
         IReadOnlyList<ValidationIssue> issues = RunWith(validator, opt,
             NewElement("id5", new DvText { Value = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab" }));
 
-        ValidationIssue only = Assert.Single(issues, i => i.RuleId == ValidationRuleIds.StringPatternViolation);
-        Assert.Equal(ValidationSeverity.NotValidated, only.Severity);
+        AssertSingleIssue(
+            issues,
+            ValidationRuleIds.StringPatternViolation,
+            "/data[id2]/events[id3]/data[id4]/items[id5]/value/value",
+            ValidationSeverity.NotValidated);
         // Do not assert timing — the RegexMatchTimeoutException is the
         // contract; wall-clock is not.
     }
