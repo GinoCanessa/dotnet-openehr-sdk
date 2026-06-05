@@ -1,0 +1,70 @@
+operational_template (adl_version=2.0.6; rm_release=1.1.0; generated)
+    openEHR-EHR-COMPOSITION.external_binding_precedence.v1.0.0
+
+language
+    original_language = <[ISO_639-1::en]>
+
+description
+    lifecycle_state = <"unmanaged">
+    details = <
+        ["en"] = <
+            language = <[ISO_639-1::en]>
+            purpose = <"M4 fixture: pin that an external binding on a CTerminologyCode takes precedence over the local value-set. The composition uses a code not in the local value-set; without precedence the validator would emit TERM_001 Error, but the binding must override that to BINDING_001 NotValidated.">
+        >
+    >
+
+definition
+    COMPOSITION[id100] matches {
+        content matches {
+            OBSERVATION[id1] occurrences matches {1..1} matches {
+                data matches {
+                    HISTORY[id2] matches {
+                        events cardinality matches {0..1} matches {
+                            POINT_EVENT[id3] occurrences matches {0..*} matches {
+                                data matches {
+                                    ITEM_TREE[id4] matches {
+                                        items matches {
+                                            ELEMENT[id7] occurrences matches {0..1} matches {
+                                                value matches {
+                                                    DV_CODED_TEXT[id8] matches {
+                                                        defining_code matches {[ac1]}
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+terminology
+    term_definitions = <
+        ["en"] = <
+            ["id100"] = <text = <"External binding precedence"> description = <"External binding precedence">>
+            ["id1"] = <text = <"obs"> description = <"obs">>
+            ["id2"] = <text = <"history"> description = <"history">>
+            ["id3"] = <text = <"event"> description = <"event">>
+            ["id4"] = <text = <"tree"> description = <"tree">>
+            ["id7"] = <text = <"position"> description = <"position">>
+            ["id8"] = <text = <"position value"> description = <"position value">>
+            ["at1"] = <text = <"standing"> description = <"standing">>
+            ["at2"] = <text = <"sitting"> description = <"sitting">>
+            ["at3"] = <text = <"lying"> description = <"lying">>
+        >
+    >
+    value_sets = <
+        ["ac1"] = <
+            id = <"ac1">
+            members = <"at1", "at2", "at3">
+        >
+    >
+    constraint_bindings = <
+        ["SNOMED-CT"] = <
+            ["ac1"] = <"http://snomed.info/sct/?fhir_vs=ecl/12345">
+        >
+    >

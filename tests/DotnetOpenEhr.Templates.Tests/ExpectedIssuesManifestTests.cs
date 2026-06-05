@@ -31,6 +31,8 @@ public sealed class ExpectedIssuesManifestTests
         "blood_pressure_wrong_units",
         "blood_pressure_extra_occurrence",
         "blood_pressure_value_set_violation",
+        "external_binding_external_takes_precedence",
+        "external_binding_with_no_value_set_skips_validation",
     ];
 
     [Theory]
