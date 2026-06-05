@@ -12,6 +12,35 @@ unstable** and may change between alphas.
 
 ### Added
 
+- **ADR 0001 — `DvOrdered<T>` CRTP cascade permanently deferred.**
+  `docs/architecture/0001-no-dvordered-crtp-cascade.md` records the
+  2026-06-05 decision to keep `ReferenceRange.Range` as
+  `Interval<DvOrdered>?` and not pursue a generic self-bound type
+  hierarchy. Linked from `docs/README.md`. *(0604-04 Phase 1)*
+- **`FlatJsonReader.Read(ReadOnlyMemory<byte>)` overload.** Skips the
+  `ReadOnlySpan<byte>.ToArray()` copy that the span overload requires
+  (`JsonDocument.Parse` has no span overload). The `Read(Stream)` /
+  `ReadAsync(Stream, …)` paths switch from `GetBuffer().AsSpan(…).ToArray()`
+  to `GetBuffer().AsMemory(…)`, removing one copy. *(0604-04 Phase 7, L6)*
+- **Schema-driven FLAT fixture `temporal_and_null`.** Pins the
+  `DvDate` arm of `AssertDataValue` + the `Element.NullFlavour`
+  compare path added in 0604-03 Phase 11; registers the scenario in
+  `lossless-catalogue.json`. *(0604-04 Phase 9, M26)*
+- **Per-group `description` content for every embedded terminology
+  entry.** All 14 group JSON files under
+  `src/DotnetOpenEhr.Terminology/Groups/` now carry a `description`
+  field on every entry, sourced from the openEHR Support
+  Terminology spec (TERM Release 3.0.0). Provenance recorded in
+  `src/DotnetOpenEhr.Terminology/THIRD_PARTY_NOTICES.md`.
+  *(0604-04 Phase 10, L8)*
+- **`IntervalJsonConverterFactory` unit tests.** Pin the new closed
+  switch over `int` / `long` / `double` / `string` plus the
+  reflection-fallback contract. *(0604-04 Phase 11)*
+- **Two new `ExpectedIssuesManifest` fixtures** —
+  `external_binding_external_takes_precedence` and
+  `external_binding_with_no_value_set_skips_validation` — that pin
+  the precedence fix landed in 0604-03 Phase 8 for the
+  `HasExternalBinding` path. *(0604-04 Phase 5, M4)*
 - **`IsoParseMode` enum** in `DotnetOpenEhr.Foundation.Iso` with
   `Strict`, `Ostrich`, and `FixAsPossible` modes; all
   `Iso{Date,Time,DateTime,Duration,TimeZone}` parsers gained
@@ -29,6 +58,23 @@ unstable** and may change between alphas.
 - **AOT smoke test** (`tests/DotnetOpenEhr.AotSmoke`) now part of the
   pre-merge gate; the publish must print `smoke ok` against a
   `PublishAot=true` build.
+
+### Changed
+
+- **`OdinParseException` messages now include the `(near '…')`
+  snippet at every throw site** in both `OdinParser` and `OdinLexer`.
+  The exception's `Snippet` property is populated from
+  `OdinLexer.Source` via a `BuildSnippet(source, line, column)` helper
+  that walks newlines and CR/LF-escapes the slice so the message stays
+  single-line. Message text changes; no API surface change.
+  *(0604-04 Phase 2, H9)*
+- **`Adl2Lexer` / `AqlLexer` HRID grammar tightened to the spec.**
+  Both scanners now drive the HRID body through an explicit
+  `IsHridTerminator(char)` helper anchored to openEHR Archetype
+  Identification spec § 3.2.1 (Release 2.3.0). Behaviour identical to
+  the prior implicit inclusion check; the new shape encodes the spec
+  so a future maintainer doesn't have to re-derive the rule.
+  *(0604-04 Phase 3, M12)*
 
 ### Changed (BREAKING)
 
@@ -52,6 +98,24 @@ unstable** and may change between alphas.
 
 ### Fixed
 
+- **M1 — `FlatJsonContentParser.MergeDataValue` no longer silently
+  zeros scalars across DV-type transitions.** A new per-DV scalar
+  copier (`DataValueScalarCopier`) preserves magnitude when
+  `|magnitude` (integral, lands as `DvCount`) is followed by `|units`
+  (forces re-instantiation as `DvQuantity`), preserves the text when
+  `|value` is followed by `|code`+`|terminology` (`DvText` →
+  `DvCodedText`), and explicitly documents the no-op transitions.
+  `DvCodedText` is no longer downcast to `DvText` when a `|value`
+  arrives after a `|code` pair. *(0604-04 Phase 6)*
+- **`IntervalJsonConverterFactory` reflection scope narrowed.** The
+  factory now uses a closed switch for Foundation-side `T`s
+  (`int`, `long`, `double`, `string`) that returns the typed
+  converter without `Activator.CreateInstance` /
+  `MakeGenericType`. The reflection fallback (and its
+  `[UnconditionalSuppressMessage]`) is retained only for RM-side
+  `T`s (currently `DvDateTime`, `DvOrdered`) that Foundation cannot
+  reference. Full elimination is deferred per the new ADR.
+  *(0604-04 Phase 11)*
 - **B1 — AQL `DISTINCT` row-key canonicalisation.** The `RowKey`
   helper that backs `DISTINCT` now produces a hash and an equality
   contract that agree across mixed `DvText`/`DvCodedText` columns;
@@ -88,6 +152,26 @@ unstable** and may change between alphas.
   Deliberate-mutation smoke confirms drift detection.
 - **M1/M2/M4/M5/M7/M11/M13/M19/M21/M22/M23/M25.** Various
   smaller correctness and diagnostic fixes — see commit log.
+
+### Tests
+
+- **H12 — validator `AssertSingleIssue` now pins `Path` alongside
+  `RuleId`.** A misrouted issue surfaces as a test failure rather
+  than passing silently. Helper extracted to a shared
+  `ValidationAssertions.cs` consumed via `using static` from
+  `DataTypeTests` (11 sites) and `StringPatternHardeningTests` (2
+  sites). *(0604-04 Phase 4)*
+- **M16 — DV_QUANTITY / DV_ORDINAL characterisation tests.** Six new
+  tests in `Adl2ParserSecondOrderTests` pin that the existing parser
+  produces `CComplexObject` + `CAttributeTuple` for both the basic
+  and tuple constraint forms (the ADL 2 spec explicitly removed
+  `C_DV_QUANTITY` / `C_DV_ORDINAL` in favour of generic tuple
+  constraints). *(0604-04 Phase 8)*
+- **L8 — terminology `description` pin test flipped.** The previous
+  `Description_field_is_currently_unpopulated_for_all_entries` test is
+  replaced by a positive `Description_is_populated_for_every_entry_in_every_group`
+  fact plus a per-group `[Theory]` variant that names the responsible
+  JSON file on failure. *(0604-04 Phase 10)*
 
 ### Performance
 
