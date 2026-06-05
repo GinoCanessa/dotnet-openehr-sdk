@@ -242,24 +242,28 @@ public ref struct AqlLexer
         // GRAMMAR: AQL spec - ARCHETYPE_HRID =
         //   (NAMESPACE '::')? IDENT '-' IDENT '-' IDENT '.' CONCEPT '.v' VERSION_ID
         // VERSION_ID = DIGIT+ ('.' DIGIT+)* ( ('-rc'|'-alpha') ('.' DIGIT+)? )?
-        // We greedily consume ASCII identifier characters, '-', '.', and
-        // '::' segments, stopping at the closing ']' or other obvious
-        // terminator.
+        //
+        // The underlying HRID grammar is openEHR Archetype Identification
+        // spec § 3.2.1 (Release 2.3.0). The body charset is:
+        //   { letter, digit, '_', '-', '.' } plus the two-character
+        //   '::' namespace separator (AQL embeds namespaced HRIDs more
+        //   often than ADL2 does, so this scanner accepts '::' inline;
+        //   the ADL2 twin does not).
+        // Anything else terminates the scan — see IsHridTerminator below.
         int p = _pos;
         while (p < _source.Length)
         {
             char ch = _source[p];
-            if (IsIdentContinue(ch) || ch == '-' || ch == '.')
-            {
-                p++;
-                continue;
-            }
             if (ch == ':' && p + 1 < _source.Length && _source[p + 1] == ':')
             {
                 p += 2;
                 continue;
             }
-            break;
+            if (IsHridTerminator(ch))
+            {
+                break;
+            }
+            p++;
         }
         int len = p - _pos;
         if (len == 0)
@@ -271,6 +275,20 @@ public ref struct AqlLexer
         _column += len;
         return Emit(AqlTokenKind.ArchetypeHridLiteral, startPos, len, startLine, startCol, value: text);
     }
+
+    /// <summary>
+    /// Returns true when <paramref name="c"/> is outside the openEHR
+    /// archetype HRID body charset (letter, digit, <c>_</c>, <c>-</c>,
+    /// <c>.</c>) and therefore terminates the HRID scan. Whitespace,
+    /// <c>(</c>, <c>&lt;</c>, <c>&gt;</c>, <c>[</c>, <c>]</c>, <c>{</c>,
+    /// <c>}</c>, <c>,</c>, <c>;</c>, <c>|</c>, <c>=</c>, newlines, and
+    /// every other non-body character are terminators per the Archetype
+    /// Identification spec § 3.2.1. Note the AQL caller handles the
+    /// two-character <c>::</c> namespace separator before checking this
+    /// helper because a single <c>:</c> on its own is a terminator.
+    /// </summary>
+    private static bool IsHridTerminator(char c)
+        => !(IsIdentContinue(c) || c == '-' || c == '.');
 
     private AqlToken ScanPathSegment(int startPos, int startLine, int startCol)
     {
