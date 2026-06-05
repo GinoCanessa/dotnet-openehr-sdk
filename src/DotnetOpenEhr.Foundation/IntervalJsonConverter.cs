@@ -30,14 +30,27 @@ public sealed class IntervalJsonConverterFactory : JsonConverterFactory
     [UnconditionalSuppressMessage(
         "AOT",
         "IL3050:RequiresDynamicCode",
-        Justification = "Callers must pre-register every Interval<T> instantiation in their source-gen context via [JsonSerializable], so the closed generic is reachable to the AOT compiler without runtime codegen.")]
+        Justification = "Used only as a fall-through for closed Interval<T> instantiations whose T is defined outside DotnetOpenEhr.Foundation (currently DvDateTime and DvOrdered in DotnetOpenEhr.Rm). The primitive-T cases (int, long, double, string) take the closed-switch fast path and never reach this site. Callers must pre-register every such RM-side Interval<T> instantiation in their source-gen context via [JsonSerializable], so the closed generic is reachable to the AOT compiler without runtime codegen.")]
     [UnconditionalSuppressMessage(
         "Trimming",
         "IL2055:RequiresUnreferencedCode",
-        Justification = "Callers must pre-register every Interval<T> instantiation in their source-gen context via [JsonSerializable], so the closed generic is reachable to the trimmer.")]
+        Justification = "Used only as a fall-through for closed Interval<T> instantiations whose T is defined outside DotnetOpenEhr.Foundation. The primitive-T cases (int, long, double, string) take the closed-switch fast path and never reach this site. Callers must pre-register every such RM-side Interval<T> instantiation in their source-gen context via [JsonSerializable], so the closed generic is reachable to the trimmer.")]
     public override JsonConverter? CreateConverter(Type typeToConvert, JsonSerializerOptions options)
     {
         Type elementType = typeToConvert.GetGenericArguments()[0];
+        // M11 (0604-04): closed dispatch over Foundation-side T's avoids
+        // reflection and MakeGenericType entirely under PublishAot=true.
+        // RM-side T's (DvDateTime, DvOrdered) cannot be referenced from
+        // Foundation (Rm depends on Foundation, not the other way
+        // around), so they fall through to the reflection path below.
+        // The two UnconditionalSuppressMessage attributes are scoped to
+        // that fall-through; see ADR
+        // docs/architecture/0001-no-dvordered-crtp-cascade.md.
+        if (elementType == typeof(int))    return new IntervalJsonConverter<int>();
+        if (elementType == typeof(long))   return new IntervalJsonConverter<long>();
+        if (elementType == typeof(double)) return new IntervalJsonConverter<double>();
+        if (elementType == typeof(string)) return new IntervalJsonConverter<string>();
+
         Type converterType = typeof(IntervalJsonConverter<>).MakeGenericType(elementType);
         return (JsonConverter?)Activator.CreateInstance(converterType);
     }
