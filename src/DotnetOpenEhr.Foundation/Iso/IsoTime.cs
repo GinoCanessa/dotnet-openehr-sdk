@@ -65,6 +65,15 @@ public sealed class IsoTime : IEquatable<IsoTime>, IComparable<IsoTime>, ICompar
         return value;
     }
 
+    public static IsoTime Parse(ReadOnlySpan<char> text, IsoParseMode mode)
+    {
+        // Mode is reserved for future per-component leniency; today the
+        // IsoTime grammar admits no per-mode variation beyond what
+        // IsoTimeZone itself enforces.
+        _ = mode;
+        return Parse(text);
+    }
+
     public static bool TryParse(ReadOnlySpan<char> text, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out IsoTime? value)
     {
         value = null;
@@ -166,6 +175,15 @@ public sealed class IsoTime : IEquatable<IsoTime>, IComparable<IsoTime>, ICompar
         if (TimeZone is not null && other.TimeZone is not null)
         {
             return ToReferenceDayUtcSeconds().CompareTo(other.ToReferenceDayUtcSeconds());
+        }
+        // M7 — mixed-zone comparison is not defined; throw rather than
+        // silently dropping the timezone from one side. Callers that
+        // intend a zoneless comparison must strip the zone from both
+        // operands first.
+        if (TimeZone is null != (other.TimeZone is null))
+        {
+            throw new InvalidOperationException(
+                "mixed-zone comparison is not defined: assign a zone to both operands or strip it from both.");
         }
 
         int cmp = Hour.CompareTo(other.Hour);

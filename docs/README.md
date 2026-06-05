@@ -33,3 +33,12 @@ A non-exhaustive list:
 - Archetype Identification
 - Archetype Technology Overview
 - Archetype Query Language (AQL)
+
+## Architecture decisions
+
+ADRs live under [`architecture/`](architecture/) and record
+non-trivial, durable design decisions.
+
+- [`0001-no-dvordered-crtp-cascade.md`](architecture/0001-no-dvordered-crtp-cascade.md)
+  — `ReferenceRange.Range` stays `Interval<DvOrdered>?`; the
+  `DvOrdered<T>` CRTP cascade is permanently deferred.

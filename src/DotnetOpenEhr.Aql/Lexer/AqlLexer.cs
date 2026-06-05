@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using System.Text;
 
 namespace DotnetOpenEhr.Aql.Lexer;
@@ -21,7 +22,6 @@ public ref struct AqlLexer
     private int _line;
     private int _column;
     private int _bracketDepth;
-    private AqlTokenKind _lastKind;
 
     public AqlLexer(ReadOnlySpan<char> source)
     {
@@ -30,7 +30,6 @@ public ref struct AqlLexer
         _line = 1;
         _column = 1;
         _bracketDepth = 0;
-        _lastKind = AqlTokenKind.EndOfFile;
     }
 
     public int Position => _pos;
@@ -243,24 +242,28 @@ public ref struct AqlLexer
         // GRAMMAR: AQL spec - ARCHETYPE_HRID =
         //   (NAMESPACE '::')? IDENT '-' IDENT '-' IDENT '.' CONCEPT '.v' VERSION_ID
         // VERSION_ID = DIGIT+ ('.' DIGIT+)* ( ('-rc'|'-alpha') ('.' DIGIT+)? )?
-        // We greedily consume ASCII identifier characters, '-', '.', and
-        // '::' segments, stopping at the closing ']' or other obvious
-        // terminator.
+        //
+        // The underlying HRID grammar is openEHR Archetype Identification
+        // spec § 3.2.1 (Release 2.3.0). The body charset is:
+        //   { letter, digit, '_', '-', '.' } plus the two-character
+        //   '::' namespace separator (AQL embeds namespaced HRIDs more
+        //   often than ADL2 does, so this scanner accepts '::' inline;
+        //   the ADL2 twin does not).
+        // Anything else terminates the scan — see IsHridTerminator below.
         int p = _pos;
         while (p < _source.Length)
         {
             char ch = _source[p];
-            if (IsIdentContinue(ch) || ch == '-' || ch == '.')
-            {
-                p++;
-                continue;
-            }
             if (ch == ':' && p + 1 < _source.Length && _source[p + 1] == ':')
             {
                 p += 2;
                 continue;
             }
-            break;
+            if (IsHridTerminator(ch))
+            {
+                break;
+            }
+            p++;
         }
         int len = p - _pos;
         if (len == 0)
@@ -272,6 +275,20 @@ public ref struct AqlLexer
         _column += len;
         return Emit(AqlTokenKind.ArchetypeHridLiteral, startPos, len, startLine, startCol, value: text);
     }
+
+    /// <summary>
+    /// Returns true when <paramref name="c"/> is outside the openEHR
+    /// archetype HRID body charset (letter, digit, <c>_</c>, <c>-</c>,
+    /// <c>.</c>) and therefore terminates the HRID scan. Whitespace,
+    /// <c>(</c>, <c>&lt;</c>, <c>&gt;</c>, <c>[</c>, <c>]</c>, <c>{</c>,
+    /// <c>}</c>, <c>,</c>, <c>;</c>, <c>|</c>, <c>=</c>, newlines, and
+    /// every other non-body character are terminators per the Archetype
+    /// Identification spec § 3.2.1. Note the AQL caller handles the
+    /// two-character <c>::</c> namespace separator before checking this
+    /// helper because a single <c>:</c> on its own is a terminator.
+    /// </summary>
+    private static bool IsHridTerminator(char c)
+        => !(IsIdentContinue(c) || c == '-' || c == '.');
 
     private AqlToken ScanPathSegment(int startPos, int startLine, int startCol)
     {
@@ -398,22 +415,17 @@ public ref struct AqlLexer
                 rawStart = _pos;
                 continue;
             }
-            if (c == '\n')
+            if (c == '\n' || c == '\r')
             {
-                AdvanceNewline(1);
-                continue;
-            }
-            if (c == '\r')
-            {
-                if (_pos + 1 < _source.Length && _source[_pos + 1] == '\n')
-                {
-                    AdvanceNewline(2);
-                }
-                else
-                {
-                    AdvanceNewline(1);
-                }
-                continue;
+                // M14 — string literals may not span lines. The most
+                // common cause of a `\n` inside a string is a missing
+                // closing quote on the previous line; report it as
+                // unterminated and point at the newline so editor
+                // gutters land on the offending row.
+                throw NewError(
+                    "Unterminated string literal (embedded newline).",
+                    _line,
+                    _column);
             }
             Advance(1);
         }
@@ -596,44 +608,48 @@ public ref struct AqlLexer
         return true;
     }
 
-    private static AqlTokenKind MatchKeyword(string text)
-    {
-        // Case-insensitive comparison; AQL keywords are ASCII so we use
-        // OrdinalIgnoreCase.
-        return text.ToUpperInvariant() switch
+    // M9 — case-insensitive keyword table. `FrozenDictionary` with an
+    // `OrdinalIgnoreCase` comparer matches without re-casing the input,
+    // so each MatchKeyword call avoids the previous `text.ToUpperInvariant()`
+    // allocation.
+    private static readonly FrozenDictionary<string, AqlTokenKind> s_keywords =
+        new Dictionary<string, AqlTokenKind>(StringComparer.OrdinalIgnoreCase)
         {
-            "SELECT" => AqlTokenKind.Select,
-            "FROM" => AqlTokenKind.From,
-            "WHERE" => AqlTokenKind.Where,
-            "ORDER" => AqlTokenKind.Order,
-            "BY" => AqlTokenKind.By,
-            "LIMIT" => AqlTokenKind.Limit,
-            "OFFSET" => AqlTokenKind.Offset,
-            "CONTAINS" => AqlTokenKind.Contains,
-            "EHR" => AqlTokenKind.Ehr,
-            "COMPOSITION" => AqlTokenKind.Composition,
-            "AND" => AqlTokenKind.And,
-            "OR" => AqlTokenKind.Or,
-            "NOT" => AqlTokenKind.Not,
-            "EXISTS" => AqlTokenKind.Exists,
-            "MATCHES" => AqlTokenKind.Matches,
-            "LIKE" => AqlTokenKind.Like,
-            "IS" => AqlTokenKind.Is,
-            "NULL" => AqlTokenKind.Null,
-            "TRUE" => AqlTokenKind.True,
-            "FALSE" => AqlTokenKind.False,
-            "ASC" => AqlTokenKind.Asc,
-            "ASCENDING" => AqlTokenKind.Asc,
-            "DESC" => AqlTokenKind.Desc,
-            "DESCENDING" => AqlTokenKind.Desc,
-            "AS" => AqlTokenKind.As,
-            "DISTINCT" => AqlTokenKind.Distinct,
-            "TOP" => AqlTokenKind.Top,
-            "BACKWARD" => AqlTokenKind.Backward,
-            "FORWARD" => AqlTokenKind.Forward,
-            _ => AqlTokenKind.EndOfFile,
-        };
-    }
+            ["SELECT"] = AqlTokenKind.Select,
+            ["FROM"] = AqlTokenKind.From,
+            ["WHERE"] = AqlTokenKind.Where,
+            ["ORDER"] = AqlTokenKind.Order,
+            ["BY"] = AqlTokenKind.By,
+            ["LIMIT"] = AqlTokenKind.Limit,
+            ["OFFSET"] = AqlTokenKind.Offset,
+            ["CONTAINS"] = AqlTokenKind.Contains,
+            ["EHR"] = AqlTokenKind.Ehr,
+            ["COMPOSITION"] = AqlTokenKind.Composition,
+            ["AND"] = AqlTokenKind.And,
+            ["OR"] = AqlTokenKind.Or,
+            ["NOT"] = AqlTokenKind.Not,
+            ["EXISTS"] = AqlTokenKind.Exists,
+            ["MATCHES"] = AqlTokenKind.Matches,
+            ["LIKE"] = AqlTokenKind.Like,
+            ["IS"] = AqlTokenKind.Is,
+            ["NULL"] = AqlTokenKind.Null,
+            ["TRUE"] = AqlTokenKind.True,
+            ["FALSE"] = AqlTokenKind.False,
+            ["ASC"] = AqlTokenKind.Asc,
+            ["ASCENDING"] = AqlTokenKind.Asc,
+            ["DESC"] = AqlTokenKind.Desc,
+            ["DESCENDING"] = AqlTokenKind.Desc,
+            ["AS"] = AqlTokenKind.As,
+            ["DISTINCT"] = AqlTokenKind.Distinct,
+            ["TOP"] = AqlTokenKind.Top,
+            ["BACKWARD"] = AqlTokenKind.Backward,
+            ["FORWARD"] = AqlTokenKind.Forward,
+        }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+
+    internal static AqlTokenKind MatchKeyword(string text)
+        => s_keywords.TryGetValue(text, out AqlTokenKind kind)
+            ? kind
+            : AqlTokenKind.EndOfFile;
 
     // -- Trivia / low-level helpers -------------------------------------------
 
@@ -679,7 +695,6 @@ public ref struct AqlLexer
 
     private AqlToken Emit(AqlTokenKind kind, int start, int length, int line, int column, string? value = null)
     {
-        _lastKind = kind;
         ReadOnlySpan<char> span = length == 0 ? [] : _source.Slice(start, length);
         return new AqlToken(kind, span, start, length, line, column, value);
     }
@@ -716,7 +731,6 @@ public ref struct AqlLexer
 
     private AqlLexException NewError(string message, int line, int column)
     {
-        _ = _lastKind;
         return new AqlLexException(message, line, column);
     }
 }

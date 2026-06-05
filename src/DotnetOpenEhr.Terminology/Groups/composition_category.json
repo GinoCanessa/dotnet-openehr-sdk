@@ -4,19 +4,23 @@
   "entries": [
     {
       "code": "431",
-      "rubric": "persistent"
+      "rubric": "persistent",
+      "description": "persistent"
     },
     {
       "code": "451",
-      "rubric": "episodic"
+      "rubric": "episodic",
+      "description": "episodic"
     },
     {
       "code": "433",
-      "rubric": "event"
+      "rubric": "event",
+      "description": "event"
     },
     {
       "code": "815",
-      "rubric": "report"
+      "rubric": "report",
+      "description": "report"
     }
   ]
 }

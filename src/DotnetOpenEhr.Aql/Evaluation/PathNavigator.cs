@@ -105,14 +105,14 @@ internal static class PathNavigator
 
     private static object? GetSingleAttribute(object value, string name)
     {
-        string n = name.ToLowerInvariant();
-        // Two-step lookup: try the RM-specific switch first so the
-        // canonical openEHR attribute names (snake_case) work, then
-        // fall back to a couple of common Pascal-cased aliases for
-        // ergonomics in expression strings.
-        object? result = GetCanonicalAttribute(value, n);
-        if (result is not null) return result;
-        return GetCanonicalAttribute(value, name);
+        // M8 — the historical "Pascal-case fallback" second call
+        // `GetCanonicalAttribute(value, name)` is dead code: every
+        // arm in `GetCanonicalAttribute` keys on lowercase snake_case
+        // (e.g. `"name"`, `"archetype_node_id"`), so a second pass
+        // with the un-lowercased identifier can never match anything
+        // the first pass missed. Keep the `ToLowerInvariant()` so the
+        // tolerant `/Name` style accepted by the lexer still resolves.
+        return GetCanonicalAttribute(value, name.ToLowerInvariant());
     }
 
     private static object? GetCanonicalAttribute(object value, string name)

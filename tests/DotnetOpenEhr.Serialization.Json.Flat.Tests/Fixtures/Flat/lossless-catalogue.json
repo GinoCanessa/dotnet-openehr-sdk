@@ -29,6 +29,90 @@
       "templateId": "nested_clusters",
       "bucket": "schema-driven-roundtrip",
       "unresolvedPaths": []
+    },
+    {
+      "file": "FlatSchemaDriven/temporal_and_null",
+      "templateId": "temporal_and_null",
+      "bucket": "schema-driven-roundtrip",
+      "unresolvedPaths": []
+    },
+    {
+      "file": "openfhir-archive/blood_pressure_flat.json",
+      "templateId": "blood_pressure",
+      "bucket": "schema-required",
+      "unresolvedPaths": []
+    },
+    {
+      "file": "openfhir-archive/growth_chart_flat.json",
+      "templateId": "growth_chart",
+      "bucket": "schema-required",
+      "unresolvedPaths": []
+    },
+    {
+      "file": "openfhir-archive/kds_diagnose_composition_flat.json",
+      "templateId": "diagnose",
+      "bucket": "schema-required",
+      "unresolvedPaths": []
+    },
+    {
+      "file": "openfhir-archive/kds_fall_einfach_flat.json",
+      "templateId": "kds_fall_einfach",
+      "bucket": "schema-required",
+      "unresolvedPaths": []
+    },
+    {
+      "file": "openfhir-archive/kds_laborbericht_flat.json",
+      "templateId": "laborbericht",
+      "bucket": "schema-required",
+      "unresolvedPaths": []
+    },
+    {
+      "file": "openfhir-archive/kds_medikamentenverabreichungen_flat.json",
+      "templateId": "kds_medikamentenverabreichungen",
+      "bucket": "schema-required",
+      "unresolvedPaths": []
+    },
+    {
+      "file": "openfhir-archive/kds_medikationseintrag_flat.json",
+      "templateId": "medikamentenliste",
+      "bucket": "schema-required",
+      "unresolvedPaths": []
+    },
+    {
+      "file": "openfhir-archive/kds_person_flat.json",
+      "templateId": "person",
+      "bucket": "schema-required",
+      "unresolvedPaths": []
+    },
+    {
+      "file": "openfhir-archive/kds_prozedur_flat.json",
+      "templateId": "kds_prozedur",
+      "bucket": "schema-required",
+      "unresolvedPaths": []
+    },
+    {
+      "file": "openfhir-archive/medication_order_flat.json",
+      "templateId": "medication_order",
+      "bucket": "schema-required",
+      "unresolvedPaths": []
+    },
+    {
+      "file": "openfhir-archive/news2_encounter_parent_flat.json",
+      "templateId": "news2_encounter_parent",
+      "bucket": "schema-required",
+      "unresolvedPaths": []
+    },
+    {
+      "file": "openfhir-archive/stu3_blood_pressure_flat.json",
+      "templateId": "blood_pressure",
+      "bucket": "schema-required",
+      "unresolvedPaths": []
+    },
+    {
+      "file": "openfhir-archive/studienteilnahme_flat.json",
+      "templateId": "studienteilnahme",
+      "bucket": "schema-required",
+      "unresolvedPaths": []
     }
   ]
 }

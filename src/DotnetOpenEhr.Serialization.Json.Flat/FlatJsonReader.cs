@@ -22,7 +22,32 @@ public static class FlatJsonReader
     /// </exception>
     public static IReadOnlyList<KeyValuePair<FlatPath, JsonElement>> Read(ReadOnlySpan<byte> utf8Json)
     {
+        // JsonDocument.Parse has no ReadOnlySpan<byte> overload, so we
+        // must materialise to an array here. Callers that already hold
+        // a ReadOnlyMemory<byte> should use the overload below to skip
+        // this copy.
         using JsonDocument doc = JsonDocument.Parse(utf8Json.ToArray());
+        return ReadEntries(doc);
+    }
+
+    /// <summary>
+    /// Reads <paramref name="utf8Json"/> as a FLAT document without
+    /// the extra <see cref="ReadOnlySpan{T}.ToArray()"/> copy that the
+    /// span overload requires. Prefer this overload when the source is
+    /// a buffer (e.g. <see cref="MemoryStream.GetBuffer"/>).
+    /// </summary>
+    /// <exception cref="JsonException">
+    /// If the document root is not an object, or a property name is
+    /// not a valid FLAT path, or a value is not a scalar.
+    /// </exception>
+    public static IReadOnlyList<KeyValuePair<FlatPath, JsonElement>> Read(ReadOnlyMemory<byte> utf8Json)
+    {
+        using JsonDocument doc = JsonDocument.Parse(utf8Json);
+        return ReadEntries(doc);
+    }
+
+    private static IReadOnlyList<KeyValuePair<FlatPath, JsonElement>> ReadEntries(JsonDocument doc)
+    {
         if (doc.RootElement.ValueKind != JsonValueKind.Object)
         {
             throw new JsonException("FLAT document root must be a JSON object.");
@@ -62,7 +87,7 @@ public static class FlatJsonReader
         ArgumentNullException.ThrowIfNull(utf8Json);
         using MemoryStream buffer = new();
         utf8Json.CopyTo(buffer);
-        return Read(buffer.GetBuffer().AsSpan(0, (int)buffer.Length));
+        return Read(buffer.GetBuffer().AsMemory(0, (int)buffer.Length));
     }
 
     /// <summary>
@@ -75,6 +100,6 @@ public static class FlatJsonReader
         ArgumentNullException.ThrowIfNull(utf8Json);
         using MemoryStream buffer = new();
         await utf8Json.CopyToAsync(buffer, cancellationToken).ConfigureAwait(false);
-        return Read(buffer.GetBuffer().AsSpan(0, (int)buffer.Length));
+        return Read(buffer.GetBuffer().AsMemory(0, (int)buffer.Length));
     }
 }

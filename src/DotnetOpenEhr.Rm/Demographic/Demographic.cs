@@ -68,7 +68,7 @@ public sealed class Agent : Actor { }
 public sealed class Role : Party
 {
     [JsonPropertyName("time_validity")]
-    public Interval<DataTypes.Quantity.DvOrdered>? TimeValidity { get; set; }
+    public Interval<DataTypes.DateTime.DvDateTime>? TimeValidity { get; set; }
 
     [JsonPropertyName("performer")]
     public Support.PartyRef Performer { get; set; } = new();
@@ -90,7 +90,7 @@ public sealed class Address : Locatable
 public sealed class Contact : Locatable
 {
     [JsonPropertyName("time_validity")]
-    public Interval<DataTypes.Quantity.DvOrdered>? TimeValidity { get; set; }
+    public Interval<DataTypes.DateTime.DvDateTime>? TimeValidity { get; set; }
 
     [JsonPropertyName("addresses")]
     public IList<Address> Addresses { get; set; } = [];
@@ -109,7 +109,7 @@ public sealed class PartyIdentity : Locatable
 public sealed class Capability : Locatable
 {
     [JsonPropertyName("time_validity")]
-    public Interval<DataTypes.Quantity.DvOrdered>? TimeValidity { get; set; }
+    public Interval<DataTypes.DateTime.DvDateTime>? TimeValidity { get; set; }
 
     [JsonPropertyName("credentials")]
     public ItemStructure Credentials { get; set; } = new ItemTree();

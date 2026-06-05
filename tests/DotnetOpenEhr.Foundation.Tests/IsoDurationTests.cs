@@ -88,4 +88,40 @@ public class IsoDurationTests
         IsoDuration d = new IsoDuration();
         Assert.Equal("PT0S", d.OriginalLexicalForm);
     }
+
+    /// <summary>
+    /// H7 — canonical zero-only forms must parse as legal ISO 8601
+    /// durations, not raise FormatException. PT0S, PT0H, PT0M, P0D,
+    /// P0W, P0Y are all spec-permitted.
+    /// </summary>
+    [Theory]
+    [InlineData("PT0S")]
+    [InlineData("PT0H")]
+    [InlineData("PT0M")]
+    [InlineData("P0D")]
+    [InlineData("P0W")]
+    [InlineData("P0Y")]
+    [InlineData("P0M")]
+    public void Parse_acceptsAllZeroOnlyForms(string text)
+    {
+        IsoDuration d = IsoDuration.Parse(text);
+        Assert.NotNull(d);
+        Assert.Equal(text, d.OriginalLexicalForm);
+    }
+
+    [Fact]
+    public void Parse_acceptsMixedZeroAndNonzero_PT0H1M0S()
+    {
+        IsoDuration d = IsoDuration.Parse("PT0H1M0S");
+        Assert.Equal(1, d.Minutes);
+        Assert.Equal("PT0H1M0S", d.OriginalLexicalForm);
+    }
+
+    [Theory]
+    [InlineData("P")]
+    [InlineData("PT")]
+    public void Parse_rejectsBareP_andBarePT(string text)
+    {
+        Assert.Throws<FormatException>(() => IsoDuration.Parse(text));
+    }
 }

@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Frozen;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
@@ -294,7 +295,11 @@ public sealed class AqlEvaluator
     {
         int offset = offsetN ?? 0;
         int limit = limitN ?? int.MaxValue;
-        if (offset <= 0 && limit >= rows.Count) return rows;
+        // M11 — never share the caller-owned `rows` list; always
+        // return a fresh array so callers can mutate their own copy
+        // without affecting (or being affected by) a subsequent
+        // evaluation that reuses the same query.
+        if (offset <= 0 && limit >= rows.Count) return rows.ToArray();
         if (offset >= rows.Count || limit <= 0) return [];
         int take = Math.Min(limit, rows.Count - offset);
         List<object?[]> result = new(take);
@@ -304,30 +309,52 @@ public sealed class AqlEvaluator
 
     // -----------------------------------------------------------------
     // Binding context
+    //
+    // H4 — parent-pointer linked list. Each `With(alias, value)` allocates
+    // a single new node instead of a copy of an entire dictionary, and
+    // `TryGet` walks the chain (most-recent-wins, preserving the
+    // dictionary-overwrite semantics of the previous implementation).
     // -----------------------------------------------------------------
 
     private sealed class Binding
     {
-        private readonly Dictionary<string, object?> _values = new(StringComparer.OrdinalIgnoreCase);
+        public static readonly Binding Empty = new(null, null, null);
 
-        public Binding() { }
+        private readonly Binding? _parent;
+        private readonly string? _alias;
+        private readonly object? _value;
 
-        private Binding(Dictionary<string, object?> values)
+        private Binding(Binding? parent, string? alias, object? value)
         {
-            _values = new Dictionary<string, object?>(values, StringComparer.OrdinalIgnoreCase);
+            _parent = parent;
+            _alias = alias;
+            _value = value;
         }
 
         public Binding With(string? alias, object? value)
         {
-            Binding copy = new(_values);
-            if (!string.IsNullOrEmpty(alias))
+            if (string.IsNullOrEmpty(alias))
             {
-                copy._values[alias] = value;
+                // No alias to contribute — share the receiver.
+                return this;
             }
-            return copy;
+            return new Binding(this, alias, value);
         }
 
-        public bool TryGet(string name, out object? value) => _values.TryGetValue(name, out value);
+        public bool TryGet(string name, out object? value)
+        {
+            for (Binding? cur = this; cur is not null; cur = cur._parent)
+            {
+                if (cur._alias is not null
+                    && string.Equals(cur._alias, name, StringComparison.OrdinalIgnoreCase))
+                {
+                    value = cur._value;
+                    return true;
+                }
+            }
+            value = null;
+            return false;
+        }
     }
 
     private sealed class RegexEvaluationContext
@@ -354,13 +381,13 @@ public sealed class AqlEvaluator
     {
         if (from.Sources.Count == 0)
         {
-            yield return new Binding();
+            yield return Binding.Empty;
             yield break;
         }
 
         // Multiple top-level sources joined by ',' produce a cross
         // product. AQL queries we care about have a single source.
-        IEnumerable<Binding> current = ExpandClass(from.Sources[0], comp, new Binding(), comp, parameters, regexContext);
+        IEnumerable<Binding> current = ExpandClass(from.Sources[0], comp, Binding.Empty, comp, parameters, regexContext);
         for (int i = 1; i < from.Sources.Count; i++)
         {
             ClassExpression next = from.Sources[i];
@@ -908,10 +935,10 @@ public sealed class AqlEvaluator
         RegexEvaluationContext regexContext)
     {
         object? v = EvalExpr(un.Operand, binding, parameters, regexContext);
-        if (v is null)
-        {
-            return un.Op == UnaryOp.Not ? null : null;
-        }
+        // L1 — both arms returned null; collapse to a single return.
+        // Historical: a comment-only branch distinguishing Not vs Negate
+        // existed here but produced identical behaviour.
+        if (v is null) return null;
         return un.Op switch
         {
             UnaryOp.Not => v is bool b ? !b : null,
@@ -954,16 +981,41 @@ public sealed class AqlEvaluator
         return false;
     }
 
+    // M9 — case-insensitive function name dispatch table. Replaces the
+    // per-call `fc.Name.ToLowerInvariant()` allocation with a
+    // FrozenDictionary lookup using `OrdinalIgnoreCase`.
+    private enum AqlFunctionKind
+    {
+        Count,
+        Length,
+        Upper,
+        Lower,
+        Now,
+    }
+
+    private static readonly FrozenDictionary<string, AqlFunctionKind> s_functions =
+        new Dictionary<string, AqlFunctionKind>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["count"] = AqlFunctionKind.Count,
+            ["length"] = AqlFunctionKind.Length,
+            ["upper"] = AqlFunctionKind.Upper,
+            ["lower"] = AqlFunctionKind.Lower,
+            ["now"] = AqlFunctionKind.Now,
+        }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+
     private static object? EvalFunction(
         FunctionCallExpression fc,
         Binding binding,
         IReadOnlyDictionary<string, object?> parameters,
         RegexEvaluationContext regexContext)
     {
-        string name = fc.Name.ToLowerInvariant();
-        switch (name)
+        if (!s_functions.TryGetValue(fc.Name, out AqlFunctionKind kind))
         {
-            case "count":
+            throw new AqlEvaluationException($"Unsupported AQL function: {fc.Name}");
+        }
+        switch (kind)
+        {
+            case AqlFunctionKind.Count:
             {
                 if (fc.Arguments.Count == 0) return 0L;
                 object? v = EvalExpr(fc.Arguments[0], binding, parameters, regexContext);
@@ -977,7 +1029,7 @@ public sealed class AqlEvaluator
                 }
                 return 1L;
             }
-            case "length":
+            case AqlFunctionKind.Length:
             {
                 if (fc.Arguments.Count == 0) return 0L;
                 object? v = EvalExpr(fc.Arguments[0], binding, parameters, regexContext);
@@ -985,19 +1037,19 @@ public sealed class AqlEvaluator
                 string s = v.ToString() ?? string.Empty;
                 return (long)s.Length;
             }
-            case "upper":
+            case AqlFunctionKind.Upper:
             {
                 if (fc.Arguments.Count == 0) return null;
                 object? v = EvalExpr(fc.Arguments[0], binding, parameters, regexContext);
                 return v?.ToString()?.ToUpperInvariant();
             }
-            case "lower":
+            case AqlFunctionKind.Lower:
             {
                 if (fc.Arguments.Count == 0) return null;
                 object? v = EvalExpr(fc.Arguments[0], binding, parameters, regexContext);
                 return v?.ToString()?.ToLowerInvariant();
             }
-            case "now":
+            case AqlFunctionKind.Now:
                 return DateTime.UtcNow;
             default:
                 throw new AqlEvaluationException($"Unsupported AQL function: {fc.Name}");
@@ -1200,20 +1252,28 @@ public sealed class AqlEvaluator
 
     private readonly struct RowKey : IEquatable<RowKey>
     {
-        private readonly object?[] _values;
+        private readonly object?[] _canonical;
 
-        public RowKey(object?[] values) { _values = values; }
+        public RowKey(object?[] values)
+        {
+            object?[] canonical = new object?[values.Length];
+            for (int i = 0; i < values.Length; i++)
+            {
+                canonical[i] = CanonicalKey(values[i]);
+            }
+            _canonical = canonical;
+        }
 
         public bool Equals(RowKey other)
         {
-            if (_values.Length != other._values.Length) return false;
-            for (int i = 0; i < _values.Length; i++)
+            if (_canonical.Length != other._canonical.Length) return false;
+            for (int i = 0; i < _canonical.Length; i++)
             {
-                object? a = _values[i];
-                object? b = other._values[i];
+                object? a = _canonical[i];
+                object? b = other._canonical[i];
                 if (a is null && b is null) continue;
                 if (a is null || b is null) return false;
-                if (!AreEqual(a, b)) return false;
+                if (!a.Equals(b)) return false;
             }
             return true;
         }
@@ -1223,11 +1283,76 @@ public sealed class AqlEvaluator
         public override int GetHashCode()
         {
             HashCode hc = new();
-            foreach (object? v in _values)
+            foreach (object? v in _canonical)
             {
-                hc.Add(v is null ? 0 : Coerce(v).GetHashCode());
+                hc.Add(v?.GetHashCode() ?? 0);
             }
             return hc.ToHashCode();
         }
     }
+
+    // -----------------------------------------------------------------
+    // CanonicalKey collapses every shape that AreEqual treats as equal
+    // into a single canonical representation, so DISTINCT's hash and
+    // equality paths cannot diverge. The rules mirror AreEqual's
+    // numeric / DV unwrapping above:
+    //   * DV_TEXT / DV_BOOLEAN / DV_URI / OBJECT_ID / Iso* / DV_COUNT
+    //     are coerced to their primitive payloads (via Coerce).
+    //   * Integer-valued numerics across int/long/short/byte/decimal
+    //     and double/float that equal their truncated form normalise
+    //     to `long`. Non-integer reals normalise to `double`. This
+    //     guarantees `1`, `1L`, `1.0`, and `DvCount { Magnitude = 1 }`
+    //     all hash and equal as the same key.
+    //   * DV_QUANTITY uses the (canonical magnitude, units) tuple so
+    //     it stays distinguishable from a unitless `1`.
+    //   * DV_ORDINAL uses its integer Value (then canonicalised).
+    // -----------------------------------------------------------------
+    internal static object? CanonicalKey(object? value)
+    {
+        if (value is null) return null;
+
+        if (value is DvQuantity q)
+        {
+            return (NormalizeNumeric(q.Magnitude), q.Units ?? string.Empty);
+        }
+        if (value is DvOrdinal o)
+        {
+            return NormalizeNumeric((long)o.Value);
+        }
+
+        object v = Coerce(value);
+        return v switch
+        {
+            string s => s,
+            bool b => b,
+            _ when IsNumeric(v) => NormalizeNumeric(v),
+            _ => v,
+        };
+    }
+
+    private static object NormalizeNumeric(object n) => n switch
+    {
+        long ll => ll,
+        int i => (long)i,
+        short s => (long)s,
+        byte b => (long)b,
+        decimal m when m == decimal.Truncate(m) && m >= long.MinValue && m <= long.MaxValue
+            => decimal.ToInt64(m),
+        decimal m => (double)m,
+        float f => NormalizeNumeric((double)f),
+        double d when CanRepresentAsLong(d) => (long)d,
+        double d => d,
+        _ => n,
+    };
+
+    private static object NormalizeNumeric(double d) => CanRepresentAsLong(d) ? (long)d : d;
+
+    private static object NormalizeNumeric(long n) => n;
+
+    private static bool CanRepresentAsLong(double d)
+        => !double.IsNaN(d)
+           && !double.IsInfinity(d)
+           && d >= long.MinValue
+           && d <= long.MaxValue
+           && d == Math.Truncate(d);
 }

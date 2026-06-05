@@ -4,131 +4,163 @@
   "entries": [
     {
       "code": "193",
-      "rubric": "not specified"
+      "rubric": "not specified",
+      "description": "not specified"
     },
     {
       "code": "216",
-      "rubric": "face-to-face communication"
+      "rubric": "face-to-face communication",
+      "description": "face-to-face communication"
     },
     {
       "code": "223",
-      "rubric": "interpreted face-to-face communication"
+      "rubric": "interpreted face-to-face communication",
+      "description": "interpreted face-to-face communication"
     },
     {
       "code": "217",
-      "rubric": "signing (face-to-face)"
+      "rubric": "signing (face-to-face)",
+      "description": "signing (face-to-face)"
     },
     {
       "code": "195",
-      "rubric": "live audiovisual; videoconference; videophone"
+      "rubric": "live audiovisual; videoconference; videophone",
+      "description": "live audiovisual; videoconference; videophone"
     },
     {
       "code": "198",
-      "rubric": "videoconferencing"
+      "rubric": "videoconferencing",
+      "description": "videoconferencing"
     },
     {
       "code": "197",
-      "rubric": "videophone"
+      "rubric": "videophone",
+      "description": "videophone"
     },
     {
       "code": "218",
-      "rubric": "signing over video"
+      "rubric": "signing over video",
+      "description": "signing over video"
     },
     {
       "code": "224",
-      "rubric": "interpreted video communication"
+      "rubric": "interpreted video communication",
+      "description": "interpreted video communication"
     },
     {
       "code": "194",
-      "rubric": "asynchronous audiovisual; recorded video"
+      "rubric": "asynchronous audiovisual; recorded video",
+      "description": "asynchronous audiovisual; recorded video"
     },
     {
       "code": "196",
-      "rubric": "recorded video"
+      "rubric": "recorded video",
+      "description": "recorded video"
     },
     {
       "code": "202",
-      "rubric": "live audio-only; telephone; internet phone; teleconference"
+      "rubric": "live audio-only; telephone; internet phone; teleconference",
+      "description": "live audio-only; telephone; internet phone; teleconference"
     },
     {
       "code": "204",
-      "rubric": "telephone"
+      "rubric": "telephone",
+      "description": "telephone"
     },
     {
       "code": "203",
-      "rubric": "teleconference"
+      "rubric": "teleconference",
+      "description": "teleconference"
     },
     {
       "code": "205",
-      "rubric": "internet telephone"
+      "rubric": "internet telephone",
+      "description": "internet telephone"
     },
     {
       "code": "222",
-      "rubric": "interpreted audio-only"
+      "rubric": "interpreted audio-only",
+      "description": "interpreted audio-only"
     },
     {
       "code": "199",
-      "rubric": "asynchronous audio-only; dictated; voice mail"
+      "rubric": "asynchronous audio-only; dictated; voice mail",
+      "description": "asynchronous audio-only; dictated; voice mail"
     },
     {
       "code": "200",
-      "rubric": "dictated"
+      "rubric": "dictated",
+      "description": "dictated"
     },
     {
       "code": "201",
-      "rubric": "voice-mail"
+      "rubric": "voice-mail",
+      "description": "voice-mail"
     },
     {
       "code": "212",
-      "rubric": "live text-only; internet chat; SMS chat; interactive written note"
+      "rubric": "live text-only; internet chat; SMS chat; interactive written note",
+      "description": "live text-only; internet chat; SMS chat; interactive written note"
     },
     {
       "code": "213",
-      "rubric": "internet chat"
+      "rubric": "internet chat",
+      "description": "internet chat"
     },
     {
       "code": "214",
-      "rubric": "SMS chat"
+      "rubric": "SMS chat",
+      "description": "SMS chat"
     },
     {
       "code": "215",
-      "rubric": "interactive written note"
+      "rubric": "interactive written note",
+      "description": "interactive written note"
     },
     {
       "code": "206",
-      "rubric": "asynchronous text; email; fax; letter; handwritten note; SMS message"
+      "rubric": "asynchronous text; email; fax; letter; handwritten note; SMS message",
+      "description": "asynchronous text; email; fax; letter; handwritten note; SMS message"
     },
     {
       "code": "211",
-      "rubric": "handwritten note"
+      "rubric": "handwritten note",
+      "description": "handwritten note"
     },
     {
       "code": "210",
-      "rubric": "printed/typed letter"
+      "rubric": "printed/typed letter",
+      "description": "printed/typed letter"
     },
     {
       "code": "207",
-      "rubric": "email"
+      "rubric": "email",
+      "description": "email"
     },
     {
       "code": "208",
-      "rubric": "facsimile/telefax"
+      "rubric": "facsimile/telefax",
+      "description": "facsimile/telefax"
     },
     {
       "code": "221",
-      "rubric": "translated text"
+      "rubric": "translated text",
+      "description": "translated text"
     },
     {
       "code": "209",
-      "rubric": "SMS message"
+      "rubric": "SMS message",
+      "description": "SMS message"
     },
     {
       "code": "219",
-      "rubric": "physically present"
+      "rubric": "physically present",
+      "description": "physically present"
     },
     {
       "code": "220",
-      "rubric": "physically remote"
+      "rubric": "physically remote",
+      "description": "physically remote"
     }
   ]
 }

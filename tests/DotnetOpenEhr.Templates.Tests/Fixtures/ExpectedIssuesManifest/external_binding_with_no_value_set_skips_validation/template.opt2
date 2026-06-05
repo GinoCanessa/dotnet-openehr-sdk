@@ -1,0 +1,61 @@
+operational_template (adl_version=2.0.6; rm_release=1.1.0; generated)
+    openEHR-EHR-COMPOSITION.external_binding_no_value_set.v1.0.0
+
+language
+    original_language = <[ISO_639-1::en]>
+
+description
+    lifecycle_state = <"unmanaged">
+    details = <
+        ["en"] = <
+            language = <[ISO_639-1::en]>
+            purpose = <"M4 fixture: pin that a CTerminologyCode whose ac code has an external binding but no local value-set still emits BINDING_NotResolved (NotValidated) rather than silently passing.">
+        >
+    >
+
+definition
+    COMPOSITION[id100] matches {
+        content matches {
+            OBSERVATION[id1] occurrences matches {1..1} matches {
+                data matches {
+                    HISTORY[id2] matches {
+                        events cardinality matches {0..1} matches {
+                            POINT_EVENT[id3] occurrences matches {0..*} matches {
+                                data matches {
+                                    ITEM_TREE[id4] matches {
+                                        items matches {
+                                            ELEMENT[id7] occurrences matches {0..1} matches {
+                                                value matches {
+                                                    DV_CODED_TEXT[id8] matches {
+                                                        defining_code matches {[ac9]}
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+terminology
+    term_definitions = <
+        ["en"] = <
+            ["id100"] = <text = <"External binding without value-set"> description = <"External binding without value-set">>
+            ["id1"] = <text = <"obs"> description = <"obs">>
+            ["id2"] = <text = <"history"> description = <"history">>
+            ["id3"] = <text = <"event"> description = <"event">>
+            ["id4"] = <text = <"tree"> description = <"tree">>
+            ["id7"] = <text = <"finding"> description = <"finding">>
+            ["id8"] = <text = <"finding value"> description = <"finding value">>
+        >
+    >
+    constraint_bindings = <
+        ["SNOMED-CT"] = <
+            ["ac9"] = <"http://snomed.info/sct/?fhir_vs=ecl/99999">
+        >
+    >

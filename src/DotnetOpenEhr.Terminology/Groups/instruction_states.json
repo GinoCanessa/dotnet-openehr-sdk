@@ -4,43 +4,53 @@
   "entries": [
     {
       "code": "524",
-      "rubric": "initial"
+      "rubric": "initial",
+      "description": "initial"
     },
     {
       "code": "526",
-      "rubric": "planned"
+      "rubric": "planned",
+      "description": "planned"
     },
     {
       "code": "527",
-      "rubric": "postponed"
+      "rubric": "postponed",
+      "description": "postponed"
     },
     {
       "code": "528",
-      "rubric": "cancelled"
+      "rubric": "cancelled",
+      "description": "cancelled"
     },
     {
       "code": "529",
-      "rubric": "scheduled"
+      "rubric": "scheduled",
+      "description": "scheduled"
     },
     {
       "code": "245",
-      "rubric": "active"
+      "rubric": "active",
+      "description": "active"
     },
     {
       "code": "530",
-      "rubric": "suspended"
+      "rubric": "suspended",
+      "description": "suspended"
     },
     {
       "code": "531",
-      "rubric": "aborted"
+      "rubric": "aborted",
+      "description": "aborted"
     },
     {
       "code": "532",
-      "rubric": "completed"
+      "rubric": "completed",
+      "description": "completed"
     },
     {
       "code": "533",
-      "rubric": "expired"
+      "rubric": "expired",
+      "description": "expired"
     }
   ]
 }

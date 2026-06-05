@@ -4,15 +4,18 @@
   "entries": [
     {
       "code": "669",
-      "rubric": "public health"
+      "rubric": "public health",
+      "description": "public health"
     },
     {
       "code": "670",
-      "rubric": "reimbursement"
+      "rubric": "reimbursement",
+      "description": "reimbursement"
     },
     {
       "code": "671",
-      "rubric": "research study"
+      "rubric": "research study",
+      "description": "research study"
     }
   ]
 }

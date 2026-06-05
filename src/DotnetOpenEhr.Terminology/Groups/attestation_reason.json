@@ -4,11 +4,13 @@
   "entries": [
     {
       "code": "240",
-      "rubric": "signed"
+      "rubric": "signed",
+      "description": "signed"
     },
     {
       "code": "648",
-      "rubric": "witnessed"
+      "rubric": "witnessed",
+      "description": "witnessed"
     }
   ]
 }

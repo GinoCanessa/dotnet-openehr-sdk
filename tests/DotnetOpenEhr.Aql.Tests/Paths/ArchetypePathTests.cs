@@ -76,4 +76,31 @@ public class ArchetypePathTests
         ArchetypePath path = ArchetypePath.Parse(@"/items['It\'s']");
         Assert.Equal(@"/items['It\'s']", path.ToString());
     }
+
+    // ---- M19: typed Resolve<T> cast contract -------------------------
+
+    [Fact]
+    public void Compiled_path_ResolveT_with_wrong_type_throws_InvalidCastException()
+    {
+        Observation bp = CompositionBuilder.NewBloodPressure(
+            "openEHR-EHR-OBSERVATION.blood_pressure.v2",
+            120, "mm[Hg]", 80, "mm[Hg]");
+        ArchetypePath path = ArchetypePath.Parse(
+            "/data/events/data/items[at0004]/value/magnitude");
+
+        // The magnitude is a double — asking for string throws.
+        Assert.Throws<InvalidCastException>(() => path.Resolve<string>(bp));
+    }
+
+    [Fact]
+    public void Resolver_ResolveT_with_wrong_type_throws_InvalidCastException()
+    {
+        Observation bp = CompositionBuilder.NewBloodPressure(
+            "openEHR-EHR-OBSERVATION.blood_pressure.v2",
+            120, "mm[Hg]", 80, "mm[Hg]");
+        Assert.Throws<InvalidCastException>(
+            () => ArchetypePathResolver.Resolve<string>(
+                bp,
+                "/data/events/data/items[at0004]/value/magnitude"));
+    }
 }

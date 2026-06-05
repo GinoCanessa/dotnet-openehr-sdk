@@ -60,12 +60,18 @@ public class IsoTimeTests
         Assert.Equal(0, earlier.CompareTo(equivalent));
     }
 
+    /// <summary>
+    /// M7 — superseded: previously this test asserted the legacy
+    /// "mixed-zone silently drops the zone" comparator policy. The new
+    /// policy throws <see cref="InvalidOperationException"/>; see
+    /// <see cref="MixedZoneComparatorTests"/> for full coverage.
+    /// </summary>
     [Fact]
     public void IsoTime_CompareTo_PreservesLocalOrdering_WhenTimezoneMissing()
     {
         IsoTime withTimezone = IsoTime.Parse("10:00:00+02:00");
         IsoTime withoutTimezone = IsoTime.Parse("09:00:00");
 
-        Assert.True(withTimezone.CompareTo(withoutTimezone) > 0);
+        Assert.Throws<InvalidOperationException>(() => withTimezone.CompareTo(withoutTimezone));
     }
 }

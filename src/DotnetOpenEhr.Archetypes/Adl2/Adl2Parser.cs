@@ -725,13 +725,7 @@ public static class Adl2Parser
         return archetype;
     }
 
-    private static OperationalTemplate CreateOperationalTemplate()
-        => (OperationalTemplate)Activator.CreateInstance(
-            typeof(OperationalTemplate),
-            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public,
-            binder: null,
-            args: null,
-            culture: null)!;
+    private static OperationalTemplate CreateOperationalTemplate() => new();
 
     // ------------------------------------------------------------------
     // ODIN-bearing sections

@@ -175,4 +175,25 @@ public sealed class Opt2ParserTests
         opt.Initialize(s_rmBmm);
         Assert.Equal(original, opt.Nodes.Count);
     }
+
+    // ---- L7 — ExtractComponentTerminologies negative path -----------
+
+    [Fact]
+    public void ExtractComponentTerminologies_unterminatedSection_throws()
+    {
+        // A minimal OPT2 prelude followed by an unbalanced
+        // component_terminologies block — the '<' opens a hash that is
+        // never closed before EOF. The parser must surface this as
+        // InvalidOperationException naming the offending section, rather
+        // than producing a silent partial parse.
+        string src = "archetype openEHR-EHR-OBSERVATION.x.v1.0.0\n" +
+            "definition\n" +
+            "    OBSERVATION[id1] matches { *  }\n" +
+            "component_terminologies = <\n" +
+            "    [\"foo\"] = <\n" +
+            "        term_definitions = <\n";
+        InvalidOperationException ex = Assert.Throws<InvalidOperationException>(
+            () => Opt2Parser.Parse(src));
+        Assert.Contains("component_terminologies", ex.Message);
+    }
 }

@@ -67,5 +67,5 @@ public sealed class Participation
     public PartyProxy Performer { get; set; } = new PartyIdentified();
 
     [JsonPropertyName("time")]
-    public Foundation.Interval<DataTypes.Quantity.DvOrdered>? Time { get; set; }
+    public Foundation.Interval<DataTypes.DateTime.DvDateTime>? Time { get; set; }
 }

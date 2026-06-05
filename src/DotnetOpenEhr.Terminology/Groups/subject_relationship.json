@@ -4,147 +4,183 @@
   "entries": [
     {
       "code": "0",
-      "rubric": "self"
+      "rubric": "self",
+      "description": "self"
     },
     {
       "code": "3",
-      "rubric": "foetus"
+      "rubric": "foetus",
+      "description": "foetus"
     },
     {
       "code": "10",
-      "rubric": "mother"
+      "rubric": "mother",
+      "description": "mother"
     },
     {
       "code": "9",
-      "rubric": "father"
+      "rubric": "father",
+      "description": "father"
     },
     {
       "code": "6",
-      "rubric": "donor"
+      "rubric": "donor",
+      "description": "donor"
     },
     {
       "code": "253",
-      "rubric": "unknown"
+      "rubric": "unknown",
+      "description": "unknown"
     },
     {
       "code": "261",
-      "rubric": "adopted daughter"
+      "rubric": "adopted daughter",
+      "description": "adopted daughter"
     },
     {
       "code": "260",
-      "rubric": "adopted son"
+      "rubric": "adopted son",
+      "description": "adopted son"
     },
     {
       "code": "259",
-      "rubric": "adoptive father"
+      "rubric": "adoptive father",
+      "description": "adoptive father"
     },
     {
       "code": "258",
-      "rubric": "adoptive mother"
+      "rubric": "adoptive mother",
+      "description": "adoptive mother"
     },
     {
       "code": "256",
-      "rubric": "biological father"
+      "rubric": "biological father",
+      "description": "biological father"
     },
     {
       "code": "255",
-      "rubric": "biological mother"
+      "rubric": "biological mother",
+      "description": "biological mother"
     },
     {
       "code": "23",
-      "rubric": "brother"
+      "rubric": "brother",
+      "description": "brother"
     },
     {
       "code": "28",
-      "rubric": "child"
+      "rubric": "child",
+      "description": "child"
     },
     {
       "code": "265",
-      "rubric": "cohabitee"
+      "rubric": "cohabitee",
+      "description": "cohabitee"
     },
     {
       "code": "257",
-      "rubric": "cousin"
+      "rubric": "cousin",
+      "description": "cousin"
     },
     {
       "code": "29",
-      "rubric": "daughter"
+      "rubric": "daughter",
+      "description": "daughter"
     },
     {
       "code": "264",
-      "rubric": "guardian"
+      "rubric": "guardian",
+      "description": "guardian"
     },
     {
       "code": "39",
-      "rubric": "maternal aunt"
+      "rubric": "maternal aunt",
+      "description": "maternal aunt"
     },
     {
       "code": "8",
-      "rubric": "maternal grandfather"
+      "rubric": "maternal grandfather",
+      "description": "maternal grandfather"
     },
     {
       "code": "7",
-      "rubric": "maternal grandmother"
+      "rubric": "maternal grandmother",
+      "description": "maternal grandmother"
     },
     {
       "code": "38",
-      "rubric": "maternal uncle"
+      "rubric": "maternal uncle",
+      "description": "maternal uncle"
     },
     {
       "code": "189",
-      "rubric": "neonate"
+      "rubric": "neonate",
+      "description": "neonate"
     },
     {
       "code": "254",
-      "rubric": "parent"
+      "rubric": "parent",
+      "description": "parent"
     },
     {
       "code": "22",
-      "rubric": "partner/spouse"
+      "rubric": "partner/spouse",
+      "description": "partner/spouse"
     },
     {
       "code": "41",
-      "rubric": "paternal aunt"
+      "rubric": "paternal aunt",
+      "description": "paternal aunt"
     },
     {
       "code": "36",
-      "rubric": "paternal grandfather"
+      "rubric": "paternal grandfather",
+      "description": "paternal grandfather"
     },
     {
       "code": "37",
-      "rubric": "paternal grandmother"
+      "rubric": "paternal grandmother",
+      "description": "paternal grandmother"
     },
     {
       "code": "40",
-      "rubric": "paternal uncle"
+      "rubric": "paternal uncle",
+      "description": "paternal uncle"
     },
     {
       "code": "27",
-      "rubric": "sibling"
+      "rubric": "sibling",
+      "description": "sibling"
     },
     {
       "code": "24",
-      "rubric": "sister"
+      "rubric": "sister",
+      "description": "sister"
     },
     {
       "code": "31",
-      "rubric": "son"
+      "rubric": "son",
+      "description": "son"
     },
     {
       "code": "263",
-      "rubric": "step father"
+      "rubric": "step father",
+      "description": "step father"
     },
     {
       "code": "262",
-      "rubric": "step mother"
+      "rubric": "step mother",
+      "description": "step mother"
     },
     {
       "code": "25",
-      "rubric": "step or half brother"
+      "rubric": "step or half brother",
+      "description": "step or half brother"
     },
     {
       "code": "26",
-      "rubric": "step or half sister"
+      "rubric": "step or half sister",
+      "description": "step or half sister"
     }
   ]
 }

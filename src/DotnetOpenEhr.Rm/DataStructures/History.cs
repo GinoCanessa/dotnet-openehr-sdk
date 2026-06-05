@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using DotnetOpenEhr.Foundation;
 using DotnetOpenEhr.Rm.DataTypes.DateTime;
 
 namespace DotnetOpenEhr.Rm.DataStructures;
@@ -59,7 +58,4 @@ public sealed class IntervalEvent : Event
 
     [JsonPropertyName("math_function")]
     public DataTypes.Text.DvCodedText MathFunction { get; set; } = new();
-
-    [JsonIgnore]
-    public Interval<DataTypes.Quantity.DvOrdered>? Interval { get; set; }
 }

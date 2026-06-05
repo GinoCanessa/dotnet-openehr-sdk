@@ -804,11 +804,11 @@ public ref struct OdinLexer
 
     private void Advance(int count)
     {
-        for (int i = 0; i < count; i++)
-        {
-            _pos++;
-            _column++;
-        }
+        // L2 — no caller crosses a newline (newlines are routed through
+        // AdvanceNewline). The previous per-character loop was equivalent
+        // to a pair of additions.
+        _pos += count;
+        _column += count;
     }
 
     private void AdvanceNewline(int count)
@@ -840,7 +840,73 @@ public ref struct OdinLexer
         => IsIdentStart(c) || IsDigit(c);
 
     private readonly OdinParseException NewError(string message, int line, int column)
-        => new(message, line, column);
+        => new(message, line, column, BuildSnippet(_source, line, column));
+
+    /// <summary>
+    /// Returns up to <paramref name="maxLen"/> characters of source
+    /// starting at 1-based (<paramref name="line"/>,
+    /// <paramref name="column"/>), CR/LF-escaped, so the
+    /// <c>(near '…')</c> suffix in <see cref="OdinParseException"/>
+    /// fires for lexer-thrown errors. Returns the empty string when
+    /// the position is out of range.
+    /// </summary>
+    private static string BuildSnippet(ReadOnlySpan<char> src, int line, int column, int maxLen = 24)
+    {
+        if (line <= 0 || column <= 0)
+        {
+            return string.Empty;
+        }
+        int offset = 0;
+        int currentLine = 1;
+        while (currentLine < line && offset < src.Length)
+        {
+            char c = src[offset];
+            if (c == '\r')
+            {
+                currentLine++;
+                offset++;
+                if (offset < src.Length && src[offset] == '\n')
+                {
+                    offset++;
+                }
+            }
+            else if (c == '\n')
+            {
+                currentLine++;
+                offset++;
+            }
+            else
+            {
+                offset++;
+            }
+        }
+        if (currentLine != line)
+        {
+            return string.Empty;
+        }
+        offset += column - 1;
+        if (offset < 0 || offset >= src.Length)
+        {
+            return string.Empty;
+        }
+        int take = Math.Min(maxLen, src.Length - offset);
+        ReadOnlySpan<char> slice = src.Slice(offset, take);
+        if (slice.IndexOfAny('\r', '\n') < 0)
+        {
+            return slice.ToString();
+        }
+        StringBuilder sb = new(slice.Length + 4);
+        foreach (char ch in slice)
+        {
+            switch (ch)
+            {
+                case '\r': sb.Append("\\r"); break;
+                case '\n': sb.Append("\\n"); break;
+                default: sb.Append(ch); break;
+            }
+        }
+        return sb.ToString();
+    }
 
     /// <summary>
     /// Scan a bracketed terminology code body starting at the current

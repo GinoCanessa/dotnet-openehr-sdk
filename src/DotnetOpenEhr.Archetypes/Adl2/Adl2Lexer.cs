@@ -391,25 +391,38 @@ public ref struct Adl2Lexer
 
     private Adl2Token ScanArchetypeHrid(int startPos, int startLine, int startCol)
     {
-        // GRAMMAR: spec 7 - archetype HRID = qualified-rm-entity '.'
-        // concept-id '.' version-id [ '.' build-count ] [ '-' suffix ].
-        // We greedily consume any ASCII identifier / dash / dot run,
-        // letting the parser validate structure.
+        // GRAMMAR: openEHR Archetype Identification spec § 3.2.1
+        // (Release 2.3.0).
+        //   archetype_hrid     = (namespace '::')? hrid_root '.v' version_id ;
+        //   hrid_root          = qualified_rm_class_name '.' concept_id ;
+        //   qualified_rm_class_name = rm_publisher '-' rm_closure '-' rm_class ;
+        //   V_ALPHANUMERIC_NAME           = [a-zA-Z][a-zA-Z0-9_]+ ;
+        //   V_SEGMENTED_ALPHANUMERIC_NAME = [a-zA-Z][a-zA-Z0-9_-]+ ;
+        //   version_id         = release_version [ extension ] ;
+        //   release_version    = digits '.' digits '.' digits ;
+        //   extension          = ('-rc' | '-alpha') '.' issue_number ;
+        // Body charset is therefore { letter, digit, '_', '-', '.' }.
+        // Anything else terminates the scan; see IsHridTerminator below.
+        // (The '::' namespace separator does not occur in ADL2 HRIDs —
+        // those carry the namespace inline as `namespace::publisher-…`
+        // and are handled at the parser level when ADL2 sources include
+        // a namespace prefix. The AQL twin permits '::' inside the scan
+        // because AQL predicates more commonly embed namespaced HRIDs.)
         int p = _pos;
         while (p < _source.Length)
         {
             char ch = _source[p];
-            if (IsIdentContinue(ch) || ch == '-' || ch == '.')
+            // The '..' Range token must terminate the scan even though
+            // '.' is a body character (spec-allowed inside version_id).
+            if (ch == '.' && p + 1 < _source.Length && _source[p + 1] == '.')
             {
-                // '.' followed by '.' would be the Range token; stop.
-                if (ch == '.' && p + 1 < _source.Length && _source[p + 1] == '.')
-                {
-                    break;
-                }
-                p++;
-                continue;
+                break;
             }
-            break;
+            if (IsHridTerminator(ch))
+            {
+                break;
+            }
+            p++;
         }
         int len = p - _pos;
         if (len == 0)
@@ -428,6 +441,18 @@ public ref struct Adl2Lexer
             startCol,
             value: text);
     }
+
+    /// <summary>
+    /// Returns true when <paramref name="c"/> is outside the openEHR
+    /// archetype HRID body charset (letter, digit, <c>_</c>, <c>-</c>,
+    /// <c>.</c>) and therefore terminates the HRID scan. Whitespace,
+    /// <c>(</c>, <c>&lt;</c>, <c>&gt;</c>, <c>[</c>, <c>]</c>, <c>{</c>,
+    /// <c>}</c>, <c>,</c>, <c>;</c>, <c>|</c>, <c>=</c>, <c>:</c>,
+    /// newlines, and every other non-body character are terminators per
+    /// the Archetype Identification spec § 3.2.1.
+    /// </summary>
+    private static bool IsHridTerminator(char c)
+        => !(IsIdentContinue(c) || c == '-' || c == '.');
 
     private Adl2Token ScanNumber(int startPos, int startLine, int startCol)
     {

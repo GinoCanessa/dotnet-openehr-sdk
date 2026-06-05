@@ -4,347 +4,433 @@
   "entries": [
     {
       "code": "339",
-      "rubric": "Acceleration"
+      "rubric": "Acceleration",
+      "description": "Acceleration"
     },
     {
       "code": "342",
-      "rubric": "Acceleration, angular"
+      "rubric": "Acceleration, angular",
+      "description": "Acceleration, angular"
     },
     {
       "code": "381",
-      "rubric": "Amount (Eq)"
+      "rubric": "Amount (Eq)",
+      "description": "Amount (Eq)"
     },
     {
       "code": "384",
-      "rubric": "Amount (mole)"
+      "rubric": "Amount (mole)",
+      "description": "Amount (mole)"
     },
     {
       "code": "497",
-      "rubric": "Angle, plane"
+      "rubric": "Angle, plane",
+      "description": "Angle, plane"
     },
     {
       "code": "500",
-      "rubric": "Angle, solid"
+      "rubric": "Angle, solid",
+      "description": "Angle, solid"
     },
     {
       "code": "335",
-      "rubric": "Area"
+      "rubric": "Area",
+      "description": "Area"
     },
     {
       "code": "119",
-      "rubric": "Concentration"
+      "rubric": "Concentration",
+      "description": "Concentration"
     },
     {
       "code": "350",
-      "rubric": "Density"
+      "rubric": "Density",
+      "description": "Density"
     },
     {
       "code": "362",
-      "rubric": "Diffusion coefficient"
+      "rubric": "Diffusion coefficient",
+      "description": "Diffusion coefficient"
     },
     {
       "code": "501",
-      "rubric": "Electric capacitance"
+      "rubric": "Electric capacitance",
+      "description": "Electric capacitance"
     },
     {
       "code": "498",
-      "rubric": "Electric charge"
+      "rubric": "Electric charge",
+      "description": "Electric charge"
     },
     {
       "code": "502",
-      "rubric": "Electric conductance"
+      "rubric": "Electric conductance",
+      "description": "Electric conductance"
     },
     {
       "code": "334",
-      "rubric": "Electric current"
+      "rubric": "Electric current",
+      "description": "Electric current"
     },
     {
       "code": "377",
-      "rubric": "Electric field strength"
+      "rubric": "Electric field strength",
+      "description": "Electric field strength"
     },
     {
       "code": "655",
-      "rubric": "Electric potential time"
+      "rubric": "Electric potential time",
+      "description": "Electric potential time"
     },
     {
       "code": "121",
-      "rubric": "Energy"
+      "rubric": "Energy",
+      "description": "Energy"
     },
     {
       "code": "366",
-      "rubric": "Energy density"
+      "rubric": "Energy density",
+      "description": "Energy density"
     },
     {
       "code": "508",
-      "rubric": "Energy dose"
+      "rubric": "Energy dose",
+      "description": "Energy dose"
     },
     {
       "code": "365",
-      "rubric": "Energy per area"
+      "rubric": "Energy per area",
+      "description": "Energy per area"
     },
     {
       "code": "364",
-      "rubric": "Energy, linear"
+      "rubric": "Energy, linear",
+      "description": "Energy, linear"
     },
     {
       "code": "347",
-      "rubric": "Flow rate, mass"
+      "rubric": "Flow rate, mass",
+      "description": "Flow rate, mass"
     },
     {
       "code": "352",
-      "rubric": "Flow rate, mass/force"
+      "rubric": "Flow rate, mass/force",
+      "description": "Flow rate, mass/force"
     },
     {
       "code": "351",
-      "rubric": "Flow rate, mass/volume"
+      "rubric": "Flow rate, mass/volume",
+      "description": "Flow rate, mass/volume"
     },
     {
       "code": "126",
-      "rubric": "Flow rate, volume"
+      "rubric": "Flow rate, volume",
+      "description": "Flow rate, volume"
     },
     {
       "code": "348",
-      "rubric": "Flux, mass"
+      "rubric": "Flux, mass",
+      "description": "Flux, mass"
     },
     {
       "code": "355",
-      "rubric": "Force"
+      "rubric": "Force",
+      "description": "Force"
     },
     {
       "code": "358",
-      "rubric": "Force per mass"
+      "rubric": "Force per mass",
+      "description": "Force per mass"
     },
     {
       "code": "357",
-      "rubric": "Force, body"
+      "rubric": "Force, body",
+      "description": "Force, body"
     },
     {
       "code": "382",
-      "rubric": "Frequency"
+      "rubric": "Frequency",
+      "description": "Frequency"
     },
     {
       "code": "586",
-      "rubric": "Glomerular filtration rate"
+      "rubric": "Glomerular filtration rate",
+      "description": "Glomerular filtration rate"
     },
     {
       "code": "373",
-      "rubric": "Heat transfer coefficient"
+      "rubric": "Heat transfer coefficient",
+      "description": "Heat transfer coefficient"
     },
     {
       "code": "505",
-      "rubric": "Illuminance"
+      "rubric": "Illuminance",
+      "description": "Illuminance"
     },
     {
       "code": "379",
-      "rubric": "Inductance"
+      "rubric": "Inductance",
+      "description": "Inductance"
     },
     {
       "code": "122",
-      "rubric": "Length"
+      "rubric": "Length",
+      "description": "Length"
     },
     {
       "code": "499",
-      "rubric": "Light intensity"
+      "rubric": "Light intensity",
+      "description": "Light intensity"
     },
     {
       "code": "123",
-      "rubric": "Loudness"
+      "rubric": "Loudness",
+      "description": "Loudness"
     },
     {
       "code": "504",
-      "rubric": "Luminous flux"
+      "rubric": "Luminous flux",
+      "description": "Luminous flux"
     },
     {
       "code": "378",
-      "rubric": "Magnetic flux"
+      "rubric": "Magnetic flux",
+      "description": "Magnetic flux"
     },
     {
       "code": "503",
-      "rubric": "Magnetic flux density"
+      "rubric": "Magnetic flux density",
+      "description": "Magnetic flux density"
     },
     {
       "code": "124",
-      "rubric": "Mass"
+      "rubric": "Mass",
+      "description": "Mass"
     },
     {
       "code": "385",
-      "rubric": "Mass (IU)"
+      "rubric": "Mass (IU)",
+      "description": "Mass (IU)"
     },
     {
       "code": "445",
-      "rubric": "Mass (Units)"
+      "rubric": "Mass (Units)",
+      "description": "Mass (Units)"
     },
     {
       "code": "349",
-      "rubric": "Mass per area"
+      "rubric": "Mass per area",
+      "description": "Mass per area"
     },
     {
       "code": "344",
-      "rubric": "Moment inertia, area"
+      "rubric": "Moment inertia, area",
+      "description": "Moment inertia, area"
     },
     {
       "code": "345",
-      "rubric": "Moment inertia, mass"
+      "rubric": "Moment inertia, mass",
+      "description": "Moment inertia, mass"
     },
     {
       "code": "340",
-      "rubric": "Momentum"
+      "rubric": "Momentum",
+      "description": "Momentum"
     },
     {
       "code": "346",
-      "rubric": "Momentum flow rate"
+      "rubric": "Momentum flow rate",
+      "description": "Momentum flow rate"
     },
     {
       "code": "343",
-      "rubric": "Momentum, angular"
+      "rubric": "Momentum, angular",
+      "description": "Momentum, angular"
     },
     {
       "code": "363",
-      "rubric": "Power"
+      "rubric": "Power",
+      "description": "Power"
     },
     {
       "code": "369",
-      "rubric": "Power density"
+      "rubric": "Power density",
+      "description": "Power density"
     },
     {
       "code": "368",
-      "rubric": "Power flux"
+      "rubric": "Power flux",
+      "description": "Power flux"
     },
     {
       "code": "367",
-      "rubric": "Power, linear"
+      "rubric": "Power, linear",
+      "description": "Power, linear"
     },
     {
       "code": "125",
-      "rubric": "Pressure"
+      "rubric": "Pressure",
+      "description": "Pressure"
     },
     {
       "code": "507",
-      "rubric": "Proportion"
+      "rubric": "Proportion",
+      "description": "Proportion"
     },
     {
       "code": "380",
-      "rubric": "Qualified real"
+      "rubric": "Qualified real",
+      "description": "Qualified real"
     },
     {
       "code": "506",
-      "rubric": "Radioactivity"
+      "rubric": "Radioactivity",
+      "description": "Radioactivity"
     },
     {
       "code": "375",
-      "rubric": "Resistance"
+      "rubric": "Resistance",
+      "description": "Resistance"
     },
     {
       "code": "370",
-      "rubric": "Specific energy"
+      "rubric": "Specific energy",
+      "description": "Specific energy"
     },
     {
       "code": "371",
-      "rubric": "Specific heat, gas constant"
+      "rubric": "Specific heat, gas constant",
+      "description": "Specific heat, gas constant"
     },
     {
       "code": "337",
-      "rubric": "Specific surface"
+      "rubric": "Specific surface",
+      "description": "Specific surface"
     },
     {
       "code": "336",
-      "rubric": "Specific volume"
+      "rubric": "Specific volume",
+      "description": "Specific volume"
     },
     {
       "code": "354",
-      "rubric": "Specific weight"
+      "rubric": "Specific weight",
+      "description": "Specific weight"
     },
     {
       "code": "356",
-      "rubric": "Surface tension"
+      "rubric": "Surface tension",
+      "description": "Surface tension"
     },
     {
       "code": "127",
-      "rubric": "Temperature"
+      "rubric": "Temperature",
+      "description": "Temperature"
     },
     {
       "code": "372",
-      "rubric": "Thermal conductivity"
+      "rubric": "Thermal conductivity",
+      "description": "Thermal conductivity"
     },
     {
       "code": "128",
-      "rubric": "Time"
+      "rubric": "Time",
+      "description": "Time"
     },
     {
       "code": "359",
-      "rubric": "Torque"
+      "rubric": "Torque",
+      "description": "Torque"
     },
     {
       "code": "338",
-      "rubric": "Velocity"
+      "rubric": "Velocity",
+      "description": "Velocity"
     },
     {
       "code": "341",
-      "rubric": "Velocity, angular"
+      "rubric": "Velocity, angular",
+      "description": "Velocity, angular"
     },
     {
       "code": "360",
-      "rubric": "Viscosity, dynamic"
+      "rubric": "Viscosity, dynamic",
+      "description": "Viscosity, dynamic"
     },
     {
       "code": "361",
-      "rubric": "Viscosity, kinematic"
+      "rubric": "Viscosity, kinematic",
+      "description": "Viscosity, kinematic"
     },
     {
       "code": "374",
-      "rubric": "Electric potential"
+      "rubric": "Electric potential",
+      "description": "Electric potential"
     },
     {
       "code": "129",
-      "rubric": "Volume"
+      "rubric": "Volume",
+      "description": "Volume"
     },
     {
       "code": "130",
-      "rubric": "Work"
+      "rubric": "Work",
+      "description": "Work"
     },
     {
       "code": "685",
-      "rubric": "Refractive power"
+      "rubric": "Refractive power",
+      "description": "Refractive power"
     },
     {
       "code": "118",
-      "rubric": "<not set>"
+      "rubric": "<not set>",
+      "description": "<not set>"
     },
     {
       "code": "709",
-      "rubric": "Time fraction"
+      "rubric": "Time fraction",
+      "description": "Time fraction"
     },
     {
       "code": "708",
-      "rubric": "Rate of change, pressure"
+      "rubric": "Rate of change, pressure",
+      "description": "Rate of change, pressure"
     },
     {
       "code": "754",
-      "rubric": "Rate of change, frequency"
+      "rubric": "Rate of change, frequency",
+      "description": "Rate of change, frequency"
     },
     {
       "code": "755",
-      "rubric": "Arbitrary"
+      "rubric": "Arbitrary",
+      "description": "Arbitrary"
     },
     {
       "code": "756",
-      "rubric": "Medication dose rate"
+      "rubric": "Medication dose rate",
+      "description": "Medication dose rate"
     },
     {
       "code": "757",
-      "rubric": "Spectral power"
+      "rubric": "Spectral power",
+      "description": "Spectral power"
     },
     {
       "code": "758",
-      "rubric": "Spectral power density"
+      "rubric": "Spectral power density",
+      "description": "Spectral power density"
     },
     {
       "code": "759",
-      "rubric": "Pace"
+      "rubric": "Pace",
+      "description": "Pace"
     },
     {
       "code": "760",
-      "rubric": "Enzyme activity"
+      "rubric": "Enzyme activity",
+      "description": "Enzyme activity"
     }
   ]
 }

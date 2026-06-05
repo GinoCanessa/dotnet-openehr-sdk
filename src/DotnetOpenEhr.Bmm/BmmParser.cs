@@ -65,8 +65,8 @@ public static class BmmParser
             ?? OptionalString(obj, "schema_name")
             ?? throw new BmmParseException(
                 "required attribute 'model_name' (or 'schema_name') missing.",
-                line: 0,
-                column: 0,
+                line: obj.Line,
+                column: obj.Column,
                 path: "model_name");
         string? rmPublisher = OptionalString(obj, "rm_publisher");
         string? rmRelease = OptionalString(obj, "rm_release");
@@ -87,8 +87,8 @@ public static class BmmParser
         {
             throw new BmmParseException(
                 $"'packages' must be an ODIN hash, found {value.Kind}.",
-                line: 0,
-                column: 0,
+                line: value.Line,
+                column: value.Column,
                 path: AppendPath(path, "packages"));
         }
         return ParsePackageHash(hash, AppendPath(path, "packages"));
@@ -104,8 +104,8 @@ public static class BmmParser
             {
                 throw new BmmParseException(
                     $"Package entry must be an ODIN object, found {kvp.Value.Kind}.",
-                    line: 0,
-                    column: 0,
+                    line: kvp.Value.Line,
+                    column: kvp.Value.Column,
                     path: subPath);
             }
             string name = OptionalString(pkgObj, "name") ?? kvp.Key;
@@ -117,8 +117,8 @@ public static class BmmParser
                 {
                     throw new BmmParseException(
                         $"'packages' must be an ODIN hash, found {subPackagesValue.Kind}.",
-                        line: 0,
-                        column: 0,
+                        line: subPackagesValue.Line,
+                        column: subPackagesValue.Column,
                         path: AppendPath(subPath, "packages"));
                 }
                 subPackages = ParsePackageHash(subHash, AppendPath(subPath, "packages"));
@@ -142,8 +142,8 @@ public static class BmmParser
         {
             throw new BmmParseException(
                 $"'class_definitions' must be an ODIN hash, found {value.Kind}.",
-                line: 0,
-                column: 0,
+                line: value.Line,
+                column: value.Column,
                 path: AppendPath(path, "class_definitions"));
         }
         Dictionary<string, BmmClass> result = new(StringComparer.Ordinal);
@@ -154,8 +154,8 @@ public static class BmmParser
             {
                 throw new BmmParseException(
                     $"Class entry must be an ODIN object, found {kvp.Value.Kind}.",
-                    line: 0,
-                    column: 0,
+                    line: kvp.Value.Line,
+                    column: kvp.Value.Column,
                     path: subPath);
             }
             result[kvp.Key] = ParseClass(kvp.Key, classObj, subPath);
@@ -183,8 +183,8 @@ public static class BmmParser
         {
             throw new BmmParseException(
                 $"'generic_parameter_defs' must be an ODIN hash, found {value.Kind}.",
-                line: 0,
-                column: 0,
+                line: value.Line,
+                column: value.Column,
                 path: AppendPath(path, "generic_parameter_defs"));
         }
         List<BmmGenericParameter> result = [];
@@ -195,8 +195,8 @@ public static class BmmParser
             {
                 throw new BmmParseException(
                     $"Generic parameter entry must be an ODIN object, found {kvp.Value.Kind}.",
-                    line: 0,
-                    column: 0,
+                    line: kvp.Value.Line,
+                    column: kvp.Value.Column,
                     path: subPath);
             }
             string gpName = OptionalString(gpObj, "name") ?? kvp.Key;
@@ -216,8 +216,8 @@ public static class BmmParser
         {
             throw new BmmParseException(
                 $"'properties' must be an ODIN hash, found {value.Kind}.",
-                line: 0,
-                column: 0,
+                line: value.Line,
+                column: value.Column,
                 path: AppendPath(path, "properties"));
         }
         Dictionary<string, BmmProperty> result = new(StringComparer.Ordinal);
@@ -228,8 +228,8 @@ public static class BmmParser
             {
                 throw new BmmParseException(
                     $"Property entry must be an ODIN object, found {kvp.Value.Kind}.",
-                    line: 0,
-                    column: 0,
+                    line: kvp.Value.Line,
+                    column: kvp.Value.Column,
                     path: subPath);
             }
             result[kvp.Key] = ParseProperty(kvp.Key, propObj, subPath);
@@ -247,8 +247,8 @@ public static class BmmParser
             {
                 throw new BmmParseException(
                     $"attribute 'type' must be a string, found {typeValue.Kind}.",
-                    line: 0,
-                    column: 0,
+                    line: typeValue.Line,
+                    column: typeValue.Column,
                     path: AppendPath(path, "type"));
             }
             try
@@ -259,8 +259,8 @@ public static class BmmParser
             {
                 throw new BmmParseException(
                     $"invalid type expression '{typeStr.Value}': {ex.Message}",
-                    line: 0,
-                    column: 0,
+                    line: typeStr.Line,
+                    column: typeStr.Column,
                     path: AppendPath(path, "type"),
                     ex);
             }
@@ -273,8 +273,8 @@ public static class BmmParser
         {
             throw new BmmParseException(
                 "property requires either 'type' or 'type_def'.",
-                line: 0,
-                column: 0,
+                line: obj.Line,
+                column: obj.Column,
                 path: path);
         }
 
@@ -300,8 +300,8 @@ public static class BmmParser
         {
             throw new BmmParseException(
                 $"'type_def' must be an ODIN object, found {value.Kind}.",
-                line: 0,
-                column: 0,
+                line: value.Line,
+                column: value.Column,
                 path: path);
         }
 
@@ -313,8 +313,8 @@ public static class BmmParser
             {
                 throw new BmmParseException(
                     $"'container_type' must be a string, found {containerVal.Kind}.",
-                    line: 0,
-                    column: 0,
+                    line: containerVal.Line,
+                    column: containerVal.Column,
                     path: AppendPath(path, "container_type"));
             }
             BmmType inner;
@@ -324,8 +324,8 @@ public static class BmmParser
                 {
                     throw new BmmParseException(
                         $"container 'type' must be a string, found {innerType.Kind}.",
-                        line: 0,
-                        column: 0,
+                        line: innerType.Line,
+                        column: innerType.Column,
                         path: AppendPath(path, "type"));
                 }
                 try
@@ -336,8 +336,8 @@ public static class BmmParser
                 {
                     throw new BmmParseException(
                         $"invalid container inner type '{innerStr.Value}': {ex.Message}",
-                        line: 0,
-                        column: 0,
+                        line: innerStr.Line,
+                        column: innerStr.Column,
                         path: AppendPath(path, "type"),
                         ex);
                 }
@@ -350,8 +350,8 @@ public static class BmmParser
             {
                 throw new BmmParseException(
                     "container property requires either 'type' or nested 'type_def'.",
-                    line: 0,
-                    column: 0,
+                    line: obj.Line,
+                    column: obj.Column,
                     path: path);
             }
             return new BmmContainerType(containerName.Value, [inner]);
@@ -364,8 +364,8 @@ public static class BmmParser
             {
                 throw new BmmParseException(
                     $"'root_type' must be a string, found {rootTypeVal.Kind}.",
-                    line: 0,
-                    column: 0,
+                    line: rootTypeVal.Line,
+                    column: rootTypeVal.Column,
                     path: AppendPath(path, "root_type"));
             }
             List<BmmType> args = [];
@@ -375,8 +375,8 @@ public static class BmmParser
                 {
                     throw new BmmParseException(
                         $"'generic_parameter_defs' must be an ODIN hash, found {gpdVal.Kind}.",
-                        line: 0,
-                        column: 0,
+                        line: gpdVal.Line,
+                        column: gpdVal.Column,
                         path: AppendPath(path, "generic_parameter_defs"));
                 }
                 foreach (KeyValuePair<string, OdinValue> kvp in gpdHash.Entries)
@@ -396,8 +396,8 @@ public static class BmmParser
             {
                 throw new BmmParseException(
                     "generic 'type_def' requires at least one generic parameter.",
-                    line: 0,
-                    column: 0,
+                    line: obj.Line,
+                    column: obj.Column,
                     path: path);
             }
             return new BmmGenericType(rootTypeName.Value, args);
@@ -411,8 +411,8 @@ public static class BmmParser
             {
                 throw new BmmParseException(
                     $"'type' must be a string, found {simpleTypeVal.Kind}.",
-                    line: 0,
-                    column: 0,
+                    line: simpleTypeVal.Line,
+                    column: simpleTypeVal.Column,
                     path: AppendPath(path, "type"));
             }
             try
@@ -423,8 +423,8 @@ public static class BmmParser
             {
                 throw new BmmParseException(
                     $"invalid type expression '{simpleTypeStr.Value}': {ex.Message}",
-                    line: 0,
-                    column: 0,
+                    line: simpleTypeStr.Line,
+                    column: simpleTypeStr.Column,
                     path: AppendPath(path, "type"),
                     ex);
             }
@@ -432,8 +432,8 @@ public static class BmmParser
 
         throw new BmmParseException(
             "'type_def' must declare either 'container_type', 'root_type', or 'type'.",
-            line: 0,
-            column: 0,
+            line: obj.Line,
+            column: obj.Column,
             path: path);
     }
 
@@ -462,8 +462,8 @@ public static class BmmParser
         {
             throw new BmmParseException(
                 $"expected interval value, found {value.Kind}.",
-                line: 0,
-                column: 0,
+                line: value.Line,
+                column: value.Column,
                 path: path);
         }
         int? lower = AsIntOrNull(interval.Lower, path);
@@ -510,8 +510,8 @@ public static class BmmParser
             {
                 throw new BmmParseException(
                     $"interval bound {i.Value} does not fit in Int32.",
-                    line: 0,
-                    column: 0,
+                    line: value.Line,
+                    column: value.Column,
                     path: path);
             }
             return (int)i.Value;
@@ -520,8 +520,8 @@ public static class BmmParser
         // endpoint already; otherwise we don't know how to handle it.
         throw new BmmParseException(
             $"interval bound must be integer, found {value.Kind}.",
-            line: 0,
-            column: 0,
+            line: value.Line,
+            column: value.Column,
             path: path);
     }
 
@@ -543,8 +543,8 @@ public static class BmmParser
                     {
                         throw new BmmParseException(
                             $"'{attr}[{i}]' must be a string, found {list.Items[i].Kind}.",
-                            line: 0,
-                            column: 0,
+                            line: list.Items[i].Line,
+                            column: list.Items[i].Column,
                             path: AppendPath(path, attr));
                     }
                     items.Add(si.Value);
@@ -561,8 +561,8 @@ public static class BmmParser
             default:
                 throw new BmmParseException(
                     $"'{attr}' must be a string list, found {value.Kind}.",
-                    line: 0,
-                    column: 0,
+                    line: value.Line,
+                    column: value.Column,
                     path: AppendPath(path, attr));
         }
     }
@@ -573,16 +573,16 @@ public static class BmmParser
         {
             throw new BmmParseException(
                 $"required attribute '{attr}' missing.",
-                line: 0,
-                column: 0,
+                line: obj.Line,
+                column: obj.Column,
                 path: AppendPath(path, attr));
         }
         if (value is not OdinString s)
         {
             throw new BmmParseException(
                 $"attribute '{attr}' must be a string, found {value.Kind}.",
-                line: 0,
-                column: 0,
+                line: value.Line,
+                column: value.Column,
                 path: AppendPath(path, attr));
         }
         return s.Value;

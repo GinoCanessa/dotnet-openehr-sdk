@@ -5,6 +5,7 @@ using DotnetOpenEhr.Rm.Composition;
 using DotnetOpenEhr.Rm.DataStructures;
 using DotnetOpenEhr.Rm.DataTypes;
 using DotnetOpenEhr.Rm.DataTypes.Basic;
+using DotnetOpenEhr.Rm.DataTypes.DateTime;
 using DotnetOpenEhr.Rm.DataTypes.Quantity;
 using DotnetOpenEhr.Rm.DataTypes.Text;
 using DotnetOpenEhr.Serialization.Json;
@@ -84,13 +85,25 @@ public sealed class FlatSchemaDrivenRoundTripTests
     }
 
     [Fact]
-    public void Catalogue_HasNo_SchemaRequired_Entries()
+    public void Catalogue_SchemaRequired_Entries_MatchArchive()
     {
-        IEnumerable<string> schemaRequired = Catalogue.Fixtures
-            .Where(f => string.Equals(f.Bucket, "schema-required", StringComparison.Ordinal))
-            .Select(f => f.File);
+        // The catalogue must enumerate every checked-in
+        // openfhir-archive/*_flat.json fixture under the
+        // "schema-required" bucket. Drift here means a new fixture
+        // was added without lighting up its parse coverage.
+        string archive = Path.Combine(CatalogueLoader.SourceDir, "openfhir-archive");
+        IReadOnlyList<string> onDisk = Directory.EnumerateFiles(archive, "*_flat.json")
+            .Select(p => "openfhir-archive/" + Path.GetFileName(p))
+            .OrderBy(s => s, StringComparer.Ordinal)
+            .ToList();
 
-        Assert.Empty(schemaRequired);
+        IReadOnlyList<string> catalogued = Catalogue.Fixtures
+            .Where(f => string.Equals(f.Bucket, "schema-required", StringComparison.Ordinal))
+            .Select(f => f.File)
+            .OrderBy(s => s, StringComparer.Ordinal)
+            .ToList();
+
+        Assert.Equal(onDisk, catalogued);
     }
 
     [Fact]
@@ -233,6 +246,32 @@ public sealed class FlatSchemaDrivenRoundTripTests
                 break;
 
             case Element ee when actual is Element ae:
+                // M26 (0604-04) — compare Element.NullFlavour when
+                // either side carries one. The Locatable assertion above
+                // covers ArchetypeNodeId / Name; this layer adds the
+                // null_flavour sidecar.
+                if (ee.NullFlavour is not null || ae.NullFlavour is not null)
+                {
+                    Assert.NotNull(ee.NullFlavour);
+                    Assert.NotNull(ae.NullFlavour);
+                    Assert.Equal(ee.NullFlavour!.Value, ae.NullFlavour!.Value);
+                    Assert.Equal(
+                        ee.NullFlavour.DefiningCode.CodeString,
+                        ae.NullFlavour.DefiningCode.CodeString);
+                    Assert.Equal(
+                        ee.NullFlavour.DefiningCode.TerminologyId.Value,
+                        ae.NullFlavour.DefiningCode.TerminologyId.Value);
+                }
+                // Skip the value-equality check when the expected
+                // element is value-less + null-flavoured. AssertDataValue
+                // calls Assert.NotNull(expected) which would fail
+                // outright. Both sides must agree on the null-flavoured
+                // shape (no Value).
+                if (ee.Value is null && ee.NullFlavour is not null)
+                {
+                    Assert.Null(ae.Value);
+                    break;
+                }
                 AssertDataValue(ee.Value, ae.Value, $"{path}/value");
                 break;
 
@@ -277,6 +316,26 @@ public sealed class FlatSchemaDrivenRoundTripTests
 
             case DvText et when actual is DvText at:
                 Assert.Equal(et.Value, at.Value);
+                break;
+
+            // M26 — temporal + duration leaf comparisons. Compares the
+            // canonical Iso* serialisation rather than instance equality
+            // to remain robust against IsoDate / IsoTime / IsoDuration
+            // implementations that intentionally compare by structure.
+            case DvDate ed when actual is DvDate ad:
+                Assert.Equal(ed.Value.ToString(), ad.Value.ToString());
+                break;
+
+            case DvTime ett when actual is DvTime att:
+                Assert.Equal(ett.Value.ToString(), att.Value.ToString());
+                break;
+
+            case DvDateTime edt when actual is DvDateTime adt:
+                Assert.Equal(edt.Value.ToString(), adt.Value.ToString());
+                break;
+
+            case DvDuration edu when actual is DvDuration adu:
+                Assert.Equal(edu.Value.ToString(), adu.Value.ToString());
                 break;
 
             default:

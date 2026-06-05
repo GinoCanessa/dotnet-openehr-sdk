@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<Import Project="..\common.props" />
 
-  <PropertyGroup>
+    <PropertyGroup>
     <RootNamespace>DotnetOpenEhr.Serialization.Json.Flat</RootNamespace>
     <AssemblyName>DotnetOpenEhr.Serialization.Json.Flat</AssemblyName>
     <PackageId>DotnetOpenEhr.Serialization.Json.Flat</PackageId>
@@ -15,6 +15,10 @@
       and Native-AOT-safe. Single TFM net10.0.
     </Description>
   </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="DotnetOpenEhr.Serialization.Json.Flat.Tests" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\DotnetOpenEhr.Rm\DotnetOpenEhr.Rm.csproj" />

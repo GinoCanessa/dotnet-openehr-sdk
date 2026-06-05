@@ -45,7 +45,7 @@ public sealed class DvMultimedia : DvEncapsulated
     public Text.CodePhrase? IntegrityCheckAlgorithm { get; set; }
 
     [JsonPropertyName("size")]
-    public int Size { get; set; }
+    public long Size { get; set; }
 
     [JsonPropertyName("thumbnail")]
     public DvMultimedia? Thumbnail { get; set; }

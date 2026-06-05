@@ -245,7 +245,33 @@ public static class OpenEhrFlatJson
 
     private static bool TrySetComposerAttr(Composition composition, string attribute, JsonElement value)
     {
-        PartyIdentified identified = composition.Composer as PartyIdentified ?? new PartyIdentified();
+        // M2 — replace the silent `as PartyIdentified ?? new PartyIdentified()`
+        // pattern with an explicit branch. With the M21 Composer-default
+        // flip, a null Composer is the new normal and we simply
+        // materialise a PartyIdentified to receive the attribute. A
+        // non-null but non-PartyIdentified Composer (PartySelf or
+        // PartyRelated) cannot have its discriminator silently swapped
+        // mid-parse without losing the original instance — fail loud.
+        PartyIdentified identified;
+        if (composition.Composer is null)
+        {
+            identified = new PartyIdentified();
+        }
+        else if (composition.Composer is PartyIdentified pi)
+        {
+            identified = pi;
+        }
+        else
+        {
+            throw new FlatSchemaRequiredException(
+                templateId: string.Empty,
+                unresolvedPaths:
+                [
+                    $"composer{attribute}: cannot apply attribute to a non-PartyIdentified Composer "
+                        + $"(actual type: {composition.Composer.GetType().Name}); the FLAT writer "
+                        + "does not support changing the discriminator mid-parse.",
+                ]);
+        }
         composition.Composer = identified;
         return TrySetPartyIdentifiedAttr(identified, attribute, value);
     }
@@ -253,6 +279,10 @@ public static class OpenEhrFlatJson
     private static bool TrySetHealthCareFacilityAttr(Composition composition, string attribute, JsonElement value)
     {
         EventContext ctx = EnsureContext(composition);
+        // M2 — HealthCareFacility is already typed PartyIdentified? so
+        // the cast guard here is only needed when callers (or future
+        // schema migrations) assign a derived PartyRelated. Keep the
+        // null branch consistent with TrySetComposerAttr.
         ctx.HealthCareFacility ??= new PartyIdentified();
         return TrySetPartyIdentifiedAttr(ctx.HealthCareFacility, attribute, value);
     }

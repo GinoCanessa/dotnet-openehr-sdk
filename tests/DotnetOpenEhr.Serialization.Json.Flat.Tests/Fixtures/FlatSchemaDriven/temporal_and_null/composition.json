@@ -1,0 +1,100 @@
+{
+  "_type": "COMPOSITION",
+  "name": { "_type": "DV_TEXT", "value": "temporal_and_null" },
+  "archetype_node_id": "openEHR-EHR-COMPOSITION.temporal_and_null.v1.0.0",
+  "language": {
+    "_type": "CODE_PHRASE",
+    "terminology_id": { "_type": "TERMINOLOGY_ID", "value": "ISO_639-1" },
+    "code_string": "en"
+  },
+  "territory": {
+    "_type": "CODE_PHRASE",
+    "terminology_id": { "_type": "TERMINOLOGY_ID", "value": "ISO_3166-1" },
+    "code_string": "GB"
+  },
+  "category": {
+    "_type": "DV_CODED_TEXT",
+    "value": "event",
+    "defining_code": {
+      "_type": "CODE_PHRASE",
+      "terminology_id": { "_type": "TERMINOLOGY_ID", "value": "openehr" },
+      "code_string": "433"
+    }
+  },
+  "composer": { "_type": "PARTY_IDENTIFIED", "name": "Dr Hand" },
+  "context": {
+    "_type": "EVENT_CONTEXT",
+    "start_time": { "_type": "DV_DATE_TIME", "value": "2024-08-20T10:00:00Z" },
+    "setting": {
+      "_type": "DV_CODED_TEXT",
+      "value": "other care",
+      "defining_code": {
+        "_type": "CODE_PHRASE",
+        "terminology_id": { "_type": "TERMINOLOGY_ID", "value": "openehr" },
+        "code_string": "238"
+      }
+    }
+  },
+  "content": [
+    {
+      "_type": "OBSERVATION",
+      "name": { "_type": "DV_TEXT", "value": "observation" },
+      "archetype_node_id": "id2",
+      "language": {
+        "_type": "CODE_PHRASE",
+        "terminology_id": { "_type": "TERMINOLOGY_ID", "value": "ISO_639-1" },
+        "code_string": "en"
+      },
+      "encoding": {
+        "_type": "CODE_PHRASE",
+        "terminology_id": { "_type": "TERMINOLOGY_ID", "value": "IANA_character-sets" },
+        "code_string": "UTF-8"
+      },
+      "subject": { "_type": "PARTY_SELF" },
+      "data": {
+        "_type": "HISTORY",
+        "name": { "_type": "DV_TEXT", "value": "history" },
+        "archetype_node_id": "id3",
+        "origin": { "_type": "DV_DATE_TIME", "value": "2024-08-20T10:00:00Z" },
+        "events": [
+          {
+            "_type": "POINT_EVENT",
+            "name": { "_type": "DV_TEXT", "value": "any event" },
+            "archetype_node_id": "id4",
+            "time": { "_type": "DV_DATE_TIME", "value": "2024-08-20T10:00:00Z" },
+            "data": {
+              "_type": "ITEM_TREE",
+              "name": { "_type": "DV_TEXT", "value": "tree" },
+              "archetype_node_id": "id5",
+              "items": [
+                {
+                  "_type": "ELEMENT",
+                  "name": { "_type": "DV_TEXT", "value": "unrecorded measurement" },
+                  "archetype_node_id": "id12",
+                  "null_flavour": {
+                    "_type": "DV_CODED_TEXT",
+                    "value": "unknown",
+                    "defining_code": {
+                      "_type": "CODE_PHRASE",
+                      "terminology_id": { "_type": "TERMINOLOGY_ID", "value": "openehr" },
+                      "code_string": "253"
+                    }
+                  }
+                },
+                {
+                  "_type": "ELEMENT",
+                  "name": { "_type": "DV_TEXT", "value": "observation date" },
+                  "archetype_node_id": "id6",
+                  "value": {
+                    "_type": "DV_DATE",
+                    "value": "2024-08-20"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

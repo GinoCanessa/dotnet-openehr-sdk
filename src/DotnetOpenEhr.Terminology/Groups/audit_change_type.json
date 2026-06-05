@@ -4,39 +4,48 @@
   "entries": [
     {
       "code": "249",
-      "rubric": "creation"
+      "rubric": "creation",
+      "description": "creation"
     },
     {
       "code": "250",
-      "rubric": "amendment"
+      "rubric": "amendment",
+      "description": "amendment"
     },
     {
       "code": "251",
-      "rubric": "modification"
+      "rubric": "modification",
+      "description": "modification"
     },
     {
       "code": "252",
-      "rubric": "synthesis"
+      "rubric": "synthesis",
+      "description": "synthesis"
     },
     {
       "code": "523",
-      "rubric": "deleted"
+      "rubric": "deleted",
+      "description": "deleted"
     },
     {
       "code": "666",
-      "rubric": "attestation"
+      "rubric": "attestation",
+      "description": "attestation"
     },
     {
       "code": "816",
-      "rubric": "restoration"
+      "rubric": "restoration",
+      "description": "restoration"
     },
     {
       "code": "817",
-      "rubric": "format conversion"
+      "rubric": "format conversion",
+      "description": "format conversion"
     },
     {
       "code": "253",
-      "rubric": "unknown"
+      "rubric": "unknown",
+      "description": "unknown"
     }
   ]
 }

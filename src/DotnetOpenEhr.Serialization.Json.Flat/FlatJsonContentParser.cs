@@ -189,7 +189,7 @@ internal static class FlatJsonContentParser
             // to its parent and apply.
             object? container = NavigateTo(composition, templateId, segments, 0, leafIdx, schema, originalPath);
             string leafFlatPath = ComposeFlatPath(templateId, segments, leafIdx);
-            return ApplyScalar(container, leaf.Name, attribute, value, leafFlatPath, schema);
+            return ApplyScalar(container, leaf.Name, attribute, value, leafFlatPath, originalPath, schema);
         }
 
         // Bare-key DateTime leaves emitted by the writer as direct strings:
@@ -201,7 +201,7 @@ internal static class FlatJsonContentParser
         {
             object? container = NavigateTo(composition, templateId, segments, 0, leafIdx, schema, originalPath);
             string leafFlatPath = ComposeFlatPath(templateId, segments, leafIdx);
-            return ApplyScalar(container, leaf.Name, attribute, value, leafFlatPath, schema);
+            return ApplyScalar(container, leaf.Name, attribute, value, leafFlatPath, originalPath, schema);
         }
 
         // Unknown no-attribute leaf — out of MVP scope.
@@ -216,11 +216,6 @@ internal static class FlatJsonContentParser
             sb.Append('/').Append(segments[i].Name);
         }
         return sb.ToString();
-    }
-
-    private static string ComposeFlatPathNoIndices(string templateId, List<Segment> segments, int endIndex)
-    {
-        return ComposeFlatPath(templateId, segments, endIndex);
     }
 
     /// <summary>Walks segments[from..to) (exclusive end) creating parent
@@ -306,12 +301,12 @@ internal static class FlatJsonContentParser
         EnsureRepeatAllocationIsBounded(list.Count, target, originalPath);
         while (list.Count <= target)
         {
-            list.Add(InstantiateContentItem(rmType));
+            list.Add(InstantiateContentItem(rmType, originalPath));
         }
         return list[target];
     }
 
-    private static ContentItem InstantiateContentItem(string? rmType)
+    private static ContentItem InstantiateContentItem(string? rmType, string originalPath)
     {
         return rmType switch
         {
@@ -319,9 +314,13 @@ internal static class FlatJsonContentParser
             "OBSERVATION" => new Observation(),
             "EVALUATION" => new Evaluation(),
             "ADMIN_ENTRY" => new AdminEntry(),
-            // Instruction / Action are out of MVP scope but instantiating
-            // a placeholder Section keeps navigation alive.
-            _ => new Section(),
+            // H6 — fail loudly on rmTypes the schema-driven content
+            // writer doesn't support (notably INSTRUCTION/ACTION today,
+            // and any future addition that lands without a paired
+            // writer arm). Previously this silently downgraded to a
+            // Section, corrupting the shape.
+            _ => throw new JsonException(
+                $"FLAT path '{originalPath}': RM type '{rmType ?? "(null)"}' is not supported by the schema-driven content writer."),
         };
     }
 
@@ -418,6 +417,7 @@ internal static class FlatJsonContentParser
         string attribute,
         JsonElement value,
         string leafFlatPath,
+        string fullFlatPath,
         ITemplateSchema schema)
     {
         if (parent is null) return false;
@@ -429,7 +429,7 @@ internal static class FlatJsonContentParser
                 case "value":
                     // Polymorphic — schema picks the concrete DV_* type.
                     schema.TryResolveType(leafFlatPath.AsSpan(), out TemplateRmTypeResolution res);
-                    el.Value = MergeDataValue(el.Value, res.RmTypeName, attribute, value);
+                    el.Value = MergeDataValue(el.Value, res.RmTypeName, attribute, value, fullFlatPath);
                     return true;
 
                 case "null_flavour":
@@ -440,20 +440,29 @@ internal static class FlatJsonContentParser
 
         if (parent is Event ev && string.Equals(leafName, "time", StringComparison.Ordinal))
         {
-            ev.Time = ApplyDvDateTime(ev.Time, attribute, value);
+            ev.Time = ParseDvDateTime(value);
             return true;
         }
 
         if (parent is History hist && string.Equals(leafName, "origin", StringComparison.Ordinal))
         {
-            hist.Origin = ApplyDvDateTime(hist.Origin, attribute, value);
+            hist.Origin = ParseDvDateTime(value);
             return true;
         }
 
         return false;
     }
 
-    private static DataValue MergeDataValue(DataValue? current, string? rmType, string attribute, JsonElement value)
+    private static DataValue MergeDataValue(DataValue? current, string? rmType, string attribute, JsonElement value, string path)
+        => MergeDataValueInternal(current, rmType, attribute, value, path);
+
+    /// <summary>
+    /// Test-visible entry point for the merge logic. Unit-tested in
+    /// <c>MergeDataValueScalarPreservationTests</c> via
+    /// <c>InternalsVisibleTo</c>; production callers should go through
+    /// <see cref="MergeDataValue"/> which forwards here.
+    /// </summary>
+    internal static DataValue MergeDataValueInternal(DataValue? current, string? rmType, string attribute, JsonElement value, string path)
     {
         // The schema's FLAT-path index strips :N indices and therefore
         // last-wins when multiple sibling Elements (different
@@ -468,10 +477,100 @@ internal static class FlatJsonContentParser
         DataValue target = current ?? InstantiateDataValue(effective);
         if (effective is not null && !MatchesType(target, effective))
         {
-            target = InstantiateDataValue(effective);
+            // M1 (0604-04): when the effective type changes mid-merge,
+            // build a fresh instance of the new type but copy any
+            // shared scalars from the previous instance forward via
+            // DataValueScalarCopier. Otherwise the second entry would
+            // silently zero out scalars written by the first entry
+            // (e.g. |magnitude then |units bumping DvCount→DvQuantity
+            // would lose magnitude).
+            //
+            // Exception: DvCodedText is a DvText subtype with a richer
+            // shape. A `|value` arriving after `|code`+`|terminology`
+            // makes the effective type "DV_TEXT" per
+            // InferRmTypeFromAttribute fall-through, but we must NOT
+            // downcast — both the text and the coded fields are
+            // legitimate; the value is updated in place on the
+            // existing DvCodedText. Documented as a positive contract
+            // in MergeDataValueScalarPreservationTests.
+            if (target is DvCodedText && string.Equals(effective, "DV_TEXT", StringComparison.Ordinal))
+            {
+                // Fall through and ApplyDataValueAttr below will write
+                // |value into the existing DvCodedText.
+            }
+            else
+            {
+                DataValue replacement = InstantiateDataValue(effective);
+                DataValueScalarCopier.Copy(target, replacement);
+                target = replacement;
+            }
         }
-        ApplyDataValueAttr(target, attribute, value);
+        ApplyDataValueAttr(target, attribute, value, path);
         return target;
+    }
+
+    /// <summary>
+    /// Per-DV scalar copier for <see cref="MergeDataValue"/>'s
+    /// type-transition path. M1 (0604-04): when the effective type
+    /// changes mid-merge, copy any scalars the source and target types
+    /// share so the second entry does not silently zero out values
+    /// written by the first entry.
+    ///
+    /// The covered set matches what the FLAT parser actually
+    /// instantiates (see <see cref="InstantiateDataValue"/>) and the
+    /// transitions reachable from
+    /// <see cref="InferRmTypeFromAttribute"/>. Adding arms for DV types
+    /// the parser does not produce would expand FLAT support out of
+    /// scope; intentionally not done here.
+    /// </summary>
+    private static class DataValueScalarCopier
+    {
+        public static void Copy(DataValue from, DataValue to)
+        {
+            switch (from, to)
+            {
+                // DvCount → DvQuantity: |magnitude (integral) lands as
+                // DvCount; then |units forces re-instantiation as
+                // DvQuantity. Preserve magnitude (long → double).
+                case (DvCount src, DvQuantity dst):
+                    dst.Magnitude = src.Magnitude;
+                    break;
+
+                // DvQuantity → DvCount: not currently reachable from
+                // InferRmTypeFromAttribute (|units pins DV_QUANTITY,
+                // |magnitude with non-integral JSON also pins
+                // DV_QUANTITY). Defensive arm: round magnitude down.
+                case (DvQuantity src, DvCount dst):
+                    dst.Magnitude = (long)src.Magnitude;
+                    break;
+
+                // DvText → DvCodedText: a |value followed by a
+                // |code+|terminology forces re-instantiation as
+                // DvCodedText. Preserve the prior text since
+                // DvCodedText has a `Value` field too (inherited).
+                case (DvText src, DvCodedText dst):
+                    dst.Value = src.Value;
+                    break;
+
+                // DvText → DvBoolean: a boolean-valued |value arriving
+                // after a string-valued |value legitimately replaces
+                // the target type. No shared scalars — explicit no-op,
+                // documented so a future reader knows the transition
+                // is reachable and intentionally destructive of the
+                // prior text.
+                case (DvText, DvBoolean):
+                    break;
+
+                // Other transitions are not reachable from the current
+                // InferRmTypeFromAttribute table. Leaving the target
+                // freshly-instantiated (no copy) is the safest default
+                // — anything that becomes reachable in the future
+                // should add an explicit arm here rather than rely on
+                // this fallthrough.
+                default:
+                    break;
+            }
+        }
     }
 
     /// <summary>Maps a scalar attribute selector to an RM type when the
@@ -549,20 +648,20 @@ internal static class FlatJsonContentParser
         };
     }
 
-    private static void ApplyDataValueAttr(DataValue target, string attribute, JsonElement value)
+    private static void ApplyDataValueAttr(DataValue target, string attribute, JsonElement value, string path)
     {
         switch (target)
         {
             case DvQuantity q:
                 switch (attribute)
                 {
-                    case "|magnitude": q.Magnitude = ReadDouble(value); break;
+                    case "|magnitude": q.Magnitude = ReadDouble(value, path); break;
                     case "|units": q.Units = value.GetString() ?? string.Empty; break;
-                    case "|precision": q.Precision = ReadInt(value); break;
+                    case "|precision": q.Precision = ReadInt(value, path); break;
                 }
                 break;
             case DvCount c when string.Equals(attribute, "|magnitude", StringComparison.Ordinal):
-                c.Magnitude = ReadInt64(value);
+                c.Magnitude = ReadInt64(value, path);
                 break;
             case DvBoolean b when string.Equals(attribute, "|value", StringComparison.Ordinal):
                 b.Value = value.ValueKind == JsonValueKind.True
@@ -611,15 +710,17 @@ internal static class FlatJsonContentParser
         }
     }
 
-    private static DvDateTime ApplyDvDateTime(DvDateTime current, string attribute, JsonElement value)
+    private static DvDateTime ParseDvDateTime(JsonElement value)
     {
-        // The writer emits the date-time as a bare key (no attribute);
-        // be lenient and also accept |value.
+        // L5 — the writer emits the date-time as a bare key (no
+        // attribute); this helper just turns the raw JSON string into
+        // a DvDateTime. The earlier signature carried unused `current`
+        // and `attribute` parameters; both have been dropped.
         string raw = value.GetString() ?? string.Empty;
         return new DvDateTime(IsoDateTime.Parse(raw));
     }
 
-    private static double ReadDouble(JsonElement value)
+    private static double ReadDouble(JsonElement value, string path)
     {
         if (value.ValueKind == JsonValueKind.Number) return value.GetDouble();
         if (value.ValueKind == JsonValueKind.String
@@ -627,10 +728,11 @@ internal static class FlatJsonContentParser
         {
             return d;
         }
-        return 0d;
+        throw new JsonException(
+            $"FLAT path '{path}': expected a numeric (double) value, got {value.ValueKind} '{value.GetRawText()}'.");
     }
 
-    private static int ReadInt(JsonElement value)
+    private static int ReadInt(JsonElement value, string path)
     {
         if (value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out int i)) return i;
         if (value.ValueKind == JsonValueKind.String
@@ -638,10 +740,11 @@ internal static class FlatJsonContentParser
         {
             return parsed;
         }
-        return 0;
+        throw new JsonException(
+            $"FLAT path '{path}': expected a numeric (int) value, got {value.ValueKind} '{value.GetRawText()}'.");
     }
 
-    private static long ReadInt64(JsonElement value)
+    private static long ReadInt64(JsonElement value, string path)
     {
         if (value.ValueKind == JsonValueKind.Number && value.TryGetInt64(out long l)) return l;
         if (value.ValueKind == JsonValueKind.String
@@ -649,6 +752,7 @@ internal static class FlatJsonContentParser
         {
             return parsed;
         }
-        return 0;
+        throw new JsonException(
+            $"FLAT path '{path}': expected a numeric (long) value, got {value.ValueKind} '{value.GetRawText()}'.");
     }
 }

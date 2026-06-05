@@ -23,6 +23,21 @@ public abstract class OdinValue
     public string? TypeMarker { get; set; }
 
     /// <summary>
+    /// 1-based source line at which the value's introducing token began.
+    /// <see cref="OdinParser"/> populates this on every value it
+    /// constructs; manually-constructed values default to 0 (meaning
+    /// "no source position available").
+    /// </summary>
+    public int Line { get; set; }
+
+    /// <summary>
+    /// 1-based source column at which the value's introducing token began.
+    /// <see cref="OdinParser"/> populates this on every value it
+    /// constructs; manually-constructed values default to 0.
+    /// </summary>
+    public int Column { get; set; }
+
+    /// <summary>
     /// The shared <see cref="OdinNull"/> singleton.
     /// </summary>
     public static OdinValue Null => s_null;

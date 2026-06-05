@@ -1,3 +1,4 @@
+using System.Linq;
 using DotnetOpenEhr.Terminology;
 using Xunit;
 
@@ -144,5 +145,72 @@ public class OpenEhrTerminologyTests
             $"Expected code '{code}' in group '{groupId}'.");
         Assert.NotNull(entry);
         Assert.Equal(expectedRubric, entry.Rubric);
+    }
+
+    /// <summary>
+    /// L8 — confirms <see cref="OpenEhrTerminology.GroupIds"/> is now
+    /// exposed as an <see cref="IReadOnlySet{T}"/> with O(1) membership.
+    /// </summary>
+    [Fact]
+    public void GroupIds_is_a_set_with_o1_membership()
+    {
+        Assert.IsAssignableFrom<IReadOnlySet<string>>(OpenEhrTerminology.GroupIds);
+        Assert.True(OpenEhrTerminology.GroupIds.Contains("null_flavours"));
+        Assert.False(OpenEhrTerminology.GroupIds.Contains("not_a_real_group_xyz"));
+    }
+
+    /// <summary>
+    /// L8 — every entry in every embedded group carries a populated
+    /// <c>description</c>. Backfilled in 0604-04 Phase 10 from the
+    /// openEHR Support Terminology spec (the spec's per-code
+    /// "Description" column maps directly onto the JSON
+    /// <c>description</c> field; <c>rubric</c> carries the same value
+    /// for compatibility with existing readers).
+    /// </summary>
+    [Fact]
+    public void Description_is_populated_for_every_entry_in_every_group()
+    {
+        foreach (string groupId in OpenEhrTerminology.GroupIds)
+        {
+            IReadOnlyDictionary<string, TerminologyEntry> group = OpenEhrTerminology.GetGroup(groupId);
+            foreach (TerminologyEntry entry in group.Values)
+            {
+                Assert.False(
+                    string.IsNullOrWhiteSpace(entry.Description),
+                    $"group '{groupId}', code '{entry.Code}': Description is null or whitespace.");
+            }
+        }
+    }
+
+    /// <summary>
+    /// L8 — per-group theory variant. Same contract as
+    /// <see cref="Description_is_populated_for_every_entry_in_every_group"/>
+    /// but per-group, so when a regression lands the failure message
+    /// names the responsible JSON file directly.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(AllGroupIds))]
+    public void Description_is_populated_for_every_entry_in_group(string groupId)
+    {
+        IReadOnlyDictionary<string, TerminologyEntry> group = OpenEhrTerminology.GetGroup(groupId);
+        foreach (TerminologyEntry entry in group.Values)
+        {
+            Assert.False(
+                string.IsNullOrWhiteSpace(entry.Description),
+                $"group '{groupId}', code '{entry.Code}': Description is null or whitespace.");
+        }
+    }
+
+    public static TheoryData<string> AllGroupIds
+    {
+        get
+        {
+            TheoryData<string> data = [];
+            foreach (string id in OpenEhrTerminology.GroupIds)
+            {
+                data.Add(id);
+            }
+            return data;
+        }
     }
 }
