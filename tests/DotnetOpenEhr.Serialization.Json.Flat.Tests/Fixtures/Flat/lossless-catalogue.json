@@ -31,6 +31,12 @@
       "unresolvedPaths": []
     },
     {
+      "file": "FlatSchemaDriven/temporal_and_null",
+      "templateId": "temporal_and_null",
+      "bucket": "schema-driven-roundtrip",
+      "unresolvedPaths": []
+    },
+    {
       "file": "openfhir-archive/blood_pressure_flat.json",
       "templateId": "blood_pressure",
       "bucket": "schema-required",

@@ -246,6 +246,32 @@ public sealed class FlatSchemaDrivenRoundTripTests
                 break;
 
             case Element ee when actual is Element ae:
+                // M26 (0604-04) — compare Element.NullFlavour when
+                // either side carries one. The Locatable assertion above
+                // covers ArchetypeNodeId / Name; this layer adds the
+                // null_flavour sidecar.
+                if (ee.NullFlavour is not null || ae.NullFlavour is not null)
+                {
+                    Assert.NotNull(ee.NullFlavour);
+                    Assert.NotNull(ae.NullFlavour);
+                    Assert.Equal(ee.NullFlavour!.Value, ae.NullFlavour!.Value);
+                    Assert.Equal(
+                        ee.NullFlavour.DefiningCode.CodeString,
+                        ae.NullFlavour.DefiningCode.CodeString);
+                    Assert.Equal(
+                        ee.NullFlavour.DefiningCode.TerminologyId.Value,
+                        ae.NullFlavour.DefiningCode.TerminologyId.Value);
+                }
+                // Skip the value-equality check when the expected
+                // element is value-less + null-flavoured. AssertDataValue
+                // calls Assert.NotNull(expected) which would fail
+                // outright. Both sides must agree on the null-flavoured
+                // shape (no Value).
+                if (ee.Value is null && ee.NullFlavour is not null)
+                {
+                    Assert.Null(ae.Value);
+                    break;
+                }
                 AssertDataValue(ee.Value, ae.Value, $"{path}/value");
                 break;
 
