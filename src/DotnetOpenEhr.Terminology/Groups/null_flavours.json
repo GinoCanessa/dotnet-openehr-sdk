@@ -4,19 +4,23 @@
   "entries": [
     {
       "code": "271",
-      "rubric": "no information"
+      "rubric": "no information",
+      "description": "no information"
     },
     {
       "code": "253",
-      "rubric": "unknown"
+      "rubric": "unknown",
+      "description": "unknown"
     },
     {
       "code": "272",
-      "rubric": "masked"
+      "rubric": "masked",
+      "description": "masked"
     },
     {
       "code": "273",
-      "rubric": "not applicable"
+      "rubric": "not applicable",
+      "description": "not applicable"
     }
   ]
 }

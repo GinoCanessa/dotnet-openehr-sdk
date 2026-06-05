@@ -4,23 +4,28 @@
   "entries": [
     {
       "code": "532",
-      "rubric": "complete"
+      "rubric": "complete",
+      "description": "complete"
     },
     {
       "code": "553",
-      "rubric": "incomplete"
+      "rubric": "incomplete",
+      "description": "incomplete"
     },
     {
       "code": "523",
-      "rubric": "deleted"
+      "rubric": "deleted",
+      "description": "deleted"
     },
     {
       "code": "800",
-      "rubric": "inactive"
+      "rubric": "inactive",
+      "description": "inactive"
     },
     {
       "code": "801",
-      "rubric": "abandoned"
+      "rubric": "abandoned",
+      "description": "abandoned"
     }
   ]
 }

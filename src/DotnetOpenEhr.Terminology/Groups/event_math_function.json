@@ -4,47 +4,58 @@
   "entries": [
     {
       "code": "145",
-      "rubric": "minimum"
+      "rubric": "minimum",
+      "description": "minimum"
     },
     {
       "code": "144",
-      "rubric": "maximum"
+      "rubric": "maximum",
+      "description": "maximum"
     },
     {
       "code": "267",
-      "rubric": "mode"
+      "rubric": "mode",
+      "description": "mode"
     },
     {
       "code": "268",
-      "rubric": "median"
+      "rubric": "median",
+      "description": "median"
     },
     {
       "code": "146",
-      "rubric": "mean"
+      "rubric": "mean",
+      "description": "mean"
     },
     {
       "code": "147",
-      "rubric": "change"
+      "rubric": "change",
+      "description": "change"
     },
     {
       "code": "148",
-      "rubric": "total"
+      "rubric": "total",
+      "description": "total"
     },
     {
       "code": "149",
-      "rubric": "variation"
+      "rubric": "variation",
+      "description": "variation"
     },
     {
       "code": "521",
-      "rubric": "decrease"
+      "rubric": "decrease",
+      "description": "decrease"
     },
     {
       "code": "522",
-      "rubric": "increase"
+      "rubric": "increase",
+      "description": "increase"
     },
     {
       "code": "640",
-      "rubric": "actual"
+      "rubric": "actual",
+      "description": "actual"
     }
   ]
 }

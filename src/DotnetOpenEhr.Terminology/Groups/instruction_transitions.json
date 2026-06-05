@@ -4,83 +4,103 @@
   "entries": [
     {
       "code": "535",
-      "rubric": "initiate"
+      "rubric": "initiate",
+      "description": "initiate"
     },
     {
       "code": "536",
-      "rubric": "plan step"
+      "rubric": "plan step",
+      "description": "plan step"
     },
     {
       "code": "537",
-      "rubric": "postpone"
+      "rubric": "postpone",
+      "description": "postpone"
     },
     {
       "code": "538",
-      "rubric": "restore"
+      "rubric": "restore",
+      "description": "restore"
     },
     {
       "code": "166",
-      "rubric": "cancel"
+      "rubric": "cancel",
+      "description": "cancel"
     },
     {
       "code": "542",
-      "rubric": "postponed step"
+      "rubric": "postponed step",
+      "description": "postponed step"
     },
     {
       "code": "539",
-      "rubric": "schedule"
+      "rubric": "schedule",
+      "description": "schedule"
     },
     {
       "code": "534",
-      "rubric": "scheduled step"
+      "rubric": "scheduled step",
+      "description": "scheduled step"
     },
     {
       "code": "540",
-      "rubric": "start"
+      "rubric": "start",
+      "description": "start"
     },
     {
       "code": "541",
-      "rubric": "do"
+      "rubric": "do",
+      "description": "do"
     },
     {
       "code": "543",
-      "rubric": "active step"
+      "rubric": "active step",
+      "description": "active step"
     },
     {
       "code": "544",
-      "rubric": "suspend"
+      "rubric": "suspend",
+      "description": "suspend"
     },
     {
       "code": "545",
-      "rubric": "suspended step"
+      "rubric": "suspended step",
+      "description": "suspended step"
     },
     {
       "code": "546",
-      "rubric": "resume"
+      "rubric": "resume",
+      "description": "resume"
     },
     {
       "code": "547",
-      "rubric": "abort"
+      "rubric": "abort",
+      "description": "abort"
     },
     {
       "code": "548",
-      "rubric": "finish"
+      "rubric": "finish",
+      "description": "finish"
     },
     {
       "code": "549",
-      "rubric": "time out"
+      "rubric": "time out",
+      "description": "time out"
     },
     {
       "code": "550",
-      "rubric": "notify aborted"
+      "rubric": "notify aborted",
+      "description": "notify aborted"
     },
     {
       "code": "551",
-      "rubric": "notify completed"
+      "rubric": "notify completed",
+      "description": "notify completed"
     },
     {
       "code": "552",
-      "rubric": "notify cancelled"
+      "rubric": "notify cancelled",
+      "description": "notify cancelled"
     }
   ]
 }

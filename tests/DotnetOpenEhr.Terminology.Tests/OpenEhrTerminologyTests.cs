@@ -160,30 +160,57 @@ public class OpenEhrTerminologyTests
     }
 
     /// <summary>
-    /// L8 — sanity-pin the current state of the <c>Description</c>
-    /// plumbing. The JSON loader passes <c>e.Description</c> through to
-    /// every <see cref="TerminologyEntry"/>, but the embedded JSON
-    /// fixtures shipped with this package do not currently populate the
-    /// optional <c>description</c> field. If a future change adds
-    /// descriptions to the embedded JSON this test will fail and prompt
-    /// the team to upgrade the per-entry assertions in
-    /// <see cref="Spec_canonical_code_present_with_expected_rubric"/>.
+    /// L8 — every entry in every embedded group carries a populated
+    /// <c>description</c>. Backfilled in 0604-04 Phase 10 from the
+    /// openEHR Support Terminology spec (the spec's per-code
+    /// "Description" column maps directly onto the JSON
+    /// <c>description</c> field; <c>rubric</c> carries the same value
+    /// for compatibility with existing readers).
     /// </summary>
     [Fact]
-    public void Description_field_is_currently_unpopulated_for_all_entries()
+    public void Description_is_populated_for_every_entry_in_every_group()
     {
-        int populated = 0;
         foreach (string groupId in OpenEhrTerminology.GroupIds)
         {
             IReadOnlyDictionary<string, TerminologyEntry> group = OpenEhrTerminology.GetGroup(groupId);
             foreach (TerminologyEntry entry in group.Values)
             {
-                if (!string.IsNullOrWhiteSpace(entry.Description))
-                {
-                    populated++;
-                }
+                Assert.False(
+                    string.IsNullOrWhiteSpace(entry.Description),
+                    $"group '{groupId}', code '{entry.Code}': Description is null or whitespace.");
             }
         }
-        Assert.Equal(0, populated);
+    }
+
+    /// <summary>
+    /// L8 — per-group theory variant. Same contract as
+    /// <see cref="Description_is_populated_for_every_entry_in_every_group"/>
+    /// but per-group, so when a regression lands the failure message
+    /// names the responsible JSON file directly.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(AllGroupIds))]
+    public void Description_is_populated_for_every_entry_in_group(string groupId)
+    {
+        IReadOnlyDictionary<string, TerminologyEntry> group = OpenEhrTerminology.GetGroup(groupId);
+        foreach (TerminologyEntry entry in group.Values)
+        {
+            Assert.False(
+                string.IsNullOrWhiteSpace(entry.Description),
+                $"group '{groupId}', code '{entry.Code}': Description is null or whitespace.");
+        }
+    }
+
+    public static TheoryData<string> AllGroupIds
+    {
+        get
+        {
+            TheoryData<string> data = [];
+            foreach (string id in OpenEhrTerminology.GroupIds)
+            {
+                data.Add(id);
+            }
+            return data;
+        }
     }
 }

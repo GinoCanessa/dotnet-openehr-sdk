@@ -4,107 +4,133 @@
   "entries": [
     {
       "code": "225",
-      "rubric": "home"
+      "rubric": "home",
+      "description": "home"
     },
     {
       "code": "227",
-      "rubric": "emergency care"
+      "rubric": "emergency care",
+      "description": "emergency care"
     },
     {
       "code": "228",
-      "rubric": "primary medical care"
+      "rubric": "primary medical care",
+      "description": "primary medical care"
     },
     {
       "code": "229",
-      "rubric": "primary nursing care"
+      "rubric": "primary nursing care",
+      "description": "primary nursing care"
     },
     {
       "code": "230",
-      "rubric": "primary allied health care"
+      "rubric": "primary allied health care",
+      "description": "primary allied health care"
     },
     {
       "code": "231",
-      "rubric": "midwifery care"
+      "rubric": "midwifery care",
+      "description": "midwifery care"
     },
     {
       "code": "232",
-      "rubric": "secondary medical care"
+      "rubric": "secondary medical care",
+      "description": "secondary medical care"
     },
     {
       "code": "233",
-      "rubric": "secondary nursing care"
+      "rubric": "secondary nursing care",
+      "description": "secondary nursing care"
     },
     {
       "code": "234",
-      "rubric": "secondary allied health care"
+      "rubric": "secondary allied health care",
+      "description": "secondary allied health care"
     },
     {
       "code": "235",
-      "rubric": "complementary health care"
+      "rubric": "complementary health care",
+      "description": "complementary health care"
     },
     {
       "code": "236",
-      "rubric": "dental care"
+      "rubric": "dental care",
+      "description": "dental care"
     },
     {
       "code": "237",
-      "rubric": "nursing home care"
+      "rubric": "nursing home care",
+      "description": "nursing home care"
     },
     {
       "code": "802",
-      "rubric": "mental healthcare"
+      "rubric": "mental healthcare",
+      "description": "mental healthcare"
     },
     {
       "code": "238",
-      "rubric": "other care"
+      "rubric": "other care",
+      "description": "other care"
     },
     {
       "code": "803",
-      "rubric": "openEHR EHR"
+      "rubric": "openEHR EHR",
+      "description": "openEHR EHR"
     },
     {
       "code": "804",
-      "rubric": "openEHR Demographic"
+      "rubric": "openEHR Demographic",
+      "description": "openEHR Demographic"
     },
     {
       "code": "805",
-      "rubric": "openEHR synchronisation"
+      "rubric": "openEHR synchronisation",
+      "description": "openEHR synchronisation"
     },
     {
       "code": "806",
-      "rubric": "openEHR generic"
+      "rubric": "openEHR generic",
+      "description": "openEHR generic"
     },
     {
       "code": "807",
-      "rubric": "generic EMR"
+      "rubric": "generic EMR",
+      "description": "generic EMR"
     },
     {
       "code": "808",
-      "rubric": "other"
+      "rubric": "other",
+      "description": "other"
     },
     {
       "code": "809",
-      "rubric": "cancel"
+      "rubric": "cancel",
+      "description": "cancel"
     },
     {
       "code": "810",
-      "rubric": "resend"
+      "rubric": "resend",
+      "description": "resend"
     },
     {
       "code": "811",
-      "rubric": "send new"
+      "rubric": "send new",
+      "description": "send new"
     },
     {
       "code": "812",
-      "rubric": "any change"
+      "rubric": "any change",
+      "description": "any change"
     },
     {
       "code": "813",
-      "rubric": "correction"
+      "rubric": "correction",
+      "description": "correction"
     },
     {
       "code": "814",
-      "rubric": "update"
+      "rubric": "update",
+      "description": "update"
     }
   ]
 }
