@@ -81,7 +81,7 @@ public static class OdinParser
                     $"Expected {what} ({kind}) but found {t.Kind} '{Truncate(t.Text)}'.",
                     t.Line,
                     t.Column,
-                    Truncate(t.Text));
+                    BuildSnippet(Lexer.Source, t.Line, t.Column));
             }
             HasCurrent = false;
         }
@@ -95,12 +95,82 @@ public static class OdinParser
                     $"Unexpected trailing content: {t.Kind} '{Truncate(t.Text)}'.",
                     t.Line,
                     t.Column,
-                    Truncate(t.Text));
+                    BuildSnippet(Lexer.Source, t.Line, t.Column));
             }
         }
 
         private static string Truncate(string s)
             => s.Length > 32 ? s.Substring(0, 32) + "…" : s;
+    }
+
+    /// <summary>
+    /// Resolves a 1-based <paramref name="line"/>/<paramref name="column"/>
+    /// to a source offset by walking newlines, then returns up to
+    /// <paramref name="maxLen"/> characters of source starting there. CR
+    /// and LF in the returned slice are escaped (<c>\\r</c>, <c>\\n</c>)
+    /// so the snippet stays single-line in error messages. Returns the
+    /// empty string when the position is out of range — callers pass the
+    /// result as <c>OdinParseException</c>'s <c>snippet</c> argument and
+    /// the formatter already drops the <c>(near '…')</c> suffix when the
+    /// snippet is null.
+    /// </summary>
+    private static string BuildSnippet(ReadOnlySpan<char> src, int line, int column, int maxLen = 24)
+    {
+        if (line <= 0 || column <= 0)
+        {
+            return string.Empty;
+        }
+        int offset = 0;
+        int currentLine = 1;
+        while (currentLine < line && offset < src.Length)
+        {
+            char c = src[offset];
+            if (c == '\r')
+            {
+                currentLine++;
+                offset++;
+                if (offset < src.Length && src[offset] == '\n')
+                {
+                    offset++;
+                }
+            }
+            else if (c == '\n')
+            {
+                currentLine++;
+                offset++;
+            }
+            else
+            {
+                offset++;
+            }
+        }
+        if (currentLine != line)
+        {
+            return string.Empty;
+        }
+        offset += column - 1;
+        if (offset < 0 || offset >= src.Length)
+        {
+            return string.Empty;
+        }
+        int take = Math.Min(maxLen, src.Length - offset);
+        ReadOnlySpan<char> slice = src.Slice(offset, take);
+        // Escape CR / LF so the snippet stays single-line.
+        if (slice.IndexOfAny('\r', '\n') < 0)
+        {
+            return slice.ToString();
+        }
+        System.Text.StringBuilder sb = new(slice.Length + 4);
+        foreach (char ch in slice)
+        {
+            switch (ch)
+            {
+                case '\r': sb.Append("\\r"); break;
+                case '\n': sb.Append("\\n"); break;
+                default: sb.Append(ch); break;
+            }
+        }
+        return sb.ToString();
     }
 
     /// <summary>
@@ -144,7 +214,11 @@ public static class OdinParser
             OdinTokenSnapshot ident = state.Peek();
             if (ident.Kind != OdinTokenKind.Identifier)
             {
-                throw new OdinParseException("Expected schema identifier after '@'.", ident.Line, ident.Column);
+                throw new OdinParseException(
+                    "Expected schema identifier after '@'.",
+                    ident.Line,
+                    ident.Column,
+                    BuildSnippet(state.Lexer.Source, ident.Line, ident.Column));
             }
             state.Consume();
             state.Expect(OdinTokenKind.Equals, "'='");
@@ -154,7 +228,8 @@ public static class OdinParser
             throw new OdinParseException(
                 "Schema identifier headers are not supported by this ODIN parser.",
                 ident.Line,
-                ident.Column);
+                ident.Column,
+                BuildSnippet(state.Lexer.Source, ident.Line, ident.Column));
         }
         if (first.Kind == OdinTokenKind.LeftAngle)
         {
@@ -237,7 +312,8 @@ public static class OdinParser
                     throw new OdinParseException(
                         $"Unexpected identifier '{t.Text}'; expected '=' to start an attribute.",
                         t.Line,
-                        t.Column);
+                        t.Column,
+                        BuildSnippet(state.Lexer.Source, t.Line, t.Column));
                 }
             default:
                 return ParseLeafOrListStartingAt(ref state, t);
@@ -347,7 +423,8 @@ public static class OdinParser
                 throw new OdinParseException(
                     $"Duplicate hash key '{keyText}' (validity rule VDOBU).",
                     k.Line,
-                    k.Column);
+                    k.Column,
+                    BuildSnippet(state.Lexer.Source, k.Line, k.Column));
             }
             state.Expect(OdinTokenKind.Equals, "'='");
             entries[keyText] = ParseTypedBlock(ref state);
@@ -417,7 +494,8 @@ public static class OdinParser
                 throw new OdinParseException(
                     $"Expected '..' after '*' in interval; found {afterStar.Kind} '{afterStar.Text}'.",
                     afterStar.Line,
-                    afterStar.Column);
+                    afterStar.Column,
+                    BuildSnippet(state.Lexer.Source, afterStar.Line, afterStar.Column));
             }
             state.Consume();
             OdinTokenSnapshot beforeUpper = state.Peek();
@@ -426,7 +504,8 @@ public static class OdinParser
                 throw new OdinParseException(
                     "Interval '|*..*|' is not valid: at least one bound must be finite.",
                     beforeUpper.Line,
-                    beforeUpper.Column);
+                    beforeUpper.Column,
+                    BuildSnippet(state.Lexer.Source, beforeUpper.Line, beforeUpper.Column));
             }
             if (beforeUpper.Kind == OdinTokenKind.LeftAngle)
             {
@@ -473,7 +552,8 @@ public static class OdinParser
             throw new OdinParseException(
                 $"Expected '..' or '|' inside interval, found {afterFirst.Kind} '{afterFirst.Text}'.",
                 afterFirst.Line,
-                afterFirst.Column);
+                afterFirst.Column,
+                BuildSnippet(state.Lexer.Source, afterFirst.Line, afterFirst.Column));
         }
         state.Consume();
         OdinTokenSnapshot beforeUpper2 = state.Peek();
@@ -502,7 +582,8 @@ public static class OdinParser
             throw new OdinParseException(
                 $"Expected '*' as unbounded upper sentinel; found {t.Kind} '{t.Text}'.",
                 t.Line,
-                t.Column);
+                t.Column,
+                BuildSnippet(state.Lexer.Source, t.Line, t.Column));
         }
         state.Consume();
     }
@@ -515,7 +596,8 @@ public static class OdinParser
             throw new OdinParseException(
                 $"Expected closing '|' for interval opened at line {openPipe.Line}; found {t.Kind} '{t.Text}'.",
                 t.Line,
-                t.Column);
+                t.Column,
+                BuildSnippet(state.Lexer.Source, t.Line, t.Column));
         }
         state.Consume();
     }
@@ -556,7 +638,8 @@ public static class OdinParser
             throw new OdinParseException(
                 $"Expected attribute name; found {t.Kind} '{t.Text}'.",
                 t.Line,
-                t.Column);
+                t.Column,
+                BuildSnippet(state.Lexer.Source, t.Line, t.Column));
         }
         state.Consume();
         return ParseAttributeBodyStartingWith(ref state, t);
@@ -596,7 +679,8 @@ public static class OdinParser
             throw new OdinParseException(
                 $"Duplicate attribute '{name.Text}' (validity rule VDATU).",
                 name.Line,
-                name.Column);
+                name.Column,
+                BuildSnippet(state.Lexer.Source, name.Line, name.Column));
         }
         state.Expect(OdinTokenKind.Equals, "'='");
         OdinValue value = ParseTypedBlock(ref state);
@@ -612,7 +696,8 @@ public static class OdinParser
             throw new OdinParseException(
                 $"Expected '<' to open a block; found {t.Kind} '{t.Text}'.",
                 t.Line,
-                t.Column);
+                t.Column,
+                BuildSnippet(state.Lexer.Source, t.Line, t.Column));
         }
         state.Consume();
         OdinValue inner = ParseBlockContents(ref state);
@@ -622,7 +707,8 @@ public static class OdinParser
             throw new OdinParseException(
                 $"Expected '>' to close block; found {close.Kind} '{close.Text}'.",
                 close.Line,
-                close.Column);
+                close.Column,
+                BuildSnippet(state.Lexer.Source, close.Line, close.Column));
         }
         state.Consume();
         if (typeMarker is not null)
@@ -668,7 +754,8 @@ public static class OdinParser
                     throw new OdinParseException(
                         $"Expected '[' to open a hash key; found {t.Kind} '{t.Text}'.",
                         t.Line,
-                        t.Column);
+                        t.Column,
+                        BuildSnippet(state.Lexer.Source, t.Line, t.Column));
                 }
                 break;
             }
@@ -686,7 +773,8 @@ public static class OdinParser
                 throw new OdinParseException(
                     $"Duplicate hash key '{keyText}' (validity rule VDOBU).",
                     keyToken.Line,
-                    keyToken.Column);
+                    keyToken.Column,
+                    BuildSnippet(state.Lexer.Source, keyToken.Line, keyToken.Column));
             }
             state.Expect(OdinTokenKind.Equals, "'='");
             OdinValue value = ParseTypedBlock(ref state);
@@ -731,7 +819,8 @@ public static class OdinParser
                 throw new OdinParseException(
                     $"Expected primitive key inside '[...]'; found {t.Kind} '{t.Text}'.",
                     t.Line,
-                    t.Column);
+                    t.Column,
+                    BuildSnippet(state.Lexer.Source, t.Line, t.Column));
         }
     }
 
@@ -782,25 +871,25 @@ public static class OdinParser
                 return new OdinString(t.Text);
             case OdinTokenKind.IntegerLiteral:
                 state.Consume();
-                return new OdinInteger(ParseInteger(t));
+                return new OdinInteger(ParseInteger(t, state.Lexer.Source));
             case OdinTokenKind.RealLiteral:
                 state.Consume();
-                return new OdinReal(ParseReal(t));
+                return new OdinReal(ParseReal(t, state.Lexer.Source));
             case OdinTokenKind.BooleanLiteral:
                 state.Consume();
                 return new OdinBoolean(string.Equals(t.Text, "true", StringComparison.OrdinalIgnoreCase));
             case OdinTokenKind.DateLiteral:
                 state.Consume();
-                return ParseDateToken(t);
+                return ParseDateToken(t, state.Lexer.Source);
             case OdinTokenKind.TimeLiteral:
                 state.Consume();
-                return ParseTimeToken(t);
+                return ParseTimeToken(t, state.Lexer.Source);
             case OdinTokenKind.DateTimeLiteral:
                 state.Consume();
-                return ParseDateTimeToken(t);
+                return ParseDateTimeToken(t, state.Lexer.Source);
             case OdinTokenKind.DurationLiteral:
                 state.Consume();
-                return ParseDurationToken(t);
+                return ParseDurationToken(t, state.Lexer.Source);
             case OdinTokenKind.LeftBracket:
                 return ParseBracketStart(ref state);
             case OdinTokenKind.Pipe:
@@ -809,11 +898,12 @@ public static class OdinParser
                 throw new OdinParseException(
                     $"Expected a leaf value; found {t.Kind} '{t.Text}'.",
                     t.Line,
-                    t.Column);
+                    t.Column,
+                    BuildSnippet(state.Lexer.Source, t.Line, t.Column));
         }
     }
 
-    private static long ParseInteger(OdinTokenSnapshot t)
+    private static long ParseInteger(OdinTokenSnapshot t, ReadOnlySpan<char> source)
     {
         // GRAMMAR: spec 7.1.3 allows '25', '300000', '29e6'.
         string text = t.Text;
@@ -835,24 +925,36 @@ public static class OdinParser
         }
         catch (OverflowException)
         {
-            throw new OdinParseException($"Integer literal '{text}' overflows Int64.", t.Line, t.Column);
+            throw new OdinParseException(
+                $"Integer literal '{text}' overflows Int64.",
+                t.Line,
+                t.Column,
+                BuildSnippet(source, t.Line, t.Column));
         }
         catch (FormatException)
         {
-            throw new OdinParseException($"Malformed integer literal '{text}'.", t.Line, t.Column);
+            throw new OdinParseException(
+                $"Malformed integer literal '{text}'.",
+                t.Line,
+                t.Column,
+                BuildSnippet(source, t.Line, t.Column));
         }
     }
 
-    private static double ParseReal(OdinTokenSnapshot t)
+    private static double ParseReal(OdinTokenSnapshot t, ReadOnlySpan<char> source)
     {
         if (!double.TryParse(t.Text, NumberStyles.Float, CultureInfo.InvariantCulture, out double value))
         {
-            throw new OdinParseException($"Malformed real literal '{t.Text}'.", t.Line, t.Column);
+            throw new OdinParseException(
+                $"Malformed real literal '{t.Text}'.",
+                t.Line,
+                t.Column,
+                BuildSnippet(source, t.Line, t.Column));
         }
         return value;
     }
 
-    private static OdinValue ParseDateToken(OdinTokenSnapshot t)
+    private static OdinValue ParseDateToken(OdinTokenSnapshot t, ReadOnlySpan<char> source)
     {
         // SPEC: ODIN partial-form dates using '??' are not representable
         // as IsoDate; fall back to OdinString preserving the lexical form.
@@ -862,12 +964,16 @@ public static class OdinParser
         }
         if (!IsoDate.TryParse(t.Text.AsSpan(), out IsoDate? date))
         {
-            throw new OdinParseException($"Malformed date literal '{t.Text}'.", t.Line, t.Column);
+            throw new OdinParseException(
+                $"Malformed date literal '{t.Text}'.",
+                t.Line,
+                t.Column,
+                BuildSnippet(source, t.Line, t.Column));
         }
         return new OdinDate(date);
     }
 
-    private static OdinValue ParseTimeToken(OdinTokenSnapshot t)
+    private static OdinValue ParseTimeToken(OdinTokenSnapshot t, ReadOnlySpan<char> source)
     {
         if (t.Text.IndexOf('?') >= 0)
         {
@@ -875,12 +981,16 @@ public static class OdinParser
         }
         if (!IsoTime.TryParse(t.Text.AsSpan(), out IsoTime? time))
         {
-            throw new OdinParseException($"Malformed time literal '{t.Text}'.", t.Line, t.Column);
+            throw new OdinParseException(
+                $"Malformed time literal '{t.Text}'.",
+                t.Line,
+                t.Column,
+                BuildSnippet(source, t.Line, t.Column));
         }
         return new OdinTime(time);
     }
 
-    private static OdinValue ParseDateTimeToken(OdinTokenSnapshot t)
+    private static OdinValue ParseDateTimeToken(OdinTokenSnapshot t, ReadOnlySpan<char> source)
     {
         if (t.Text.IndexOf('?') >= 0)
         {
@@ -888,16 +998,24 @@ public static class OdinParser
         }
         if (!IsoDateTime.TryParse(t.Text.AsSpan(), out IsoDateTime? dt))
         {
-            throw new OdinParseException($"Malformed date-time literal '{t.Text}'.", t.Line, t.Column);
+            throw new OdinParseException(
+                $"Malformed date-time literal '{t.Text}'.",
+                t.Line,
+                t.Column,
+                BuildSnippet(source, t.Line, t.Column));
         }
         return new OdinDateTime(dt);
     }
 
-    private static OdinValue ParseDurationToken(OdinTokenSnapshot t)
+    private static OdinValue ParseDurationToken(OdinTokenSnapshot t, ReadOnlySpan<char> source)
     {
         if (!IsoDuration.TryParse(t.Text.AsSpan(), out IsoDuration? d))
         {
-            throw new OdinParseException($"Malformed duration literal '{t.Text}'.", t.Line, t.Column);
+            throw new OdinParseException(
+                $"Malformed duration literal '{t.Text}'.",
+                t.Line,
+                t.Column,
+                BuildSnippet(source, t.Line, t.Column));
         }
         return new OdinDuration(d);
     }
