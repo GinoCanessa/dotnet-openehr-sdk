@@ -1,5 +1,8 @@
 using System.IO;
+using System.Xml;
+using System.Xml.Linq;
 using DotnetOpenEhr.Bmm;
+using DotnetOpenEhr.Bmm.Rm;
 
 namespace DotnetOpenEhr.Templates;
 
@@ -32,7 +35,7 @@ public static class Opt14XmlParser
     public static OperationalTemplate Load(Stream xml, ParseOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(xml);
-        throw new NotImplementedException("Opt14XmlParser is being implemented; see scratch/0605-01/plan.md");
+        return Load(xml, OpenEhrRmBmm.LoadDefault(), options);
     }
 
     /// <summary>
@@ -44,7 +47,8 @@ public static class Opt14XmlParser
     {
         ArgumentNullException.ThrowIfNull(xml);
         ArgumentNullException.ThrowIfNull(rmBmm);
-        throw new NotImplementedException("Opt14XmlParser is being implemented; see scratch/0605-01/plan.md");
+        XDocument doc = LoadDocument(xml);
+        return Opt14XmlReader.ParseCore(doc, rmBmm, options ?? new ParseOptions());
     }
 
     /// <summary>
@@ -54,7 +58,7 @@ public static class Opt14XmlParser
     public static OperationalTemplate Load(string filePath, ParseOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(filePath);
-        throw new NotImplementedException("Opt14XmlParser is being implemented; see scratch/0605-01/plan.md");
+        return Load(filePath, OpenEhrRmBmm.LoadDefault(), options);
     }
 
     /// <summary>
@@ -65,7 +69,8 @@ public static class Opt14XmlParser
     {
         ArgumentNullException.ThrowIfNull(filePath);
         ArgumentNullException.ThrowIfNull(rmBmm);
-        throw new NotImplementedException("Opt14XmlParser is being implemented; see scratch/0605-01/plan.md");
+        using FileStream fs = File.OpenRead(filePath);
+        return Load(fs, rmBmm, options);
     }
 
     /// <summary>
@@ -75,7 +80,7 @@ public static class Opt14XmlParser
     public static OperationalTemplate Parse(string xmlText, ParseOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(xmlText);
-        throw new NotImplementedException("Opt14XmlParser is being implemented; see scratch/0605-01/plan.md");
+        return Parse(xmlText, OpenEhrRmBmm.LoadDefault(), options);
     }
 
     /// <summary>
@@ -86,6 +91,37 @@ public static class Opt14XmlParser
     {
         ArgumentNullException.ThrowIfNull(xmlText);
         ArgumentNullException.ThrowIfNull(rmBmm);
-        throw new NotImplementedException("Opt14XmlParser is being implemented; see scratch/0605-01/plan.md");
+        using StringReader sr = new(xmlText);
+        XDocument doc = LoadDocument(sr);
+        return Opt14XmlReader.ParseCore(doc, rmBmm, options ?? new ParseOptions());
+    }
+
+    private static XDocument LoadDocument(Stream xml)
+    {
+        // DtdProcessing.Prohibit + no resolver matches the repo's
+        // existing safe-XML stance and keeps the AOT publish clean.
+        XmlReaderSettings settings = new()
+        {
+            DtdProcessing = DtdProcessing.Prohibit,
+            XmlResolver = null,
+            IgnoreComments = true,
+            IgnoreProcessingInstructions = true,
+        };
+        using XmlReader reader = XmlReader.Create(xml, settings);
+        return XDocument.Load(reader, LoadOptions.SetLineInfo);
+    }
+
+    private static XDocument LoadDocument(TextReader text)
+    {
+        XmlReaderSettings settings = new()
+        {
+            DtdProcessing = DtdProcessing.Prohibit,
+            XmlResolver = null,
+            IgnoreComments = true,
+            IgnoreProcessingInstructions = true,
+        };
+        using XmlReader reader = XmlReader.Create(text, settings);
+        return XDocument.Load(reader, LoadOptions.SetLineInfo);
     }
 }
+

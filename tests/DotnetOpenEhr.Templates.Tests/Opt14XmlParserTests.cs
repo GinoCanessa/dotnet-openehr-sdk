@@ -45,26 +45,24 @@ public sealed partial class Opt14XmlParserTests
     [Fact]
     public void Public_surface_exists()
     {
-        // The six advertised entry points should all be reachable;
-        // until the parser is implemented they must throw
-        // NotImplementedException — not any other exception (which
-        // would mean the stub did real work before throwing).
+        // The six advertised entry points should all be reachable.
+        // We don't care here what each one throws on bad input — only
+        // that the public class shape, accessibility, and parameter
+        // surface match what the README/feature request promise.
         Assert.True(typeof(Opt14XmlParser).IsClass);
         Assert.True(typeof(Opt14XmlParser).IsAbstract && typeof(Opt14XmlParser).IsSealed,
             "Opt14XmlParser must be a public static class.");
 
-        using MemoryStream ms = new([1, 2, 3]);
-        Assert.Throws<System.NotImplementedException>(() => Opt14XmlParser.Load(ms));
-        Assert.Throws<System.NotImplementedException>(() => Opt14XmlParser.Load(ms, s_rmBmm));
-        // For the filePath overloads the contract is "throw before
-        // doing any I/O" — use a path that would FileNotFoundException
-        // if the stub ever tried to open it, and assert we instead
-        // see NotImplementedException.
-        const string bogusPath = "definitely_does_not_exist_xyz.opt";
-        Assert.Throws<System.NotImplementedException>(() => Opt14XmlParser.Load(bogusPath));
-        Assert.Throws<System.NotImplementedException>(() => Opt14XmlParser.Load(bogusPath, s_rmBmm));
-        Assert.Throws<System.NotImplementedException>(() => Opt14XmlParser.Parse("<x/>"));
-        Assert.Throws<System.NotImplementedException>(() => Opt14XmlParser.Parse("<x/>", s_rmBmm));
+        System.Reflection.MethodInfo[] methods = typeof(Opt14XmlParser).GetMethods(
+            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+        Assert.Equal(2, methods.Count(m => m.Name == "Load" && m.GetParameters()[0].ParameterType == typeof(System.IO.Stream)));
+        Assert.Equal(2, methods.Count(m => m.Name == "Load" && m.GetParameters()[0].ParameterType == typeof(string)));
+        Assert.Equal(2, methods.Count(m => m.Name == "Parse"));
+
+        // Null-guard contract still holds on every overload.
+        Assert.Throws<System.ArgumentNullException>(() => Opt14XmlParser.Load((System.IO.Stream)null!));
+        Assert.Throws<System.ArgumentNullException>(() => Opt14XmlParser.Load((string)null!));
+        Assert.Throws<System.ArgumentNullException>(() => Opt14XmlParser.Parse((string)null!));
     }
 
     [Fact]
