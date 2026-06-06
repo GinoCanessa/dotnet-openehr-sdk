@@ -165,11 +165,25 @@ internal static class Opt14XmlReader
             result.Definition = definitionTree;
         }
 
+        // ----- Terminology harvest (Phase 4) --------------------------
+        int termDefinitionElementsSeen = Opt14TerminologyReader.Harvest(
+            root, result, archetypeRootSources, options.Lenient);
+
+        // Value-preservation invariant: if the document declared at
+        // least one <term_definitions> element AND we built a non-empty
+        // definition tree, we must have landed *something* in either
+        // result.Terminology or result.ComponentTerminologies.
+        if (termDefinitionElementsSeen > 0
+            && !string.IsNullOrEmpty(result.Definition.RmTypeName)
+            && result.Terminology.TermDefinitions.Count == 0
+            && result.ComponentTerminologies.Count == 0)
+        {
+            throw new InvalidOperationException(
+                "OPT1.4 document declared <term_definitions> elements but the terminology " +
+                "harvest produced no entries — this would silently drop terminology data.");
+        }
+
         // ----- Initialize: materialise Nodes + FLAT index. ------------
-        // Phase 4 will run between Definition assembly and this call to
-        // harvest terminology; until then Initialize sees Definition
-        // alone, which is enough to satisfy criteria (a), (b), (d).
-        _ = archetypeRootSources;
         result.Initialize(rmBmm);
         return result;
     }

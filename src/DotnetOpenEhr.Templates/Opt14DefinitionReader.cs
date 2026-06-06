@@ -65,7 +65,10 @@ internal static class Opt14DefinitionReader
     // via PopulateCObjectCommon.
     // ------------------------------------------------------------------
 
-    private static CObject BuildObject(XElement el, bool lenient)
+    private static CObject BuildObject(
+        XElement el,
+        bool lenient,
+        List<(XElement Source, CComplexObject Node)>? archetypeRootSources)
     {
         string? xsi = el.Attribute(Opt14XmlReader.Xsi + "type")?.Value;
         // Strip any "xs:"-style namespace prefix some emitters add.
@@ -73,12 +76,12 @@ internal static class Opt14DefinitionReader
 
         CObject obj = discriminator switch
         {
-            "C_COMPLEX_OBJECT" or "" => BuildComplex(el, lenient),
-            "C_ARCHETYPE_ROOT" => BuildArchetypeRoot(el, lenient),
+            "C_COMPLEX_OBJECT" or "" => BuildComplex(el, lenient, archetypeRootSources),
+            "C_ARCHETYPE_ROOT" => BuildArchetypeRoot(el, lenient, archetypeRootSources),
             "ARCHETYPE_SLOT" => BuildArchetypeSlot(el, lenient),
             "ARCHETYPE_INTERNAL_REF" => BuildInternalRef(el, lenient),
             "C_COMPLEX_OBJECT_PROXY" => BuildComplexProxy(el, lenient),
-            "C_PRIMITIVE_OBJECT" => BuildPrimitiveWrapper(el, lenient),
+            "C_PRIMITIVE_OBJECT" => BuildPrimitiveWrapper(el, lenient, archetypeRootSources),
             "C_STRING" => ReadCString(el),
             "C_INTEGER" => ReadCInteger(el),
             "C_REAL" => ReadCReal(el),
@@ -112,14 +115,20 @@ internal static class Opt14DefinitionReader
         return obj;
     }
 
-    private static CComplexObject BuildComplex(XElement el, bool lenient)
+    private static CComplexObject BuildComplex(
+        XElement el,
+        bool lenient,
+        List<(XElement Source, CComplexObject Node)>? archetypeRootSources)
     {
         CComplexObject cco = new();
-        ReadAttributesInto(el, cco, lenient, null);
+        ReadAttributesInto(el, cco, lenient, archetypeRootSources);
         return cco;
     }
 
-    private static CArchetypeRoot BuildArchetypeRoot(XElement el, bool lenient)
+    private static CArchetypeRoot BuildArchetypeRoot(
+        XElement el,
+        bool lenient,
+        List<(XElement Source, CComplexObject Node)>? archetypeRootSources)
     {
         CArchetypeRoot root = new();
         string? archetypeRef = Opt14XmlReader.FindChildValue(
@@ -128,7 +137,7 @@ internal static class Opt14DefinitionReader
         {
             root.ArchetypeRef = archetypeRef;
         }
-        ReadAttributesInto(el, root, lenient, null);
+        ReadAttributesInto(el, root, lenient, archetypeRootSources);
         return root;
     }
 
@@ -185,7 +194,10 @@ internal static class Opt14DefinitionReader
     /// <c>node_id</c> / <c>occurrences</c> on top via
     /// <see cref="PopulateCObjectCommon"/>.
     /// </summary>
-    private static CObject BuildPrimitiveWrapper(XElement el, bool lenient)
+    private static CObject BuildPrimitiveWrapper(
+        XElement el,
+        bool lenient,
+        List<(XElement Source, CComplexObject Node)>? archetypeRootSources)
     {
         XElement? item = Opt14XmlReader.FindChild(el, "item", lenient);
         if (item is null)
@@ -194,7 +206,7 @@ internal static class Opt14DefinitionReader
             // outer common-member copy still produces a valid CObject.
             return new CString();
         }
-        return BuildObject(item, lenient);
+        return BuildObject(item, lenient, archetypeRootSources);
     }
 
     private static void PopulateCObjectCommon(XElement el, CObject obj, bool lenient)
@@ -305,7 +317,7 @@ internal static class Opt14DefinitionReader
     {
         try
         {
-            CObject obj = BuildObject(childEl, lenient);
+            CObject obj = BuildObject(childEl, lenient, archetypeRootSources);
             if (obj is CArchetypeRoot root && archetypeRootSources is not null)
             {
                 archetypeRootSources.Add((childEl, root));
