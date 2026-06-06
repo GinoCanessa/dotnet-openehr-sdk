@@ -1,5 +1,6 @@
 using System.Xml;
 using System.Xml.Linq;
+using DotnetOpenEhr.Archetypes.Aom2.Constraint;
 using DotnetOpenEhr.Archetypes.Aom2.Resource;
 using DotnetOpenEhr.Archetypes.Identification;
 using DotnetOpenEhr.Bmm;
@@ -153,10 +154,23 @@ internal static class Opt14XmlReader
             }
         }
 
-        // Phase 2: Definition recursion and Terminology harvesting are
-        // intentionally deferred to Phases 3 and 4. The Initialize call
-        // is deferred along with them.
-        _ = rmBmm;
+        // ----- Definition tree (Phase 3) ------------------------------
+        List<(XElement Source, CComplexObject Node)> archetypeRootSources = [];
+        if (definitionEl is not null)
+        {
+            CComplexObject definitionTree = Opt14DefinitionReader.Read(
+                definitionEl,
+                options.Lenient,
+                archetypeRootSources);
+            result.Definition = definitionTree;
+        }
+
+        // ----- Initialize: materialise Nodes + FLAT index. ------------
+        // Phase 4 will run between Definition assembly and this call to
+        // harvest terminology; until then Initialize sees Definition
+        // alone, which is enough to satisfy criteria (a), (b), (d).
+        _ = archetypeRootSources;
+        result.Initialize(rmBmm);
         return result;
     }
 
