@@ -12,6 +12,22 @@ unstable** and may change between alphas.
 
 ### Added
 
+- **`Opt14XmlParser` — OPT 1.4 XML loader for the Templates package.**
+  Reads the canonical openEHR OPT 1.4 XML serialisation produced by
+  every authoring tool (CKM, Better Studio, EHRbase Template
+  Repository, openFHIR KDS) and returns the same
+  `OperationalTemplate` shape `Opt2Parser` returns from ADL2-text, so
+  `ITemplateSchema`, the template-aware FLAT serializer, and the
+  validator work unchanged across both source formats. Translates
+  the full XML graph into AOM2 (xsi:type-dispatched, including the
+  `C_PRIMITIVE_OBJECT` envelope unwrap), harvests per-archetype
+  terminology from every `C_ARCHETYPE_ROOT` plus any top-level
+  `<component_ontologies>` / `<component_terminologies>` block,
+  and exposes a `ParseOptions { Lenient }` toggle for vendor /
+  namespace drift. Strict-mode errors raise `Opt14ParseException`
+  with `IXmlLineInfo` co-ordinates. AOT/trim-safe (uses
+  `XDocument` / `XmlReader` only; no reflection or
+  `XmlSerializer`). *(0605-01)*
 - **ADR 0001 — `DvOrdered<T>` CRTP cascade permanently deferred.**
   `docs/architecture/0001-no-dvordered-crtp-cascade.md` records the
   2026-06-05 decision to keep `ReferenceRange.Range` as
