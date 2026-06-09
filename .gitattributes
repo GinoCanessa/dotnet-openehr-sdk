@@ -1,0 +1,5 @@
+# Treat embedded OPT 1.4 XML test fixtures as binary so Git does not
+# rewrite LF → CRLF on checkout. This keeps the bytes byte-identical
+# to the upstream openFHIR copies referenced in
+# `tests/DotnetOpenEhr.Templates.Tests/Fixtures/Opt14/ATTRIBUTION.md`.
+tests/DotnetOpenEhr.Templates.Tests/Fixtures/Opt14/*.opt binary

@@ -242,6 +242,68 @@ DotnetOpenEhr.Templates.OperationalTemplate opt2 =
     DotnetOpenEhr.Templates.Opt2Parser.Parse(opt2Src);
 System.Console.WriteLine($"opt2: {opt2.ArchetypeId} nodes={opt2.Nodes.Count}");
 
+// DotnetOpenEhr.Templates / Opt14XmlParser: parse a tiny inline OPT1.4
+// document and report its node count. Kept structurally equivalent to
+// the OPT2 smoke above (OBSERVATION → HISTORY → POINT_EVENT → ITEM_TREE
+// → ELEMENT → DV_TEXT) so a regression in either parser surfaces an
+// asymmetric node count.
+const string opt14Src = """
+    <?xml version="1.0" encoding="UTF-8"?>
+    <template xmlns="http://schemas.openehr.org/v1">
+        <language>
+            <terminology_id><value>ISO_639-1</value></terminology_id>
+            <code_string>en</code_string>
+        </language>
+        <description><lifecycle_state>unmanaged</lifecycle_state></description>
+        <template_id><value>aot_smoke_opt14</value></template_id>
+        <concept>aot_smoke_opt14</concept>
+        <definition>
+            <rm_type_name>OBSERVATION</rm_type_name>
+            <node_id>at0000</node_id>
+            <attributes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="C_SINGLE_ATTRIBUTE">
+                <rm_attribute_name>data</rm_attribute_name>
+                <children xsi:type="C_COMPLEX_OBJECT">
+                    <rm_type_name>HISTORY</rm_type_name>
+                    <node_id>at0001</node_id>
+                    <attributes xsi:type="C_MULTIPLE_ATTRIBUTE">
+                        <rm_attribute_name>events</rm_attribute_name>
+                        <children xsi:type="C_COMPLEX_OBJECT">
+                            <rm_type_name>POINT_EVENT</rm_type_name>
+                            <node_id>at0002</node_id>
+                            <attributes xsi:type="C_SINGLE_ATTRIBUTE">
+                                <rm_attribute_name>data</rm_attribute_name>
+                                <children xsi:type="C_COMPLEX_OBJECT">
+                                    <rm_type_name>ITEM_TREE</rm_type_name>
+                                    <node_id>at0003</node_id>
+                                    <attributes xsi:type="C_MULTIPLE_ATTRIBUTE">
+                                        <rm_attribute_name>items</rm_attribute_name>
+                                        <children xsi:type="C_COMPLEX_OBJECT">
+                                            <rm_type_name>ELEMENT</rm_type_name>
+                                            <node_id>at0004</node_id>
+                                            <attributes xsi:type="C_SINGLE_ATTRIBUTE">
+                                                <rm_attribute_name>value</rm_attribute_name>
+                                                <children xsi:type="C_COMPLEX_OBJECT">
+                                                    <rm_type_name>DV_TEXT</rm_type_name>
+                                                    <node_id>at0005</node_id>
+                                                </children>
+                                            </attributes>
+                                        </children>
+                                    </attributes>
+                                </children>
+                            </attributes>
+                        </children>
+                    </attributes>
+                </children>
+            </attributes>
+            <archetype_id><value>openEHR-EHR-OBSERVATION.aot_smoke_opt14.v1</value></archetype_id>
+            <term_definitions code="at0000"><items id="text">AOT smoke 1.4</items></term_definitions>
+        </definition>
+    </template>
+    """;
+DotnetOpenEhr.Templates.OperationalTemplate opt14 =
+    DotnetOpenEhr.Templates.Opt14XmlParser.Parse(opt14Src);
+System.Console.WriteLine($"opt14: {opt14.ArchetypeId} nodes={opt14.Nodes.Count}");
+
 // DotnetOpenEhr.Templates / DotnetOpenEhr.Serialization.Json.Flat:
 // schema-driven FLAT round-trip. Build a tiny COMPOSITION OPT2 +
 // matching Composition, FLAT-serialise using the template as schema,

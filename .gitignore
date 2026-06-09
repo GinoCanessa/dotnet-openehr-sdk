@@ -286,6 +286,11 @@ node_modules/
 # Visual Studio 6 workspace options file
 *.opt
 
+# OPT 1.4 XML test fixtures (despite the `.opt` extension above —
+# openEHR's OPT 1.4 serialization predates VS6 conventions and uses
+# the same suffix).
+!tests/DotnetOpenEhr.Templates.Tests/Fixtures/Opt14/*.opt
+
 # Visual Studio 6 auto-generated workspace file (contains which files were open etc.)
 *.vbw
 

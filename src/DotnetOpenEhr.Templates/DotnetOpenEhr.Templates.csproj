@@ -6,13 +6,14 @@
     <AssemblyName>DotnetOpenEhr.Templates</AssemblyName>
     <PackageId>DotnetOpenEhr.Templates</PackageId>
     <Description>
-      openEHR Operational Template (OPT2) parser and concrete
-      OperationalTemplate model for .NET. Reuses the ADL2 parser from
-      DotnetOpenEhr.Archetypes for the bulk of the AOM2 tree and adds
-      OPT2-specific extensions (component_terminologies) plus an
-      ITemplateSchema implementation suitable for driving the
-      template-aware FLAT serializer. Trim-safe and Native-AOT-safe.
-      Single TFM net10.0.
+      openEHR Operational Template parser and concrete OperationalTemplate
+      model for .NET. Reads both OPT2 (ADL2-text via Opt2Parser, on top of
+      the ADL2 parser from DotnetOpenEhr.Archetypes) and OPT1.4 (XML via
+      Opt14XmlParser, the format every authoring tool emits — CKM, Better
+      Studio, EHRbase, openFHIR KDS). Both parsers return the same
+      OperationalTemplate, so the ITemplateSchema seam consumed by the
+      template-aware FLAT serializer and the validator works uniformly
+      across formats. Trim-safe and Native-AOT-safe. Single TFM net10.0.
     </Description>
   </PropertyGroup>
 

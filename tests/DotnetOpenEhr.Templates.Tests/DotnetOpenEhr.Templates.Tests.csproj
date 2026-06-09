@@ -25,6 +25,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Fixtures\Opt2\*.opt2" />
     <EmbeddedResource Include="Fixtures\Opt2\*.opt" />
+    <EmbeddedResource Include="Fixtures\Opt14\*.opt" />
     <EmbeddedResource Include="Fixtures\ExpectedIssuesManifest\**\*.opt2" />
     <EmbeddedResource Include="Fixtures\ExpectedIssuesManifest\**\*.json" />
   </ItemGroup>
