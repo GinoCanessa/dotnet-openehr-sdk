@@ -6,12 +6,20 @@ Template (OPT 1.4) XML documents sourced from the
 (Apache-2.0). They are embedded unmodified as test fixtures for
 `Opt14XmlParserTests`.
 
-| Local file             | Upstream path inside `openFHIR/openfhir`                              | Commit SHA                                 | License    |
-| ---------------------- | --------------------------------------------------------------------- | ------------------------------------------ | ---------- |
-| `KDS_Vitalstatus.opt`  | `core/src/test/resources/kds/vitalstatus/KDS_Vitalstatus.opt`         | `1623d6fe71bbed94af52f6a8625a13ce60711fba` | Apache-2.0 |
-| `KDS_Diagnose.opt`     | `core/src/test/resources/kds/diagnose/KDS_Diagnose.opt`               | `1623d6fe71bbed94af52f6a8625a13ce60711fba` | Apache-2.0 |
-| `KDS_Person.opt`       | `core/src/test/resources/kds/person/KDS_Person.opt`                   | `1623d6fe71bbed94af52f6a8625a13ce60711fba` | Apache-2.0 |
-| `Blood Pressure.opt`   | `core/src/test/resources/blood_pressure/Blood Pressure.opt`           | `1623d6fe71bbed94af52f6a8625a13ce60711fba` | Apache-2.0 |
+| Local file                       | Upstream path inside `openFHIR/openfhir`                              | Commit SHA                                 | License    |
+| -------------------------------- | --------------------------------------------------------------------- | ------------------------------------------ | ---------- |
+| `KDS_Vitalstatus.opt`            | `core/src/test/resources/kds/vitalstatus/KDS_Vitalstatus.opt`         | `1623d6fe71bbed94af52f6a8625a13ce60711fba` | Apache-2.0 |
+| `KDS_Diagnose.opt`               | `core/src/test/resources/kds/diagnose/KDS_Diagnose.opt`               | `1623d6fe71bbed94af52f6a8625a13ce60711fba` | Apache-2.0 |
+| `KDS_Person.opt`                 | `core/src/test/resources/kds/person/KDS_Person.opt`                   | `1623d6fe71bbed94af52f6a8625a13ce60711fba` | Apache-2.0 |
+| `Blood Pressure.opt`             | `core/src/test/resources/blood_pressure/Blood Pressure.opt`           | `1623d6fe71bbed94af52f6a8625a13ce60711fba` | Apache-2.0 |
+| `KDS_Vitalstatus_malformed.opt`  | **derived** from `KDS_Vitalstatus.opt` (see note below)               | — (locally derived)                        | Apache-2.0 |
+
+The malformed fixture is a verbatim copy of `KDS_Vitalstatus.opt` with
+one additional `<children xsi:type="x:VENDOR_UNKNOWN_TYPE" xmlns:x="urn:test">`
+element injected before the first `<children xsi:type="C_COMPLEX_OBJECT">`
+sibling, to exercise the parser's unknown-`xsi:type` strict/lenient
+divergence. The Apache-2.0 license carries over per Section 4(a)
+("state the changes" — captured here).
 
 The upstream `LICENSE` is the Apache License, Version 2.0; the
 repository-root `LICENSE-Apache-2.0` is the corresponding copy carried

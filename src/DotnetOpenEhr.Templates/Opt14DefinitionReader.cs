@@ -103,12 +103,12 @@ internal static class Opt14DefinitionReader
             // not modelled in AOM2 today. Strict throws; lenient skips
             // (caller drops the resulting placeholder).
             "C_DV_STATE" or "STATE_MACHINE" or "STATE" or "TRANSITION"
-                => throw new NotSupportedException(
-                    $"OPT1.4 '{discriminator}' is not modelled in AOM2 v1; deferred to v2 " +
-                    $"(line {Opt14XmlReader.LineInfo(el).Line})."),
-            _ => throw new InvalidOperationException(
-                $"Unknown OPT1.4 xsi:type '{discriminator}' on <{el.Name.LocalName}> " +
-                $"(line {Opt14XmlReader.LineInfo(el).Line})."),
+                => throw Opt14ParseException.AtElement(
+                    $"OPT1.4 '{discriminator}' is not modelled in AOM2 v1; deferred to v2.",
+                    el),
+            _ => throw Opt14ParseException.AtElement(
+                $"Unknown OPT1.4 xsi:type '{discriminator}' on <{el.Name.LocalName}>.",
+                el),
         };
 
         PopulateCObjectCommon(el, obj, lenient);
@@ -285,9 +285,9 @@ internal static class Opt14DefinitionReader
             default:
                 if (!lenient)
                 {
-                    throw new InvalidOperationException(
-                        $"Unknown OPT1.4 attribute xsi:type '{disc}' on <{el.Name.LocalName}> " +
-                        $"(line {Opt14XmlReader.LineInfo(el).Line}).");
+                    throw Opt14ParseException.AtElement(
+                        $"Unknown OPT1.4 attribute xsi:type '{disc}' on <{el.Name.LocalName}>.",
+                        el);
                 }
                 return null;
         }
@@ -324,11 +324,7 @@ internal static class Opt14DefinitionReader
             }
             return obj;
         }
-        catch (NotSupportedException) when (lenient)
-        {
-            return null;
-        }
-        catch (InvalidOperationException) when (lenient)
+        catch (Opt14ParseException) when (lenient)
         {
             return null;
         }

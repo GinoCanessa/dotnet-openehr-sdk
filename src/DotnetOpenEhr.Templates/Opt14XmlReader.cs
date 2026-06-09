@@ -24,7 +24,7 @@ internal static class Opt14XmlReader
         XElement? root = doc.Root;
         if (root is null)
         {
-            throw new InvalidOperationException("OPT1.4 document has no root element.");
+            throw new Opt14ParseException("OPT1.4 document has no root element.");
         }
 
         // The XSD allows either <template> or <operational_template>
@@ -33,22 +33,21 @@ internal static class Opt14XmlReader
         bool isStrictLocalName = root.Name.LocalName is "template" or "operational_template";
         if (!isStrictLocalName)
         {
-            throw new InvalidOperationException(
+            throw Opt14ParseException.AtElement(
                 $"OPT1.4 root element must be 'template' or 'operational_template' " +
-                $"(got '{root.Name.LocalName}').");
+                $"(got '{root.Name.LocalName}').",
+                root);
         }
-        if (!isStrictNamespace)
+        if (!isStrictNamespace && !options.Lenient)
         {
             // Strict mode requires the canonical openEHR namespace.
             // Lenient mode tolerates a missing/foreign namespace and
             // falls back to local-name lookup downstream.
-            if (!options.Lenient)
-            {
-                throw new InvalidOperationException(
-                    $"OPT1.4 root element must be in the '{OpenEhr.NamespaceName}' " +
-                    $"namespace (got '{root.Name.NamespaceName}'). Set " +
-                    $"ParseOptions.Lenient = true to accept documents that drop the namespace.");
-            }
+            throw Opt14ParseException.AtElement(
+                $"OPT1.4 root element must be in the '{OpenEhr.NamespaceName}' " +
+                $"namespace (got '{root.Name.NamespaceName}'). Set " +
+                $"ParseOptions.Lenient = true to accept documents that drop the namespace.",
+                root);
         }
 
         OperationalTemplate result = new()
@@ -148,8 +147,9 @@ internal static class Opt14XmlReader
                 }
                 else if (!options.Lenient)
                 {
-                    throw new InvalidOperationException(
-                        $"OPT1.4 root archetype_id '{hridText}' is not a valid archetype HRID.");
+                    throw Opt14ParseException.AtElement(
+                        $"OPT1.4 root archetype_id '{hridText}' is not a valid archetype HRID.",
+                        archIdEl!);
                 }
             }
         }
@@ -178,7 +178,7 @@ internal static class Opt14XmlReader
             && result.Terminology.TermDefinitions.Count == 0
             && result.ComponentTerminologies.Count == 0)
         {
-            throw new InvalidOperationException(
+            throw new Opt14ParseException(
                 "OPT1.4 document declared <term_definitions> elements but the terminology " +
                 "harvest produced no entries — this would silently drop terminology data.");
         }
