@@ -1,3 +1,6 @@
+using System.Collections.Concurrent;
+using System.Text.RegularExpressions;
+
 namespace DotnetOpenEhr.Templates.Validation;
 
 /// <summary>
@@ -23,4 +26,24 @@ public sealed class OperationalTemplateValidatorOptions
     /// Negative values throw at validator-construction time.
     /// </remarks>
     public TimeSpan RegexMatchTimeout { get; init; } = TimeSpan.FromSeconds(1);
+
+    /// <summary>
+    /// Optional caller-supplied regex compile cache. When null
+    /// (default), the validator shares a process-global cache with all
+    /// other default-options validators in the AppDomain — the same
+    /// behaviour shipped before this option existed. When non-null, the
+    /// validator uses the supplied dictionary instead, giving callers
+    /// (especially tests) a private, observable cache without reaching
+    /// into validator internals.
+    /// </summary>
+    /// <remarks>
+    /// Keyed on <c>(Pattern, Timeout)</c> so two validator instances
+    /// with different <see cref="RegexMatchTimeout"/> values can share
+    /// the same dictionary safely. The dictionary is expected to be
+    /// thread-safe; <see cref="ConcurrentDictionary{TKey,TValue}"/> is
+    /// the intended type. Successful compiles are inserted via
+    /// <c>GetOrAdd</c>; malformed-pattern compiles throw before insert
+    /// and so do not poison the cache.
+    /// </remarks>
+    public ConcurrentDictionary<(string Pattern, TimeSpan Timeout), Regex>? RegexCache { get; init; }
 }

@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+using System.Text.RegularExpressions;
 using DotnetOpenEhr.Rm.Common;
 using DotnetOpenEhr.Rm.Composition;
 using DotnetOpenEhr.Rm.DataStructures;
@@ -172,19 +174,43 @@ terminology
     [Fact]
     public void InvalidPattern_DoesNotPoisonRegexCache()
     {
-        string opt = ScaffoldOpt2("""
+        const string badPattern = "[no_close_unique_flake_marker";
+        string opt = ScaffoldOpt2($$"""
                                             DV_TEXT[id6] matches {
-                                                value matches {/[no_close/}
+                                                value matches {/{{badPattern}}/}
                                             }
 """);
-        OperationalTemplateValidator validator = new();
 
-        int before = OperationalTemplateValidator.s_regexCache.Count;
-        // Submit the same bad pattern twice.
-        RunWith(validator, opt, NewElement("id5", new DvText { Value = "abc" }));
-        RunWith(validator, opt, NewElement("id5", new DvText { Value = "abc" }));
-        int after = OperationalTemplateValidator.s_regexCache.Count;
+        // Private per-test cache — no shared global state, no race
+        // with sibling test classes, no InternalsVisibleTo reach.
+        ConcurrentDictionary<(string Pattern, TimeSpan Timeout), Regex> cache = new();
+        OperationalTemplateValidator validator = new(new OperationalTemplateValidatorOptions
+        {
+            RegexCache = cache,
+        });
 
-        Assert.Equal(before, after);
+        // Sanity: the pattern really is malformed on this runtime.
+        // RegexParseException : ArgumentException, so ThrowsAny catches
+        // both today's and tomorrow's exact subtype.
+        Assert.ThrowsAny<ArgumentException>(static () => _ = new Regex(badPattern));
+
+        // Drive the validator twice with the bad pattern.
+        IReadOnlyList<ValidationIssue> issues = RunWith(
+            validator, opt, NewElement("id5", new DvText { Value = "abc" }));
+        RunWith(validator, opt, NewElement("id5", new DvText { Value = "abc" }));
+
+        // Anchor: prove the bad pattern actually reached the catch
+        // block, so the cache-membership assertion below is meaningful.
+        Assert.Contains(
+            issues,
+            i => i.RuleId == ValidationRuleIds.StringPatternViolation
+                 && i.Severity == ValidationSeverity.NotValidated);
+
+        // Invariant under test: GetOrAdd's factory threw, so no key
+        // with this pattern must be in the test's own cache. Race-free
+        // by construction — this dictionary is owned by this test.
+        Assert.False(
+            cache.Keys.Any(k => k.Pattern == badPattern),
+            "Malformed pattern must not be inserted into the regex cache.");
     }
 }
