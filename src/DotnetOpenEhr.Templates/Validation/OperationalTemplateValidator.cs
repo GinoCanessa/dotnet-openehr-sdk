@@ -41,16 +41,11 @@ public sealed class OperationalTemplateValidator
     // (O(100s) in realistic workloads). This static is reached only
     // when the caller does not supply
     // <see cref="OperationalTemplateValidatorOptions.RegexCache"/>;
-    // when they do, the validator uses that dictionary instead.
+    // when they do, the validator uses that dictionary instead. The
+    // configured timeout is read from the per-instance
+    // <c>_options.RegexMatchTimeout</c> directly inside
+    // <see cref="ValidateString"/>; there is no thread-static plumbing.
     internal static readonly ConcurrentDictionary<(string Pattern, TimeSpan Timeout), Regex> s_defaultRegexCache = new();
-
-    // H8 — the configured timeout is read in static helpers via
-    // [ThreadStatic] to avoid a 6-method-signature plumbing refactor.
-    // Set on Validate entry, cleared on exit. Single-thread-safe per
-    // Validate call; concurrent validators on different threads each
-    // see their own configured timeout.
-    [ThreadStatic]
-    private static TimeSpan? s_currentMatchTimeout;
 
     /// <summary>
     /// Creates a validator with the default
@@ -120,22 +115,11 @@ public sealed class OperationalTemplateValidator
             return issues;
         }
 
-        // H8 — expose the configured timeout to static regex helpers for
-        // the duration of this Validate call.
-        TimeSpan? previous = s_currentMatchTimeout;
-        s_currentMatchTimeout = _options.RegexMatchTimeout;
-        try
-        {
-            Walk(root, rootTemplate, "/", template, issues, ct);
-        }
-        finally
-        {
-            s_currentMatchTimeout = previous;
-        }
+        Walk(root, rootTemplate, "/", template, issues, ct);
         return issues;
     }
 
-    private static void Walk(
+    private void Walk(
         Locatable node,
         CComplexObject templateNode,
         string aqlPath,
@@ -415,7 +399,7 @@ public sealed class OperationalTemplateValidator
     // today, so the validator pattern-matches on the RmTypeName of the
     // value-attribute child and interprets the inner attribute set.
 
-    private static void ValidateElementValue(
+    private void ValidateElementValue(
         Element element,
         CComplexObject templateNode,
         string elementPath,
@@ -442,7 +426,7 @@ public sealed class OperationalTemplateValidator
         }
     }
 
-    private static void ValidateDataValue(
+    private void ValidateDataValue(
         DataValue value,
         CObject constraint,
         string path,
@@ -469,7 +453,7 @@ public sealed class OperationalTemplateValidator
         }
     }
 
-    private static void ValidateDataValueAsComplex(
+    private void ValidateDataValueAsComplex(
         DataValue value,
         CComplexObject complex,
         string path,
@@ -752,7 +736,7 @@ public sealed class OperationalTemplateValidator
         }
     }
 
-    private static void ValidateString(
+    private void ValidateString(
         string actual,
         CString constraint,
         string path,
@@ -762,13 +746,12 @@ public sealed class OperationalTemplateValidator
         {
             // H8 — cache successfully-compiled regexes only; malformed
             // patterns emit NotValidated without poisoning the cache.
-            TimeSpan timeout = s_currentMatchTimeout
-                ?? TimeSpan.FromSeconds(1);
+            TimeSpan timeout = _options.RegexMatchTimeout;
 
             Regex? rx;
             try
             {
-                rx = s_defaultRegexCache.GetOrAdd(
+                rx = _regexCache.GetOrAdd(
                     (constraint.Pattern!, timeout),
                     static key => new Regex(
                         key.Pattern,
