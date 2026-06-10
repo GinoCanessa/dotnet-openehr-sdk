@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 using DotnetOpenEhr.Rm.Common;
 using DotnetOpenEhr.Rm.Composition;
@@ -179,11 +180,18 @@ terminology
                                                 value matches {/{{badPattern}}/}
                                             }
 """);
-        OperationalTemplateValidator validator = new();
+
+        // Private per-test cache — no shared global state, no race
+        // with sibling test classes, no InternalsVisibleTo reach.
+        ConcurrentDictionary<(string Pattern, TimeSpan Timeout), Regex> cache = new();
+        OperationalTemplateValidator validator = new(new OperationalTemplateValidatorOptions
+        {
+            RegexCache = cache,
+        });
 
         // Sanity: the pattern really is malformed on this runtime.
-        // RegexParseException : ArgumentException, so ThrowsAny catches both
-        // (xUnit's Throws<T> is exact-type, not subtype).
+        // RegexParseException : ArgumentException, so ThrowsAny catches
+        // both today's and tomorrow's exact subtype.
         Assert.ThrowsAny<ArgumentException>(static () => _ = new Regex(badPattern));
 
         // Drive the validator twice with the bad pattern.
@@ -191,22 +199,18 @@ terminology
             validator, opt, NewElement("id5", new DvText { Value = "abc" }));
         RunWith(validator, opt, NewElement("id5", new DvText { Value = "abc" }));
 
-        // Anchor: prove the bad pattern actually reached the catch block,
-        // so the cache-membership assertion below is meaningful.
+        // Anchor: prove the bad pattern actually reached the catch
+        // block, so the cache-membership assertion below is meaningful.
         Assert.Contains(
             issues,
             i => i.RuleId == ValidationRuleIds.StringPatternViolation
                  && i.Severity == ValidationSeverity.NotValidated);
 
-        // Invariant under test: GetOrAdd's factory threw, so no key with
-        // this pattern must be in the cache. Race-free because the pattern
-        // is unique to this test — concurrent inserts from sibling test
-        // classes cannot collide. Pattern-only (ignores Timeout) so the
-        // assertion survives any future change to the production default
-        // timeout literal without going silently vacuous.
+        // Invariant under test: GetOrAdd's factory threw, so no key
+        // with this pattern must be in the test's own cache. Race-free
+        // by construction — this dictionary is owned by this test.
         Assert.False(
-            OperationalTemplateValidator.s_defaultRegexCache.Keys
-                .Any(k => k.Pattern == badPattern),
+            cache.Keys.Any(k => k.Pattern == badPattern),
             "Malformed pattern must not be inserted into the regex cache.");
     }
 }

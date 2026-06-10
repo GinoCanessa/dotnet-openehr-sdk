@@ -45,7 +45,7 @@ public sealed class OperationalTemplateValidator
     // configured timeout is read from the per-instance
     // <c>_options.RegexMatchTimeout</c> directly inside
     // <see cref="ValidateString"/>; there is no thread-static plumbing.
-    internal static readonly ConcurrentDictionary<(string Pattern, TimeSpan Timeout), Regex> s_defaultRegexCache = new();
+    private static readonly ConcurrentDictionary<(string Pattern, TimeSpan Timeout), Regex> s_defaultRegexCache = new();
 
     /// <summary>
     /// Creates a validator with the default
