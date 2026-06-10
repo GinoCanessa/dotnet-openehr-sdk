@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using DotnetOpenEhr.Rm.Common;
 using DotnetOpenEhr.Rm.Composition;
 using DotnetOpenEhr.Rm.DataStructures;
@@ -172,19 +173,40 @@ terminology
     [Fact]
     public void InvalidPattern_DoesNotPoisonRegexCache()
     {
-        string opt = ScaffoldOpt2("""
+        const string badPattern = "[no_close_unique_flake_marker";
+        string opt = ScaffoldOpt2($$"""
                                             DV_TEXT[id6] matches {
-                                                value matches {/[no_close/}
+                                                value matches {/{{badPattern}}/}
                                             }
 """);
         OperationalTemplateValidator validator = new();
 
-        int before = OperationalTemplateValidator.s_regexCache.Count;
-        // Submit the same bad pattern twice.
-        RunWith(validator, opt, NewElement("id5", new DvText { Value = "abc" }));
-        RunWith(validator, opt, NewElement("id5", new DvText { Value = "abc" }));
-        int after = OperationalTemplateValidator.s_regexCache.Count;
+        // Sanity: the pattern really is malformed on this runtime.
+        // RegexParseException : ArgumentException, so ThrowsAny catches both
+        // (xUnit's Throws<T> is exact-type, not subtype).
+        Assert.ThrowsAny<ArgumentException>(static () => _ = new Regex(badPattern));
 
-        Assert.Equal(before, after);
+        // Drive the validator twice with the bad pattern.
+        IReadOnlyList<ValidationIssue> issues = RunWith(
+            validator, opt, NewElement("id5", new DvText { Value = "abc" }));
+        RunWith(validator, opt, NewElement("id5", new DvText { Value = "abc" }));
+
+        // Anchor: prove the bad pattern actually reached the catch block,
+        // so the cache-membership assertion below is meaningful.
+        Assert.Contains(
+            issues,
+            i => i.RuleId == ValidationRuleIds.StringPatternViolation
+                 && i.Severity == ValidationSeverity.NotValidated);
+
+        // Invariant under test: GetOrAdd's factory threw, so no key with
+        // this pattern must be in the cache. Race-free because the pattern
+        // is unique to this test — concurrent inserts from sibling test
+        // classes cannot collide. Pattern-only (ignores Timeout) so the
+        // assertion survives any future change to the production default
+        // timeout literal without going silently vacuous.
+        Assert.False(
+            OperationalTemplateValidator.s_regexCache.Keys
+                .Any(k => k.Pattern == badPattern),
+            "Malformed pattern must not be inserted into the regex cache.");
     }
 }
