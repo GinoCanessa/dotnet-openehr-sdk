@@ -68,6 +68,14 @@ unstable** and may change between alphas.
   per-pattern timeout for the validator's regex evaluator. Defaults to
   100 ms; a `RegexMatchTimeoutException` surfaces as a
   `NotValidated` issue rather than crashing the validator.
+- **`OperationalTemplateValidatorOptions.RegexCache`** — optional
+  `ConcurrentDictionary<(string Pattern, TimeSpan Timeout), Regex>`
+  seam on the validator options. When supplied, the validator uses
+  the caller's dictionary as its regex compile cache; when null
+  (default), it uses the same process-global cache as before, with
+  identical hit/miss behaviour. Primarily intended for tests that
+  need a private, observable cache without reaching into validator
+  internals. *(0610-01)*
 - **Per-pattern compiled-regex cache** in the validator, keyed by
   pattern string, so repeat constraints in a wide OPT share a single
   compiled state machine.
@@ -77,6 +85,16 @@ unstable** and may change between alphas.
 
 ### Changed
 
+- **Validator regex compile cache is no longer exposed via
+  `InternalsVisibleTo`** and the prior `[ThreadStatic]`-based timeout
+  plumbing has been removed. The renamed default cache field
+  (`s_defaultRegexCache`) is now `private`, and the configured
+  `RegexMatchTimeout` is read per-instance from `_options` directly
+  inside `ValidateString`. **No effect on public API or default
+  behaviour** — default-options validators still share the same
+  process-global cache with the same hit/miss profile. Callers that
+  want a private cache can now supply
+  `OperationalTemplateValidatorOptions.RegexCache`. *(0610-01)*
 - **`OdinParseException` messages now include the `(near '…')`
   snippet at every throw site** in both `OdinParser` and `OdinLexer`.
   The exception's `Snippet` property is populated from
