@@ -30,15 +30,19 @@ namespace DotnetOpenEhr.Templates.Validation;
 public sealed class OperationalTemplateValidator
 {
     private readonly OperationalTemplateValidatorOptions _options;
+    private readonly ConcurrentDictionary<(string Pattern, TimeSpan Timeout), Regex> _regexCache;
 
-    // H8 — regex cache: only successfully compiled patterns are added,
-    // so a malformed pattern submitted N times does not poison the
-    // cache. Keyed on (pattern, timeout) so different validator
-    // instances with different timeout postures share entries safely.
-    // Process-global; bounded by the number of distinct valid
-    // (pattern, timeout) pairs across loaded templates (O(100s) in
-    // realistic workloads).
-    internal static readonly ConcurrentDictionary<(string Pattern, TimeSpan Timeout), Regex> s_regexCache = new();
+    // H8 — process-global default regex cache: only successfully
+    // compiled patterns are added, so a malformed pattern submitted N
+    // times does not poison the cache. Keyed on (pattern, timeout) so
+    // different validator instances with different timeout postures
+    // share entries safely. Process-global; bounded by the number of
+    // distinct valid (pattern, timeout) pairs across loaded templates
+    // (O(100s) in realistic workloads). This static is reached only
+    // when the caller does not supply
+    // <see cref="OperationalTemplateValidatorOptions.RegexCache"/>;
+    // when they do, the validator uses that dictionary instead.
+    internal static readonly ConcurrentDictionary<(string Pattern, TimeSpan Timeout), Regex> s_defaultRegexCache = new();
 
     // H8 — the configured timeout is read in static helpers via
     // [ThreadStatic] to avoid a 6-method-signature plumbing refactor.
@@ -74,6 +78,7 @@ public sealed class OperationalTemplateValidator
                 "RegexMatchTimeout must be non-negative; use TimeSpan.Zero to opt out.");
         }
         _options = options;
+        _regexCache = options.RegexCache ?? s_defaultRegexCache;
     }
     /// <summary>
     /// Validates <paramref name="composition"/> against
@@ -763,7 +768,7 @@ public sealed class OperationalTemplateValidator
             Regex? rx;
             try
             {
-                rx = s_regexCache.GetOrAdd(
+                rx = s_defaultRegexCache.GetOrAdd(
                     (constraint.Pattern!, timeout),
                     static key => new Regex(
                         key.Pattern,

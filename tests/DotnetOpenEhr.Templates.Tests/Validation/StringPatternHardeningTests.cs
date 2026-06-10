@@ -205,7 +205,7 @@ terminology
         // assertion survives any future change to the production default
         // timeout literal without going silently vacuous.
         Assert.False(
-            OperationalTemplateValidator.s_regexCache.Keys
+            OperationalTemplateValidator.s_defaultRegexCache.Keys
                 .Any(k => k.Pattern == badPattern),
             "Malformed pattern must not be inserted into the regex cache.");
     }
