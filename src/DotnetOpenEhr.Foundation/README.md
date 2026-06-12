@@ -34,7 +34,7 @@ hand-written and allocates only the resulting value object.
 
 ## See also
 
-- [`docs/package-map.md`](https://github.com/ginoc/dotnet-openehr-sdk/blob/main/docs/package-map.md)
+- [`docs/package-map.md`](https://github.com/GinoCanessa/dotnet-openehr-sdk/blob/main/docs/package-map.md)
   — pick the right package for the job.
-- [`docs/getting-started.md`](https://github.com/ginoc/dotnet-openehr-sdk/blob/main/docs/getting-started.md)
+- [`docs/getting-started.md`](https://github.com/GinoCanessa/dotnet-openehr-sdk/blob/main/docs/getting-started.md)
   — install, parse, validate, query.

@@ -1,10 +1,14 @@
 # AOT / trim posture
 
 DotnetOpenEhr is designed **AOT- and trim-safe from day one**. This
-isn't an afterthought: the CI gate publishes a Native AOT smoke binary
-on every PR, with trimmer and AOT warnings escalated to errors. If a
-change introduces a reflection-based code path or a non-trim-friendly
-dependency, the build fails before it can reach `main`.
+isn't an afterthought: every shipping project enables the trim analyzer
+with warnings escalated to errors, so a change that introduces a
+reflection-based code path or a non-trim-friendly dependency fails the
+ordinary `dotnet build` the CI workflow already runs on every PR. A
+fuller Native AOT smoke binary (which also exercises the AOT analyzer's
+`IL3xxx` diagnostics) is published and executed as a **local/manual
+gate** via the command below; a CI job for it is staged in
+`.github/workflows/build-and-test.yml` but is currently disabled.
 
 ## What "AOT- and trim-safe" means here
 
@@ -43,17 +47,18 @@ shipping package and exercising the primary public surface (parse a
 Composition, validate against an OPT, run an AQL query, round-trip
 canonical and FLAT JSON, load the RM BMM, etc.).
 
-CI runs:
+Run it locally (this is the command the staged-but-disabled CI job uses,
+for both **linux-x64** and **win-x64**):
 
 ```bash
 dotnet publish tests/DotnetOpenEhr.AotSmoke \
-    -c Release -r linux-x64 -p:PublishAot=true
+    -c Release -r linux-x64 -p:PublishAot=true -p:TreatWarningsAsErrors=true
 ```
 
-on **linux-x64** and **win-x64**, with `TreatWarningsAsErrors=true`
-applied to the trimmer's `IL2xxx` and the AOT analyzer's `IL3xxx`
-diagnostics. The resulting binary is then executed; a non-zero exit
-code or a missing `smoke ok` line fails the job.
+This publishes with the trimmer's `IL2xxx` and the AOT analyzer's
+`IL3xxx` diagnostics escalated to errors. The resulting binary is then
+executed; a non-zero exit code or a missing `smoke ok` line indicates a
+regression.
 
 ## Coverage gate
 

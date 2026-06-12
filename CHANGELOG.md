@@ -5,8 +5,9 @@ file. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-While the SDK is in the `0.1.0-alpha.*` line, **public APIs are
-unstable** and may change between alphas.
+While the SDK is in the `0.x` `-beta.0` train, **public APIs are
+unstable** and may change between releases. Packages use a date-based
+version scheme, `yyyy.MMdd.HHmm-beta.0`.
 
 ## [Unreleased]
 
@@ -66,7 +67,7 @@ unstable** and may change between alphas.
   `PT0M` per the ISO 8601 spec; `P1YT` and bare `PT` still reject.
 - **`OperationalTemplateValidatorOptions.RegexMatchTimeout`** — opt-in
   per-pattern timeout for the validator's regex evaluator. Defaults to
-  100 ms; a `RegexMatchTimeoutException` surfaces as a
+  1 second; a `RegexMatchTimeoutException` surfaces as a
   `NotValidated` issue rather than crashing the validator.
 - **`OperationalTemplateValidatorOptions.RegexCache`** — optional
   `ConcurrentDictionary<(string Pattern, TimeSpan Timeout), Regex>`
@@ -182,7 +183,7 @@ unstable** and may change between alphas.
   (`FlatSchemaRequiredException.BuildMessage`).
 - **H13 — canonical JSON byte snapshot.** Eight canonical-wire
   fixtures now have checked-in `*.expected.json` byte snapshots
-  regenerable via `OPENEHR_REGENERATE_CANONICAL_WIRE_SNAPSHOTS=1`.
+  regenerable via `OPENEHR_REGENERATE_CANONICAL_SNAPSHOTS=1`.
   Deliberate-mutation smoke confirms drift detection.
 - **M1/M2/M4/M5/M7/M11/M13/M19/M21/M22/M23/M25.** Various
   smaller correctness and diagnostic fixes — see commit log.
@@ -316,5 +317,5 @@ First public alpha. Installs as a granular set of twelve
 - This is the first public alpha — the APIs are unstable and may break
   between alphas without notice.
 
-[Unreleased]: https://github.com/ginoc/dotnet-openehr-sdk/compare/v0.1.0-alpha.1...HEAD
-[0.1.0-alpha.1]: https://github.com/ginoc/dotnet-openehr-sdk/releases/tag/v0.1.0-alpha.1
+[Unreleased]: https://github.com/GinoCanessa/dotnet-openehr-sdk/compare/v0.1.0-alpha.1...HEAD
+[0.1.0-alpha.1]: https://github.com/GinoCanessa/dotnet-openehr-sdk/releases/tag/v0.1.0-alpha.1

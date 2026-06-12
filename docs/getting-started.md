@@ -47,6 +47,23 @@ using DotnetOpenEhr.Serialization.Json.Flat;
 Composition? flat = OpenEhrFlatJson.ParseComposition(File.ReadAllBytes("vitals.flat.json"));
 ```
 
+### Strict ISO parsing
+
+The Foundation ISO 8601 types (`IsoDate`, `IsoTime`, `IsoDateTime`,
+`IsoDuration`, `IsoTimeZone`) parse leniently by default: the parameterless
+overloads use `IsoParseMode.FixAsPossible` ("lenient input, canonical output").
+Pass `IsoParseMode.Strict` to reject malformed-but-fixable input instead of
+silently normalising it:
+
+```csharp
+using DotnetOpenEhr.Foundation.Iso;
+
+IsoDateTime when = IsoDateTime.Parse("2026-06-12T14:28:59+01:00", IsoParseMode.Strict);
+```
+
+Use `IsoParseMode.Ostrich` on wire-deserialization paths to preserve the
+original lexical form verbatim for byte-equivalent round-trip.
+
 ## 2. Validate against an Operational Template (OPT2)
 
 `DotnetOpenEhr.Templates` parses OPT2 sources into an
@@ -64,12 +81,55 @@ IReadOnlyList<ValidationIssue> issues = validator.Validate(c!, opt);
 
 foreach (ValidationIssue issue in issues)
 {
-    Console.WriteLine($"{issue.Severity} {issue.Path}: {issue.Message}");
+    Console.WriteLine($"{issue.Severity} [{issue.RuleId}] {issue.Path}: {issue.Message}");
 }
 ```
 
 `ValidationIssue` covers structural, cardinality, occurrences, and
-data-type-constraint findings emitted by the template walker.
+data-type-constraint findings emitted by the template walker. Each issue
+carries a stable `RuleId`; the `ValidationRuleIds` static class exposes those
+id constants so you can suppress or escalate findings by id.
+
+### Load an OPT 1.4 XML template
+
+Most authoring tools (CKM, Better Studio, EHRbase, …) emit Operational
+Templates as OPT 1.4 XML rather than ADL2-text OPT2. `Opt14XmlParser` reads
+that dialect and returns the **same** `OperationalTemplate` shape as
+`Opt2Parser.Parse`, so the validator and the FLAT serializer work unchanged:
+
+```csharp
+using DotnetOpenEhr.Templates;
+
+OperationalTemplate opt = Opt14XmlParser.Load("vitals.opt");
+
+// Broaden tolerance for documents that drop/remap the openEHR namespace.
+OperationalTemplate lenient =
+    Opt14XmlParser.Load("vitals.opt", new ParseOptions { Lenient = true });
+```
+
+In the default strict mode the parser throws `Opt14ParseException` on
+malformed input; `ParseOptions { Lenient = true }` reports and skips unknown
+elements instead.
+
+### Tune the validator
+
+The validator accepts an `OperationalTemplateValidatorOptions` to bound the
+time spent matching `CString.Pattern` regexes:
+
+```csharp
+using DotnetOpenEhr.Templates.Validation;
+
+OperationalTemplateValidator tuned = new(new OperationalTemplateValidatorOptions
+{
+    RegexMatchTimeout = TimeSpan.FromMilliseconds(250),
+});
+```
+
+`RegexMatchTimeout` defaults to 1 second; pass `TimeSpan.Zero` to opt out of
+timeout enforcement. A regex timeout surfaces as a `NotValidated` issue rather
+than a crash. Supply your own `RegexCache` (a
+`ConcurrentDictionary<(string, TimeSpan), Regex>`) when you want a private,
+observable compile cache.
 
 ## 3. Run an AQL query over in-memory Compositions
 
@@ -115,5 +175,5 @@ and shows a tiny snippet:
 - [Templates](https://www.nuget.org/packages/DotnetOpenEhr.Templates)
 - [Aql](https://www.nuget.org/packages/DotnetOpenEhr.Aql)
 
-See also [`aot.md`](aot.md) for the AOT/trim posture and the smoke gate
-the CI enforces on every PR.
+See also [`aot.md`](aot.md) for the AOT/trim posture and the local AOT
+smoke gate.

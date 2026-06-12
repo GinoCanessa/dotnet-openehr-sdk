@@ -1,9 +1,8 @@
 # DotnetOpenEhr documentation
 
-This folder will collect end-user and contributor documentation as the
-SDK comes online.
+This folder contains end-user and contributor documentation for the SDK.
 
-Planned docs:
+Docs:
 
 - [`getting-started.md`](getting-started.md) — install, parse a
   Composition, validate against an OPT, run an AQL query.

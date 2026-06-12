@@ -39,5 +39,5 @@ record/DTO surface.
 
 - `DotnetOpenEhr.Templates` — concrete OPT2-backed schema.
 - `DotnetOpenEhr.Serialization.Json.Flat` — the primary consumer.
-- [`docs/package-map.md`](https://github.com/ginoc/dotnet-openehr-sdk/blob/main/docs/package-map.md)
-- [`docs/getting-started.md`](https://github.com/ginoc/dotnet-openehr-sdk/blob/main/docs/getting-started.md)
+- [`docs/package-map.md`](https://github.com/GinoCanessa/dotnet-openehr-sdk/blob/main/docs/package-map.md)
+- [`docs/getting-started.md`](https://github.com/GinoCanessa/dotnet-openehr-sdk/blob/main/docs/getting-started.md)
