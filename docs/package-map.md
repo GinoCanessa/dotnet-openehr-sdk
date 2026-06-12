@@ -20,7 +20,7 @@ test harnesses where you want everything at once.
 | Parse / write **canonical** openEHR JSON | `DotnetOpenEhr.Serialization.Json` |
 | Parse / write **FLAT** openEHR JSON | `DotnetOpenEhr.Serialization.Json.Flat` |
 | Parse ADL2 archetypes | `DotnetOpenEhr.Archetypes` |
-| Parse OPT2 templates + validate Compositions | `DotnetOpenEhr.Templates` |
+| Parse OPT2 **and OPT 1.4 XML** templates + validate Compositions | `DotnetOpenEhr.Templates` |
 | Hand a template to the FLAT serializer without taking `Templates` as a dep | `DotnetOpenEhr.Templates.Abstractions` |
 | Parse and run AQL over in-memory Compositions | `DotnetOpenEhr.Aql` |
 
