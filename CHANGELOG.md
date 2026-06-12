@@ -316,5 +316,5 @@ First public alpha. Installs as a granular set of twelve
 - This is the first public alpha — the APIs are unstable and may break
   between alphas without notice.
 
-[Unreleased]: https://github.com/ginoc/dotnet-openehr-sdk/compare/v0.1.0-alpha.1...HEAD
-[0.1.0-alpha.1]: https://github.com/ginoc/dotnet-openehr-sdk/releases/tag/v0.1.0-alpha.1
+[Unreleased]: https://github.com/GinoCanessa/dotnet-openehr-sdk/compare/v0.1.0-alpha.1...HEAD
+[0.1.0-alpha.1]: https://github.com/GinoCanessa/dotnet-openehr-sdk/releases/tag/v0.1.0-alpha.1

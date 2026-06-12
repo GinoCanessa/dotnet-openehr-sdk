@@ -89,8 +89,8 @@ Fully AOT- and trim-safe; no runtime reflection.
 
 - `DotnetOpenEhr.Serialization.Json.Flat` — consume
   `OperationalTemplate` as an `ITemplateSchema` for FLAT round-trip.
-- [`docs/package-map.md`](https://github.com/ginoc/dotnet-openehr-sdk/blob/main/docs/package-map.md)
-- [`docs/getting-started.md`](https://github.com/ginoc/dotnet-openehr-sdk/blob/main/docs/getting-started.md)
+- [`docs/package-map.md`](https://github.com/GinoCanessa/dotnet-openehr-sdk/blob/main/docs/package-map.md)
+- [`docs/getting-started.md`](https://github.com/GinoCanessa/dotnet-openehr-sdk/blob/main/docs/getting-started.md)
 - openEHR ITS-XML specifications:
   <https://specifications.openehr.org/releases/ITS-XML/latest/>
 

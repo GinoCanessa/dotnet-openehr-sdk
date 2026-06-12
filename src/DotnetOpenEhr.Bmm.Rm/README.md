@@ -34,10 +34,10 @@ This package's **code** is MIT; the embedded `.bmm` files are
 redistributed verbatim under **Apache-2.0** from the openEHR
 `specifications-ITS-BMM` repository. The NuGet package therefore
 publishes under the SPDX expression `MIT AND Apache-2.0`. See
-[`THIRD_PARTY_NOTICES.md`](https://github.com/ginoc/dotnet-openehr-sdk/blob/main/src/DotnetOpenEhr.Bmm.Rm/THIRD_PARTY_NOTICES.md)
+[`THIRD_PARTY_NOTICES.md`](https://github.com/GinoCanessa/dotnet-openehr-sdk/blob/main/src/DotnetOpenEhr.Bmm.Rm/THIRD_PARTY_NOTICES.md)
 for upstream attribution and the pinned commit SHA.
 
 ## See also
 
-- [`docs/package-map.md`](https://github.com/ginoc/dotnet-openehr-sdk/blob/main/docs/package-map.md)
-- [`docs/getting-started.md`](https://github.com/ginoc/dotnet-openehr-sdk/blob/main/docs/getting-started.md)
+- [`docs/package-map.md`](https://github.com/GinoCanessa/dotnet-openehr-sdk/blob/main/docs/package-map.md)
+- [`docs/getting-started.md`](https://github.com/GinoCanessa/dotnet-openehr-sdk/blob/main/docs/getting-started.md)

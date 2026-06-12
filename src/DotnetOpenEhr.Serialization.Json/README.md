@@ -39,8 +39,8 @@ routed through the polymorphic `Locatable` type info so canonical
 ## See also
 
 - `DotnetOpenEhr.Serialization.Json.Flat` — FLAT-dialect round-trip.
-- [`docs/canonical-json-ordering.md`](https://github.com/ginoc/dotnet-openehr-sdk/blob/main/docs/canonical-json-ordering.md)
+- [`docs/canonical-json-ordering.md`](https://github.com/GinoCanessa/dotnet-openehr-sdk/blob/main/docs/canonical-json-ordering.md)
   — the documented sibling-key ordering used for byte-equivalent
   round-trip.
-- [`docs/package-map.md`](https://github.com/ginoc/dotnet-openehr-sdk/blob/main/docs/package-map.md)
-- [`docs/getting-started.md`](https://github.com/ginoc/dotnet-openehr-sdk/blob/main/docs/getting-started.md)
+- [`docs/package-map.md`](https://github.com/GinoCanessa/dotnet-openehr-sdk/blob/main/docs/package-map.md)
+- [`docs/getting-started.md`](https://github.com/GinoCanessa/dotnet-openehr-sdk/blob/main/docs/getting-started.md)

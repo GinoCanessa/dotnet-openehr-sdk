@@ -24,8 +24,8 @@
     <Company>Gino Canessa</Company>
     <Copyright>Copyright (c) 2026 Gino Canessa and the DotnetOpenEhr SDK contributors</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/ginoc/dotnet-openehr-sdk</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/ginoc/dotnet-openehr-sdk</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/GinoCanessa/dotnet-openehr-sdk</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/GinoCanessa/dotnet-openehr-sdk</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>openehr ehr health interoperability</PackageTags>
     <IncludeSymbols>true</IncludeSymbols>

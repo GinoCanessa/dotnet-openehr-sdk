@@ -1,6 +1,6 @@
 # DotnetOpenEhr — a modern .NET SDK for openEHR
 
-[![CI](https://github.com/ginoc/dotnet-openehr-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/ginoc/dotnet-openehr-sdk/actions/workflows/ci.yml)
+[![CI](https://github.com/GinoCanessa/dotnet-openehr-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/GinoCanessa/dotnet-openehr-sdk/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 A first-class .NET 10 / C# 14 SDK for working with **openEHR** artefacts
