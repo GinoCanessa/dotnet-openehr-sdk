@@ -65,7 +65,7 @@ Composition c = OpenEhrJson.ParseComposition(File.ReadAllText("vitals.json"))!;
 OperationalTemplateValidator v = new();
 foreach (ValidationIssue issue in v.Validate(c, opt2))
 {
-    Console.WriteLine($"{issue.Severity} {issue.Path}: {issue.Message}");
+    Console.WriteLine($"{issue.Severity} [{issue.RuleId}] {issue.Path}: {issue.Message}");
 }
 ```
 
