@@ -175,5 +175,5 @@ and shows a tiny snippet:
 - [Templates](https://www.nuget.org/packages/DotnetOpenEhr.Templates)
 - [Aql](https://www.nuget.org/packages/DotnetOpenEhr.Aql)
 
-See also [`aot.md`](aot.md) for the AOT/trim posture and the smoke gate
-the CI enforces on every PR.
+See also [`aot.md`](aot.md) for the AOT/trim posture and the local AOT
+smoke gate.
