@@ -9,7 +9,12 @@ work with the strongly-typed Reference Model and Data Types, validate
 Compositions against operational templates, and evaluate AQL queries
 over in-memory data — all trim-safe and Native-AOT-safe.
 
-> **Status:** alpha. APIs are unstable.
+> **Status:** beta. APIs may still change before 1.0.
+>
+> **Versioning:** packages use a date-based scheme,
+> `yyyy.MMdd.HHmm-beta.0` (e.g. `2026.0612.1428-beta.0`), emitted by
+> `src/Directory.Build.props`. The `-beta.0` suffix marks the current
+> pre-1.0 train.
 
 ## Package map
 
@@ -29,7 +34,7 @@ identifier so consumers only pay for what they use:
 | `DotnetOpenEhr.Bmm` | Basic Meta-Model (BMM) object model + parser. |
 | `DotnetOpenEhr.Bmm.Rm` | Canonical openEHR RM BMM schemas (embedded resources, dual-licensed). |
 | `DotnetOpenEhr.Archetypes` | ADL2 / AOM2 parser + object model. |
-| `DotnetOpenEhr.Templates` | OPT2 parser + template-driven validation. |
+| `DotnetOpenEhr.Templates` | OPT2 and OPT 1.4 XML parser + template-driven validation. |
 | `DotnetOpenEhr.Aql` | AQL parser, AST, in-memory tree-walking evaluator. |
 
 ## Build / Test / AOT
