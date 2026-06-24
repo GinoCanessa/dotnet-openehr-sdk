@@ -158,7 +158,7 @@ sibling source request (`featurerequest.md` / `bugreport.md`).
       resume from this same loop on the next invocation.
 4. **Final verification.** When the loop exits because all phases are
    `Complete`, run the broader test command from the plan (or the repo
-   default, `dotnet test fhir-augury.slnx`) once more end-to-end.
+   default, `dotnet test dotnet-openehr-sdk.slnx`) once more end-to-end.
 5. **Final wrap-up.** Fires only when the loop has fully exited (all
    phases `Complete`, a `Blocked` phase, a scope-exceeded decision,
    or a checkpoint boundary). Never fires per-phase. Report:
@@ -230,8 +230,8 @@ When `plan.md` already shows `In-progress` or partial completion:
 - **Source request is still read-only** here, just as in `dev-plan`.
 - **No push, no PR.** Local commits only.
 - **Honor repo conventions and stored memories** — explicit C# types,
-  `[]` for empty collections, `dotnet build fhir-augury.slnx` and
-  `dotnet test fhir-augury.slnx` as the canonical build/test
+  `[]` for empty collections, `dotnet build dotnet-openehr-sdk.slnx` and
+  `dotnet test dotnet-openehr-sdk.slnx` as the canonical build/test
   commands, and any other documented preferences. If a convention
   contradicts the plan, prefer the convention and note the deviation
   in `plan.md`.

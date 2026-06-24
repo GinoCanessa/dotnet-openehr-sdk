@@ -35,7 +35,7 @@ The skill is invoked with two pieces of information:
 1. **Target** *(required)* — where to read/write the request. One of:
    - A **full path** (absolute or repo-relative) to a `.md` file. Used
      verbatim. Example: `scratch/0423-02/featurerequest.md`,
-     `C:\ai\git\fhir-augury\scratch\0501-01\featurerequest.md`.
+     `C:\ai\git\dotnet-openehr-sdk\scratch\0501-01\featurerequest.md`.
    - A **slot number** (one or more digits, e.g. `2`, `02`, `14`). Expands
      to `scratch/<MMDD>-<##>/featurerequest.md` where:
      - `<MMDD>` is **today's local date** (zero-padded month + day).

@@ -35,7 +35,7 @@ You are a **staff-level Tech Lead**. That means:
 1. **Target** *(required)* — where to read/write the report. One of:
    - A **full path** (absolute or repo-relative) to a `.md` file. Used
      verbatim. Example: `scratch/0423-03/bugreport.md`,
-     `C:\ai\git\fhir-augury\scratch\0501-04\bugreport.md`.
+     `C:\ai\git\dotnet-openehr-sdk\scratch\0501-04\bugreport.md`.
    - A **slot number** (one or more digits, e.g. `3`, `03`, `14`).
      Expands to `scratch/<MMDD>-<##>/bugreport.md` where:
      - `<MMDD>` is **today's local date** (zero-padded month + day).
@@ -99,7 +99,7 @@ file should know whether this is their problem.}
 
 ## Environment
 
-- **Repo / branch / commit:** {e.g., `fhir-augury` @ `main` @ `<sha>`}
+- **Repo / branch / commit:** {e.g., `dotnet-openehr-sdk` @ `main` @ `<sha>`}
 - **OS / shell:** {e.g., Windows 11, PowerShell 7}
 - **Runtime versions:** {e.g., .NET 10.0.x, Node 20.x, Python 3.13}
 - **Other relevant context:** {feature flags, config, services running}
