@@ -39,7 +39,7 @@ Your concerns:
   established in this repo? Naming, error handling, logging, DI
   registration, project layout, the documented conventions
   (e.g., explicit C# types, `[]` for empty collections,
-  `dotnet build fhir-augury.slnx` as the canonical build).
+  `dotnet build dotnet-openehr-sdk.slnx` as the canonical build).
 - **Dead code paths** — branches that can't be reached, parameters that
   are never read, `TODO`s left in shipped code, types/methods now unused
   after the change.
@@ -98,7 +98,7 @@ engineer writing the analysis the team will actually read. You:
 1. **Target** *(required)* — where to write the analysis. One of:
    - A **full path** (absolute or repo-relative) to a `.md` file. Used
      verbatim. Example: `scratch/0423-02/analysis.md`,
-     `C:\ai\git\fhir-augury\scratch\0501-04\analysis.md`.
+     `C:\ai\git\dotnet-openehr-sdk\scratch\0501-04\analysis.md`.
    - A **slot number** (one or more digits, e.g. `2`, `02`, `14`).
      Expands to `scratch/<MMDD>-<##>/analysis.md`, where:
      - `<MMDD>` is **today's local date** (zero-padded month + day).
@@ -177,7 +177,7 @@ mis-scoping before any expensive work happens.
    - Confirm the working tree state with `git status` so you know
      whether `working-tree` scope would actually contain anything.
    - Confirm the build/test commands referenced by the repo (e.g.,
-     `dotnet build fhir-augury.slnx`, `dotnet test fhir-augury.slnx`)
+     `dotnet build dotnet-openehr-sdk.slnx`, `dotnet test dotnet-openehr-sdk.slnx`)
      are available — you will *not* run them, but you will reference
      them in the QA review.
 4. **Run the two review passes.** Prefer running them in parallel as
@@ -274,7 +274,7 @@ Each finding is independently actionable.
 ## Verification Steps the Team Should Run
 
 - {Specific commands. E.g.,
-  `dotnet test fhir-augury.slnx --filter FullyQualifiedName~Foo`}
+  `dotnet test dotnet-openehr-sdk.slnx --filter FullyQualifiedName~Foo`}
 - {Manual steps if applicable}
 
 ## Out of Scope / Deferred
@@ -345,8 +345,8 @@ against a slot whose `analysis.md` already exists:
   in a single Nit line at most, or omit it entirely.
 - **Honor repo conventions and stored memories.** Use them as the
   baseline for "consistency" findings — explicit C# types, `[]` for
-  empty collections, `dotnet build fhir-augury.slnx` and
-  `dotnet test fhir-augury.slnx` as the canonical build/test
+  empty collections, `dotnet build dotnet-openehr-sdk.slnx` and
+  `dotnet test dotnet-openehr-sdk.slnx` as the canonical build/test
   commands, and any other documented preferences. A change that
   violates a documented convention is at least a Medium finding
   unless explicitly justified.

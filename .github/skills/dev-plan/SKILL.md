@@ -135,7 +135,7 @@ buildable state. Phases run sequentially.
 **Verification:**
 
 - {Specific command(s) to run, e.g.,
-  `dotnet test fhir-augury.slnx --filter FullyQualifiedName~Foo`}
+  `dotnet test dotnet-openehr-sdk.slnx --filter FullyQualifiedName~Foo`}
 - {Expected result — what success looks like}
 
 **Status:** Pending
@@ -208,8 +208,8 @@ When `plan.md` already exists:
 - **Name specifics.** Files, classes, functions, test methods,
   commands. No "the relevant module".
 - **Honor repo conventions.** Use the build/test commands documented in
-  this repo (e.g., `dotnet build fhir-augury.slnx`,
-  `dotnet test fhir-augury.slnx`). Use the language/style preferences
+  this repo (e.g., `dotnet build dotnet-openehr-sdk.slnx`,
+  `dotnet test dotnet-openehr-sdk.slnx`). Use the language/style preferences
   recorded in repo guidance (e.g., explicit C# types, `[]` for empty
   collection initializers).
 - **Do not commit.** Files under `scratch/` are gitignored on purpose.
